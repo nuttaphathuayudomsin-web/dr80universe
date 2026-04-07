@@ -356,7 +356,7 @@ select:focus{border-color:var(--sky)}
         <div class="section-pill" style="background:var(--amber-bg);color:var(--amber)">DR tab only</div>
       </div>
       <div class="trend-grid" id="trendGrid"></div>
-      <div class="trend-note">📌 52W High &gt;90% · 52W Low &lt;20% · RSI Overbought &gt;70 · RSI Oversold &lt;30 · Most Active = top 20% vol. Buttons hidden if 0 DRs match.</div>
+      <div class="trend-note">📌 52W High &gt;90% · 52W Low &lt;20% · RSI Overbought &gt;70 · RSI Oversold &lt;30. Buttons hidden if 0 DRs match.</div>
     </div>
   </div>
 
@@ -483,7 +483,6 @@ const GOAL_COUNTRIES = {regional:["CN - A","CN - H","JP","SG","EU","HK"]};
 const TREND_DEFS = [
   {id:"high52",icon:"📈",name:"Near 52W High",desc:"52W ratio > 90%"},
   {id:"low52",icon:"📉",name:"Near 52W Low",desc:"52W ratio < 20%"},
-  {id:"highTV",icon:"🔥",name:"Most Active",desc:"Top 20% by trading vol"},
   {id:"rsiOB",icon:"⚡",name:"RSI Overbought",desc:"RSI > 70"},
   {id:"rsiOS",icon:"🧊",name:"RSI Oversold",desc:"RSI < 30"}
 ];
@@ -513,11 +512,6 @@ function matchTrend(r,id){
   if(id==="low52")return wk52h!=null&&wk52h<0.20;
   if(id==="rsiOB")return rsiVal!=null&&rsiVal>70;
   if(id==="rsiOS")return rsiVal!=null&&rsiVal<30;
-  if(id==="highTV"){
-    const tvs=DR_RAW.filter(x=>x[11]!=null).map(x=>x[11]).sort((a,b)=>a-b);
-    const p80=tvs[Math.floor(tvs.length*0.8)];
-    return trading_v!=null&&trading_v>=p80;
-  }
   return false;
 }
 function getTrendCount(id){return DR_RAW.filter(r=>matchTrend(r,id)).length;}
