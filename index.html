@@ -591,7 +591,7 @@ function updateIdeas(){
     const card=document.createElement("div");
     card.className="idea-card"+(fIdeaTheme===t?" active":"");
     card.innerHTML=`<span class="idea-icon">${meta.icon}</span><div class="idea-name">${t}</div><div class="idea-count">${rows.length} DRs</div><div class="idea-perf ${avg>=0?"pos":"neg"}">${fmtP(avg,1)} avg</div>`;
-    card.onclick=()=>{fIdeaTheme=fIdeaTheme===t?"":t;render();};
+    card.onclick=()=>{fIdeaTheme=fIdeaTheme===t?"":t;track("idea_click",t);render();};
     grid.appendChild(card);
   });
 }
@@ -608,7 +608,7 @@ function updateTrending(){
     const btn=document.createElement("div");
     btn.className="trend-btn"+(fTrend===td.id?" active":"");
     btn.innerHTML=`<div class="trend-icon">${td.icon}</div><div class="trend-name">${td.name}</div><div class="trend-desc">${td.desc}</div><div class="trend-count">${cnt} DRs</div>`;
-    btn.onclick=()=>{fTrend=fTrend===td.id?"":td.id;render();};
+    btn.onclick=()=>{fTrend=fTrend===td.id?"":td.id;track("trend_click",td.name);render();};
     grid.appendChild(btn);
   });
 }
@@ -647,7 +647,7 @@ function updateHeatmap(){
       const cell=document.createElement("div");
       cell.className="hm-cell"+(fSector===sec?" selected":"");
       cell.style.background=bg;cell.title=sec+" ("+fmtP(avg,1)+")";
-      cell.onclick=()=>{fSector=fSector===sec?"":sec;document.getElementById("sectorFilter").value=fSector;document.getElementById("hmReset").classList.toggle("show",fSector!=="");render();};
+      cell.onclick=()=>{fSector=fSector===sec?"":sec;document.getElementById("sectorFilter").value=fSector;document.getElementById("hmReset").classList.toggle("show",fSector!=="");track("heatmap_sector",sec);render();};
       cell.innerHTML=`<div class="hm-cell-name" style="color:${tc}">${sec}</div><div class="hm-cell-val" style="color:${tc}">${fmtP(avg,1)}</div>`;
       secGrid.appendChild(cell);
     });
@@ -776,7 +776,7 @@ function updateTable(data){
     const sig=pct>=0.8?'<span class="badge b-perf b-top">Top 20%</span>':pct<=0.2?'<span class="badge b-perf b-bot">Bot 20%</span>':'<span class="badge b-perf b-mid">Mid</span>';
     const tkShort=ticker.split(" ")[0];
     const isTB=TB_SET.has(tkShort);
-    const resLink=isTB?`<a class="settrade-link" href="https://www.settrade.com/th/equities/dr/quote/${tkShort}/research" target="_blank">📊 Research</a>`:'<span style="color:var(--text3);font-size:11px">—</span>';
+    const resLink=isTB?`<a class="settrade-link" href="https://www.settrade.com/th/equities/dr/quote/${tkShort}/research" target="_blank" onclick="track('research_click','${tkShort}')">📊 Research</a>`:'<span style="color:var(--text3);font-size:11px">—</span>';
     const upcomingBadge=!ticker.includes("TB Equity")?'<span class="badge b-upcoming" style="margin-left:5px;font-size:10px">Upcoming</span>':"";
     const chk=compareSet.has(ticker)?"checked":"";
     const cleanName=name.replace(/-DR$|-DRX$/,"");
@@ -855,6 +855,7 @@ function populate(){
 }
 
 function openCompare(){
+  track("compare_open","");
   const selected=getRAW().filter(r=>compareSet.has(r[0]));
   if(selected.length<2)return;
   const periods=["ytd","1m","3m","6m","1y"],pLabels=["YTD","1M","3M","6M","1Y"];
@@ -885,6 +886,7 @@ function confirmUL(){
   activateTab("ul");
 }
 function activateTab(tab){
+  track("tab_switch",tab);
   activeTab=tab;
   document.getElementById("tabDR").classList.toggle("active",tab==="dr");
   document.getElementById("tabUL").classList.toggle("active",tab==="ul");
@@ -893,6 +895,20 @@ function activateTab(tab){
   document.getElementById("search").value="";
   document.getElementById("hmReset").classList.remove("show");
   populate();updateColCustomizer();render();
+}
+
+// ── ANALYTICS ──
+const GA_URL="https://script.google.com/a/macros/krungthai.com/s/AKfycbzP4M_ro5f36AlQSis_Va6xXxgOlPGRxf7OJTV7cxD3Qr4Odx6hc9LoOHKhmStz5hKB/exec";
+const SESSION_ID=Math.random().toString(36).slice(2,10);
+function track(event,value=""){
+  try{
+    fetch(GA_URL,{
+      method:"POST",
+      mode:"no-cors",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({event,value,tab:activeTab,period,session:SESSION_ID})
+    });
+  }catch(e){}
 }
 
 function render(){
@@ -912,13 +928,13 @@ document.addEventListener("DOMContentLoaded",function(){
   document.getElementById("themeFilter").addEventListener("change",e=>{fTheme=e.target.value;render();});
   document.getElementById("sectorFilter").addEventListener("change",e=>{fSector=e.target.value;render();});
   document.getElementById("countryFilter").addEventListener("change",e=>{fCountry=e.target.value;render();});
-  document.getElementById("search").addEventListener("input",e=>{fSearch=e.target.value;render();});
+  document.getElementById("search").addEventListener("input",e=>{fSearch=e.target.value;if(e.target.value.length>2)track("search",e.target.value);render();});
   document.getElementById("compareModal").addEventListener("click",e=>{if(e.target===e.currentTarget)closeCompare();});
   document.getElementById("ulModal").addEventListener("click",e=>{if(e.target===e.currentTarget)document.getElementById("ulModal").classList.remove("open");});
   document.getElementById("periodBtns").addEventListener("click",e=>{
     if(!e.target.classList.contains("pbtn"))return;
     document.querySelectorAll(".pbtn").forEach(b=>b.classList.remove("active"));
-    e.target.classList.add("active");period=e.target.dataset.p;
+    e.target.classList.add("active");period=e.target.dataset.p;track("period_change",e.target.dataset.p);
     if(!["name","ticker","country","theme","sector"].includes(sortCol))sortCol=period;
     render();
   });
@@ -928,6 +944,7 @@ document.addEventListener("DOMContentLoaded",function(){
   scrollBar.addEventListener("input",()=>{tblWrap.scrollLeft=parseInt(scrollBar.value);});
   tblWrap.addEventListener("scroll",()=>{scrollBar.value=tblWrap.scrollLeft;scrollBar.max=Math.max(0,tblWrap.scrollWidth-tblWrap.clientWidth);});
   populate();updateColCustomizer();render();
+  track("page_load","dr80_dashboard");
 });
 
 </script>
