@@ -777,7 +777,7 @@ function updateTable(data){
     const tkShort=ticker.split(" ")[0];
     const isTB=TB_SET.has(tkShort);
     const resLink=isTB?`<a class="settrade-link" href="https://www.settrade.com/th/equities/dr/quote/${tkShort}/research" target="_blank">📊 Research</a>`:'<span style="color:var(--text3);font-size:11px">—</span>';
-    const upcomingBadge=!TB_SET.has(tkShort)?'<span class="badge b-upcoming" style="margin-left:5px;font-size:10px">Upcoming</span>':"";
+    const upcomingBadge=!ticker.includes("TB Equity")?'<span class="badge b-upcoming" style="margin-left:5px;font-size:10px">Upcoming</span>':"";
     const chk=compareSet.has(ticker)?"checked":"";
     const cleanName=name.replace(/-DR$|-DRX$/,"");
     const trEl=document.createElement("tr");
