@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DR80 — KTB Depositary Receipt Explorer</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root{
+  --navy:#003F88;--navy2:#004FA8;--navy-dark:#002055;
+  --sky:#00AEEF;--sky2:#29C5F6;--sky-light:#E0F4FC;--sky-pale:#F0F9FE;
+  --green:#007A4D;--green-bg:#E0F5EC;--red:#C0392B;--red-bg:#FDECEA;
+  --amber:#D97706;--amber-bg:#FEF3C7;
+  --text:#1A2B42;--text2:#4A6080;--text3:#8FA3BE;
+  --border:#E2E8F0;--border2:#F1F5F9;
+  --gray50:#F5F7FA;--gray100:#EEF2F7;--gray200:#D9E2EE;--gray600:#4A6080;
+  --shadow:0 2px 8px rgba(0,63,136,0.07);--shadow-md:0 4px 20px rgba(0,63,136,0.10);
+  --r:12px;--r-sm:8px;
+  --fs:1; /* font scale factor, modified by slider */
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Sarabun',sans-serif;background:var(--gray50);color:var(--text);font-size:calc(15px * var(--fs));line-height:1.6}
+/* HEADER */
+.header{background:var(--navy);padding:0 28px;position:sticky;top:0;z-index:300;box-shadow:0 2px 16px rgba(0,0,0,0.2)}
+.header-inner{display:flex;align-items:center;justify-content:space-between;height:62px}
+.logo{display:flex;align-items:center;gap:12px}
+.logo-icon{width:38px;height:38px;background:var(--sky);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.logo-texts{display:flex;flex-direction:column;line-height:1.15}
+.logo-sub{font-size:calc(11px * var(--fs));color:rgba(255,255,255,0.5);letter-spacing:0.14em;text-transform:uppercase}
+.logo-main{font-size:calc(16px * var(--fs));font-weight:700;color:white}
+.logo-main span{color:var(--sky2);font-weight:300}
+.header-right{display:flex;align-items:center;gap:10px}
+.date-chip{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.18);border-radius:20px;padding:4px 12px;font-size:calc(11px * var(--fs));color:rgba(255,255,255,0.6);font-family:'IBM Plex Mono',monospace;white-space:nowrap}
+.date-chip strong{color:var(--sky2)}
+.live-badge{display:flex;align-items:center;gap:5px;font-size:calc(11px * var(--fs));color:rgba(255,255,255,0.4);font-family:'IBM Plex Mono',monospace}
+.live-dot{width:7px;height:7px;border-radius:50%;background:#22C55E;animation:blink 2s infinite;flex-shrink:0}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+/* FONT SIZER */
+.font-sizer{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:20px;padding:3px 10px}
+.fs-btn{background:none;border:none;color:rgba(255,255,255,0.7);font-size:16px;cursor:pointer;width:22px;height:22px;display:flex;align-items:center;justify-content:center;border-radius:50%;transition:background 0.12s;line-height:1}
+.fs-btn:hover{background:rgba(255,255,255,0.15);color:white}
+.fs-label{font-size:calc(11px * var(--fs));color:rgba(255,255,255,0.55);font-family:'IBM Plex Mono',monospace;min-width:32px;text-align:center}
+/* PAGE TABS */
+.page-tabs{background:var(--navy-dark);padding:0 28px;position:sticky;top:62px;z-index:290;border-bottom:1px solid rgba(255,255,255,0.08)}
+.page-tabs-inner{display:flex}
+.ptab{font-size:calc(14px * var(--fs));font-weight:500;color:rgba(255,255,255,0.45);padding:11px 24px;cursor:pointer;border:none;border-bottom:2px solid transparent;background:none;font-family:'Sarabun',sans-serif;margin-bottom:-1px;transition:all 0.15s;display:flex;align-items:center;gap:8px}
+.ptab:hover{color:rgba(255,255,255,0.75)}
+.ptab.active{color:var(--sky2);border-bottom-color:var(--sky2);font-weight:600}
+.ptab-badge{font-size:calc(10px * var(--fs));font-family:'IBM Plex Mono',monospace;background:rgba(0,174,239,0.15);color:var(--sky2);padding:1px 7px;border-radius:3px}
+.ptab.ul-tab{color:rgba(255,255,255,0.3)}
+.ptab.ul-tab .ptab-badge{background:rgba(255,200,50,0.1);color:rgba(255,200,100,0.7)}
+/* FILTER STATUS */
+.filter-status{background:rgba(0,28,72,0.98);border-bottom:1px solid rgba(255,255,255,0.07);padding:0 28px;position:sticky;top:103px;z-index:280}
+.filter-status-inner{display:flex;align-items:center;gap:8px;height:40px;overflow-x:auto}
+.filter-status-inner::-webkit-scrollbar{height:0}
+.fs-label2{font-size:calc(12px * var(--fs));color:rgba(255,255,255,0.35);font-family:'IBM Plex Mono',monospace;white-space:nowrap;margin-right:2px;flex-shrink:0}
+.fs-tag{display:inline-flex;align-items:center;gap:5px;border-radius:20px;padding:3px 11px;font-size:calc(12px * var(--fs));font-family:'IBM Plex Mono',monospace;white-space:nowrap;border:1px solid;flex-shrink:0}
+.fs-tag.period{background:rgba(0,174,239,0.12);border-color:rgba(0,174,239,0.3);color:var(--sky2)}
+.fs-tag.idea{background:rgba(155,127,255,0.12);border-color:rgba(155,127,255,0.25);color:#C4B5FD}
+.fs-tag.trend{background:rgba(245,166,35,0.12);border-color:rgba(245,166,35,0.25);color:#FCD34D}
+.fs-tag.sector{background:rgba(0,122,77,0.15);border-color:rgba(0,200,130,0.25);color:#6EE7B7}
+.fs-tag.search{background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.15);color:rgba(255,255,255,0.7)}
+.fs-x{cursor:pointer;opacity:0.55;font-size:12px;margin-left:1px}.fs-x:hover{opacity:1}
+.fs-clear{margin-left:auto;font-size:calc(12px * var(--fs));font-family:'IBM Plex Mono',monospace;color:rgba(255,255,255,0.3);cursor:pointer;padding:3px 9px;border-radius:4px;border:1px solid rgba(255,255,255,0.1);background:none;flex-shrink:0}
+.fs-clear:hover{color:white;border-color:rgba(255,255,255,0.35)}
+/* HERO */
+.hero{position:relative;background:linear-gradient(118deg,var(--navy-dark) 0%,var(--navy) 52%,#005BAA 100%);color:white;padding:30px 28px 26px;border-bottom:3px solid var(--sky);overflow:hidden}
+.hero-blob{position:absolute;border-radius:50%;pointer-events:none}
+.hb1{width:450px;height:450px;background:rgba(0,174,239,0.07);right:-100px;top:-160px}
+.hb2{width:280px;height:280px;background:rgba(41,197,246,0.05);right:150px;bottom:-130px}
+.hero-inner{position:relative;max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 400px;gap:24px;align-items:center}
+.hero-eyebrow{font-size:calc(11px * var(--fs));color:var(--sky2);letter-spacing:0.16em;text-transform:uppercase;margin-bottom:6px;font-family:'IBM Plex Mono',monospace}
+.hero-title{font-size:calc(28px * var(--fs));font-weight:700;line-height:1.25;margin-bottom:8px}
+.hero-title span{color:var(--sky2)}
+.hero-desc{font-size:calc(14px * var(--fs));color:rgba(255,255,255,0.65);line-height:1.7;margin-bottom:12px}
+.hero-date-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(0,174,239,0.12);border:1px solid rgba(0,174,239,0.3);border-radius:6px;padding:6px 14px}
+.hero-date-badge .lbl{font-family:'IBM Plex Mono',monospace;font-size:calc(12px * var(--fs));color:rgba(255,255,255,0.55)}
+.hero-date-badge strong{font-family:'IBM Plex Mono',monospace;font-size:calc(12px * var(--fs));color:var(--sky2)}
+/* TOP MOVERS */
+.hero-movers{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:var(--r);padding:16px 18px}
+.hm-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.hm-hdr-title{font-size:calc(12px * var(--fs));font-family:'IBM Plex Mono',monospace;color:rgba(255,255,255,0.6);letter-spacing:0.08em;text-transform:uppercase}
+.hm-period-badge{font-size:calc(11px * var(--fs));background:rgba(0,174,239,0.2);color:var(--sky2);padding:2px 8px;border-radius:3px;font-family:'IBM Plex Mono',monospace}
+.hm-cols{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.hm-col-lbl{font-size:calc(11px * var(--fs));font-weight:700;letter-spacing:0.07em;text-transform:uppercase;margin-bottom:6px}
+.hm-col-lbl.g{color:rgba(110,231,183,0.8)}.hm-col-lbl.r{color:rgba(252,165,165,0.8)}
+.hm-row{display:flex;align-items:center;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.05)}
+.hm-row:last-child{border-bottom:none}
+.hm-num{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:calc(10px * var(--fs));font-weight:700;flex-shrink:0;margin-right:8px}
+.hm-num.g{background:rgba(0,122,77,0.3);color:#6EE7B7}.hm-num.r{background:rgba(192,57,43,0.3);color:#FCA5A5}
+.hm-info{flex:1;min-width:0}
+.hm-name{font-size:calc(12px * var(--fs));font-weight:600;color:rgba(255,255,255,0.85);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hm-ticker-sm{font-family:'IBM Plex Mono',monospace;font-size:calc(10px * var(--fs));color:rgba(255,255,255,0.35)}
+.hm-pct{font-family:'IBM Plex Mono',monospace;font-size:calc(13px * var(--fs));font-weight:600;flex-shrink:0;margin-left:6px}
+.hm-pct.pos{color:#4ADE80}.hm-pct.neg{color:#F87171}
+/* CONTENT */
+.content{max-width:1200px;margin:0 auto;padding:20px 28px}
+/* PERIOD */
+.period-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+.period-label{font-size:calc(14px * var(--fs));color:var(--text2);font-weight:500}
+.period-group{display:flex;background:white;border:1px solid var(--border);border-radius:var(--r-sm);overflow:hidden;box-shadow:var(--shadow)}
+.pbtn{font-family:'IBM Plex Mono',monospace;font-size:calc(12px * var(--fs));font-weight:500;padding:9px 20px;background:none;border:none;border-right:1px solid var(--border);color:var(--text3);cursor:pointer;transition:all 0.13s;letter-spacing:0.05em}
+.pbtn:last-child{border-right:none}.pbtn:hover{background:var(--sky-pale);color:var(--navy)}.pbtn.active{background:var(--navy);color:white}
+/* METRICS */
+.metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-bottom:20px}
+.mc{background:white;border-radius:var(--r);padding:18px 20px;box-shadow:var(--shadow);position:relative;overflow:hidden;transition:box-shadow 0.15s,transform 0.15s}
+.mc:hover{box-shadow:var(--shadow-md);transform:translateY(-1px)}
+.mc-bar{position:absolute;top:0;left:0;right:0;height:4px;border-radius:var(--r) var(--r) 0 0}
+.mc-bar.sky{background:linear-gradient(90deg,var(--sky),var(--sky2))}.mc-bar.green{background:var(--green)}.mc-bar.red{background:var(--red)}.mc-bar.navy{background:var(--navy)}
+.mc-icon{font-size:calc(20px * var(--fs));margin-bottom:8px;display:block}
+.mc-label{font-size:calc(11px * var(--fs));color:var(--text3);font-weight:600;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px}
+.mc-val{font-family:'IBM Plex Mono',monospace;font-size:calc(26px * var(--fs));font-weight:500;color:var(--text);line-height:1}
+.mc-val.pos{color:var(--green)}.mc-val.neg{color:var(--red)}.mc-sub{font-size:calc(12px * var(--fs));color:var(--text3);margin-top:5px}
+/* SECTION HDR */
+.section-hdr{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.section-title{font-size:calc(17px * var(--fs));font-weight:700;color:var(--navy)}
+.section-pill{font-size:calc(12px * var(--fs));font-family:'IBM Plex Mono',monospace;background:var(--sky-light);color:var(--navy2);padding:3px 10px;border-radius:20px}
+/* IDEA + TRENDING */
+.idea-trend-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.idea-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.idea-card{background:white;border:2px solid var(--border);border-radius:var(--r);padding:18px 14px 14px;cursor:pointer;transition:all 0.15s;text-align:center;position:relative;overflow:hidden;box-shadow:var(--shadow)}
+.idea-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--sky-light);transition:background 0.15s;border-radius:var(--r) var(--r) 0 0}
+.idea-card:hover{border-color:var(--sky);transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.idea-card:hover::before{background:linear-gradient(90deg,var(--sky),var(--sky2))}
+.idea-card.active{border-color:var(--navy);background:var(--navy)}
+.idea-card.active::before{background:var(--sky)}
+.idea-card.active .idea-name{color:white}.idea-card.active .idea-count{color:rgba(255,255,255,0.5)}
+.idea-card.active .idea-perf.pos{color:#4FFFB0}.idea-card.active .idea-perf.neg{color:#FF9090}
+.idea-icon{font-size:calc(26px * var(--fs));margin-bottom:8px;display:block}
+.idea-name{font-size:calc(13px * var(--fs));font-weight:600;color:var(--navy);margin-bottom:3px;line-height:1.3}
+.idea-count{font-size:calc(11px * var(--fs));color:var(--text3)}
+.idea-perf{font-family:'IBM Plex Mono',monospace;font-size:calc(13px * var(--fs));font-weight:600;margin-top:5px}
+.idea-perf.pos{color:var(--green)}.idea-perf.neg{color:var(--red)}
+/* TRENDING */
+.trend-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.trend-btn{background:white;border:2px solid var(--border);border-radius:var(--r-sm);padding:16px 14px;cursor:pointer;transition:all 0.15s;text-align:left;box-shadow:var(--shadow)}
+.trend-btn:hover{border-color:var(--amber);box-shadow:var(--shadow-md)}
+.trend-btn.active{border-color:var(--amber);background:#FFFBEB}
+.trend-icon{font-size:calc(22px * var(--fs));margin-bottom:6px;display:block}
+.trend-name{font-size:calc(14px * var(--fs));font-weight:700;color:var(--text);margin-bottom:2px}
+.trend-desc{font-size:calc(12px * var(--fs));color:var(--text3)}
+.trend-count{font-family:'IBM Plex Mono',monospace;font-size:calc(14px * var(--fs));color:var(--amber);font-weight:700;margin-top:4px}
+.trend-note{background:var(--amber-bg);border:1px solid #FCD34D;border-radius:var(--r-sm);padding:10px 13px;font-size:calc(12px * var(--fs));color:#78350F}
+/* CHARTS ROW */
+.charts-row{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px;margin-bottom:20px}
+.chart-card{background:white;border-radius:var(--r);padding:20px;box-shadow:var(--shadow)}
+.chart-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.chart-title{font-size:calc(12px * var(--fs));font-weight:700;color:var(--text2);letter-spacing:0.08em;text-transform:uppercase}
+.chart-sub{font-size:calc(11px * var(--fs));color:var(--text3)}
+.chart-idea-tag{font-size:calc(11px * var(--fs));font-family:'IBM Plex Mono',monospace;background:var(--sky-light);color:var(--navy2);padding:2px 8px;border-radius:3px}
+/* HEATMAP — bigger cells */
+.hm-theme-group{margin-bottom:14px}
+.hm-theme-label{font-size:calc(12px * var(--fs));font-weight:700;color:var(--text2);letter-spacing:0.07em;text-transform:uppercase;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.hm-theme-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.hm-sectors{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.hm-cell{border-radius:8px;padding:12px 10px;cursor:pointer;transition:all 0.13s;border:2px solid transparent;min-height:60px;display:flex;flex-direction:column;justify-content:space-between}
+.hm-cell:hover{transform:scale(1.04);opacity:0.85}
+.hm-cell.selected{border-color:var(--navy);box-shadow:0 0 0 3px rgba(0,63,136,0.2)}
+.hm-cell-name{font-size:calc(12px * var(--fs));font-weight:700;line-height:1.3;margin-bottom:4px}
+.hm-cell-val{font-family:'IBM Plex Mono',monospace;font-size:calc(13px * var(--fs));font-weight:700}
+.hm-reset{font-size:calc(12px * var(--fs));font-family:'IBM Plex Mono',monospace;background:var(--red-bg);color:var(--red);border:1px solid var(--red);border-radius:4px;padding:2px 9px;cursor:pointer;display:none}
+.hm-reset.show{display:inline-block}
+/* DONUT EXPOSURE */
+.donut-wrap{display:flex;flex-direction:column;gap:6px}
+.donut-section{margin-bottom:6px}
+.donut-sub{font-size:calc(11px * var(--fs));font-weight:700;color:var(--text3);letter-spacing:0.07em;text-transform:uppercase;margin-bottom:8px}
+.donut-chart-wrap{position:relative;height:130px}
+.donut-legend{display:flex;flex-direction:column;gap:4px;margin-top:6px}
+.donut-row{display:flex;align-items:center;justify-content:space-between;font-size:calc(11px * var(--fs))}
+.donut-left{display:flex;align-items:center;gap:6px}
+.donut-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+.donut-name{color:var(--text2)}
+.donut-pct{font-family:'IBM Plex Mono',monospace;color:var(--text);font-weight:600}
+.exp-divider{border-top:1px solid var(--border2);margin:10px 0}
+/* DISTRIBUTION */
+.dist-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.dist-stat{background:var(--gray50);border-radius:8px;padding:10px;text-align:center;border:1px solid var(--border2)}
+.dist-stat-lbl{font-size:calc(10px * var(--fs));color:var(--text3);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:3px}
+.dist-stat-val{font-family:'IBM Plex Mono',monospace;font-size:calc(15px * var(--fs));font-weight:700}
+.dist-stat-val.pos{color:var(--green)}.dist-stat-val.neg{color:var(--red)}
+/* COLUMN CUSTOMIZER */
+.col-cust-bar{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.col-cust-label{font-size:calc(13px * var(--fs));color:var(--text2);font-weight:600}
+.col-cust-btn{background:white;border:1.5px solid var(--border);border-radius:6px;padding:5px 12px;font-size:calc(12px * var(--fs));color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:6px;transition:all 0.13s;box-shadow:var(--shadow)}
+.col-cust-btn:hover{border-color:var(--sky)}
+.col-cust-btn.active{border-color:var(--navy);background:var(--sky-light);color:var(--navy)}
+.col-cust-btn input[type=checkbox]{accent-color:var(--navy)}
+/* TABLE */
+.table-card{background:white;border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow)}
+.table-top{display:flex;align-items:center;justify-content:space-between;padding:13px 18px;border-bottom:1px solid var(--border2)}
+.table-lbl{font-size:calc(12px * var(--fs));font-weight:700;color:var(--text2);letter-spacing:0.08em;text-transform:uppercase}
+.row-count{font-family:'IBM Plex Mono',monospace;font-size:calc(12px * var(--fs));color:var(--text3)}
+.tbl-scroll-bar{padding:6px 0 0 0;display:flex;align-items:center;gap:8px}
+.tbl-scroll-label{font-size:calc(11px * var(--fs));color:var(--text3);white-space:nowrap}
+.tbl-scroll-input{flex:1;accent-color:var(--navy);height:4px;cursor:pointer}
+.tbl-wrap{overflow-x:auto}
+.tbl-wrap::-webkit-scrollbar{height:4px}
+.tbl-wrap::-webkit-scrollbar-track{background:var(--gray50)}
+.tbl-wrap::-webkit-scrollbar-thumb{background:var(--gray200);border-radius:2px}
+table{width:100%;border-collapse:collapse;min-width:900px}
+thead th{text-align:left;padding:11px 13px;font-size:calc(11px * var(--fs));font-weight:700;color:var(--text3);letter-spacing:0.09em;text-transform:uppercase;border-bottom:2px solid var(--border);background:var(--gray50);white-space:nowrap;cursor:pointer;user-select:none;transition:color 0.12s}
+thead th:hover{color:var(--navy)}
+thead th.sorted{color:var(--navy)}
+tbody tr{border-bottom:1px solid var(--border2);border-left:3px solid transparent;transition:all 0.1s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:var(--sky-pale);border-left-color:var(--sky)}
+tbody td{padding:11px 13px;white-space:nowrap}
+.td-name{font-size:calc(14px * var(--fs));font-weight:600;color:var(--navy);max-width:220px;overflow:hidden;text-overflow:ellipsis;display:block}
+.td-ticker-sm{font-family:'IBM Plex Mono',monospace;font-size:calc(11px * var(--fs));color:var(--text3)}
+.td-num{font-family:'IBM Plex Mono',monospace;font-size:calc(12px * var(--fs));font-weight:500;text-align:right}
+.td-num.pos{color:var(--green)}.td-num.neg{color:var(--red)}.td-num.neu{color:var(--text3)}
+.badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:calc(11px * var(--fs));font-weight:700;white-space:nowrap}
+.b-perf{font-family:'IBM Plex Mono',monospace;font-size:calc(10px * var(--fs));padding:3px 7px;border-radius:4px;font-weight:600}
+.b-top{background:#DCFCE7;color:#166534}.b-bot{background:#FEE2E2;color:#991B1B}.b-mid{background:var(--gray100);color:var(--gray600)}
+.b-ai{background:#DBEAFE;color:#1E40AF}.b-nxt{background:#E0F4FC;color:#0369A1}
+.b-tmt{background:#E0F2FE;color:#0C4A6E}.b-idx{background:var(--gray100);color:var(--gray600)}
+.b-geo{background:#FEE2E2;color:#991B1B}.b-spc{background:#FEF3C7;color:#92400E}
+.b-upcoming{background:#FEF3C7;color:#92400E;border:1px solid #FCD34D}
+.chk{width:15px;height:15px;accent-color:var(--navy);cursor:pointer}
+.sort-arrow{margin-left:2px;font-size:10px}
+.settrade-link{display:inline-flex;align-items:center;gap:3px;background:var(--sky-light);color:var(--navy2);border:1px solid rgba(0,174,239,0.25);border-radius:5px;padding:3px 9px;font-size:calc(11px * var(--fs));font-weight:600;cursor:pointer;white-space:nowrap;text-decoration:none;transition:all 0.12s}
+.settrade-link:hover{background:var(--sky);color:white;border-color:var(--sky)}
+/* FILTER BAR */
+.filter-bar{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:12px}
+.search-wrap{position:relative;flex:1;min-width:160px;max-width:260px}
+.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:15px;pointer-events:none}
+input[type=text]{width:100%;background:white;border:1.5px solid var(--border);color:var(--text);font-family:'Sarabun',sans-serif;font-size:calc(13px * var(--fs));padding:9px 12px 9px 34px;border-radius:var(--r-sm);outline:none;box-shadow:var(--shadow);transition:border-color 0.15s}
+input[type=text]:focus{border-color:var(--sky)}
+input[type=text]::placeholder{color:var(--text3)}
+select{background:white;border:1.5px solid var(--border);color:var(--text2);font-family:'Sarabun',sans-serif;font-size:calc(13px * var(--fs));padding:9px 28px 9px 11px;border-radius:var(--r-sm);outline:none;cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%238FA3BE' stroke-width='1.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;box-shadow:var(--shadow);transition:border-color 0.15s}
+select:focus{border-color:var(--sky)}
+.compare-btn{margin-left:auto;background:var(--navy);color:white;border:none;font-family:'Sarabun',sans-serif;font-size:calc(13px * var(--fs));font-weight:600;padding:9px 20px;border-radius:var(--r-sm);cursor:pointer;box-shadow:0 2px 8px rgba(0,63,136,0.2);white-space:nowrap;transition:all 0.15s}
+.compare-btn:hover{background:var(--navy2)}.compare-btn:disabled{background:var(--gray200);color:var(--text3);cursor:not-allowed;box-shadow:none}
+/* UL BANNER */
+.ul-banner{background:linear-gradient(90deg,#FEF3C7,#FFFBEB);border-bottom:2px solid #FCD34D;padding:10px 28px;display:none}
+.ul-banner.show{display:block}
+.ul-banner-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;gap:10px;font-size:calc(13px * var(--fs));color:#78350F}
+/* DISCLAIMER */
+.disclaimer{background:#FFFBEB;border:1px solid #FCD34D;border-radius:var(--r);padding:20px 24px;margin-top:22px}
+.disc-hdr{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.disc-title{font-size:calc(13px * var(--fs));font-weight:700;color:#92400E;letter-spacing:0.05em}
+.disc-text{font-size:calc(13px * var(--fs));color:#78350F;line-height:1.85}
+/* MODALS */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,20,60,0.6);z-index:1000;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
+.modal-overlay.open{display:flex}
+.modal{background:white;border-radius:var(--r);padding:28px;width:min(520px,93vw);box-shadow:0 24px 64px rgba(0,0,0,0.25)}
+.modal-hdr{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.modal-icon{font-size:calc(24px * var(--fs))}
+.modal-title{font-size:calc(18px * var(--fs));font-weight:700;color:var(--navy)}
+.modal-body{font-size:calc(14px * var(--fs));color:var(--text2);line-height:1.85;margin-bottom:20px}
+.modal-body strong{color:var(--text)}
+.modal-footer{display:flex;align-items:center;gap:10px}
+.modal-confirm{background:var(--navy);color:white;border:none;font-family:'Sarabun',sans-serif;font-size:calc(14px * var(--fs));font-weight:600;padding:11px 26px;border-radius:var(--r-sm);cursor:pointer;transition:all 0.15s}
+.modal-confirm:hover{background:var(--navy2)}
+.modal-skip{font-size:calc(13px * var(--fs));color:var(--text3);cursor:pointer;display:flex;align-items:center;gap:6px;margin-left:auto}
+.modal-skip input{accent-color:var(--navy)}
+.cmp-modal{width:min(780px,95vw) !important;max-height:90vh;overflow-y:auto}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--gray50)}
+::-webkit-scrollbar-thumb{background:var(--gray200);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:var(--gray400)}
+@media(max-width:1100px){.charts-row{grid-template-columns:1fr 1fr}.hero-inner{grid-template-columns:1fr}.hero-movers{display:none}}
+@media(max-width:800px){.metrics{grid-template-columns:repeat(2,1fr)}.idea-trend-grid{grid-template-columns:1fr}.charts-row{grid-template-columns:1fr}.content{padding:14px 16px}.hero{padding:22px 16px}.header{padding:0 16px}.page-tabs{padding:0 16px}.filter-status{padding:0 16px}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="logo">
+      <div class="logo-icon">🦅</div>
+      <div class="logo-texts">
+        <div class="logo-sub">Krungthai Bank</div>
+        <div class="logo-main">DR80 <span>Explorer</span></div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="font-sizer">
+        <button class="fs-btn" onclick="setFontScale(fontScale-0.1)" title="Smaller">−</button>
+        <span class="fs-label" id="fsLabel">100%</span>
+        <button class="fs-btn" onclick="setFontScale(fontScale+0.1)" title="Larger">+</button>
+      </div>
+      <div class="date-chip">ข้อมูล ณ <strong>7 เมษายน 2569</strong></div>
+      <div class="live-badge"><span class="live-dot"></span>Live</div>
+    </div>
+  </div>
+</div>
+
+<div class="page-tabs">
+  <div class="page-tabs-inner">
+    <button class="ptab active" id="tabDR" onclick="switchTab('dr')">DR Price Return <span class="ptab-badge">incl. FX</span></button>
+    <button class="ptab ul-tab" id="tabUL" onclick="switchTab('ul')">UL Price Return <span class="ptab-badge">excl. FX · for reference</span></button>
+  </div>
+</div>
+
+<div class="filter-status"><div class="filter-status-inner" id="filterBar"></div></div>
+
+<div class="ul-banner" id="ulBanner">
+  <div class="ul-banner-inner">
+    <span style="font-size:18px">ℹ️</span>
+    <span>ข้อมูลนี้แสดงราคา Underlying <strong>ก่อนผลกระทบ FX</strong> — ใช้เพื่อการเปรียบเทียบเท่านั้น</span>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="hero-blob hb1"></div><div class="hero-blob hb2"></div>
+  <div class="hero-inner">
+    <div>
+      <div class="hero-eyebrow">ธนาคารกรุงไทย — ฝ่ายปฏิบัติการ DR</div>
+      <div class="hero-title">ค้นหา<span>ไอเดียการลงทุน</span>ของคุณ</div>
+      <div class="hero-desc">สำรวจ Depositary Receipt จากตลาดทั่วโลก กรองตามธีมหรือกลุ่มอุตสาหกรรม เพื่อค้นหา DR ที่เหมาะกับพอร์ตของคุณ</div>
+      <div class="hero-date-badge"><span>📅</span><span class="lbl">ผลตอบแทนอ้างอิง ณ วันที่</span><strong>7 เมษายน 2569</strong></div>
+    </div>
+    <div class="hero-movers">
+      <div class="hm-hdr">
+        <div class="hm-hdr-title">🔥 Top Movers</div>
+        <div class="hm-period-badge" id="moverPeriodBadge">YTD · Full Universe</div>
+      </div>
+      <div class="hm-cols">
+        <div><div class="hm-col-lbl g">▲ Top 5</div><div id="heroGainers"></div></div>
+        <div><div class="hm-col-lbl r">▼ Bot 5</div><div id="heroLosers"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="content">
+  <div class="period-row">
+    <div class="period-label">แสดงผลตอบแทนสำหรับช่วงเวลา:</div>
+    <div class="period-group" id="periodBtns">
+      <button class="pbtn active" data-p="ytd">YTD</button>
+      <button class="pbtn" data-p="1m">1M</button>
+      <button class="pbtn" data-p="3m">3M</button>
+      <button class="pbtn" data-p="6m">6M</button>
+      <button class="pbtn" data-p="1y">1Y</button>
+    </div>
+  </div>
+
+  <div class="metrics">
+    <div class="mc"><div class="mc-bar sky"></div><span class="mc-icon">📊</span><div class="mc-label">Total DRs</div><div class="mc-val" id="mTotal">—</div><div class="mc-sub">in current view</div></div>
+    <div class="mc"><div class="mc-bar green"></div><span class="mc-icon">📈</span><div class="mc-label">Gainers</div><div class="mc-val pos" id="mGain">—</div><div class="mc-sub" id="mGainPct">—</div></div>
+    <div class="mc"><div class="mc-bar red"></div><span class="mc-icon">📉</span><div class="mc-label">Losers</div><div class="mc-val neg" id="mLose">—</div><div class="mc-sub" id="mLosePct">—</div></div>
+    <div class="mc"><div class="mc-bar navy"></div><span class="mc-icon">〰️</span><div class="mc-label">Median Return</div><div class="mc-val" id="mMed">—</div><div class="mc-sub" id="mPeriodLbl">YTD</div></div>
+    <div class="mc"><div class="mc-bar sky"></div><span class="mc-icon">🌐</span><div class="mc-label">Themes</div><div class="mc-val" id="mThemes">—</div><div class="mc-sub">active</div></div>
+  </div>
+
+  <div class="idea-trend-grid">
+    <div>
+      <div class="section-hdr"><div class="section-title">Invest by Idea</div><div class="section-pill">คลิกเพื่อกรอง</div></div>
+      <div class="idea-grid" id="ideaGrid"></div>
+    </div>
+    <div id="trendingCol">
+      <div class="section-hdr">
+        <div class="section-title">Trending Filters</div>
+        <div class="section-pill" style="background:var(--amber-bg);color:var(--amber)">DR tab only</div>
+      </div>
+      <div class="trend-grid" id="trendGrid"></div>
+      <div class="trend-note">📌 52W High &gt;90% · 52W Low &lt;20% · RSI Overbought &gt;70 · RSI Oversold &lt;30 · Most Active = top 20% vol. Buttons hidden if 0 DRs match.</div>
+    </div>
+  </div>
+
+  <div class="charts-row">
+    <div class="chart-card">
+      <div class="chart-hdr">
+        <div class="chart-title">Sector Heat Map</div>
+        <div style="display:flex;align-items:center;gap:7px">
+          <button class="hm-reset" id="hmReset" onclick="resetSector()">✕ Reset</button>
+          <div class="chart-sub">grouped by theme · คลิกเพื่อกรอง</div>
+        </div>
+      </div>
+      <div id="heatmapEl"></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-hdr"><div class="chart-title">Exposure</div><div class="chart-idea-tag" id="expIdeaTag">All</div></div>
+      <div class="donut-sub">Country</div>
+      <div class="donut-chart-wrap"><canvas id="countryDonut"></canvas></div>
+      <div class="donut-legend" id="countryLegend"></div>
+      <div class="exp-divider"></div>
+      <div class="donut-sub">Sector</div>
+      <div class="donut-chart-wrap"><canvas id="sectorDonut"></canvas></div>
+      <div class="donut-legend" id="sectorLegend"></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-hdr"><div class="chart-title">Return Distribution</div><div class="chart-idea-tag" id="distIdeaTag">All</div></div>
+      <div class="dist-stats">
+        <div class="dist-stat"><div class="dist-stat-lbl">Avg</div><div class="dist-stat-val" id="dAvg">—</div></div>
+        <div class="dist-stat"><div class="dist-stat-lbl">Max</div><div class="dist-stat-val pos" id="dMax">—</div></div>
+        <div class="dist-stat"><div class="dist-stat-lbl">Min</div><div class="dist-stat-val neg" id="dMin">—</div></div>
+      </div>
+      <div style="position:relative;height:170px"><canvas id="distChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="section-hdr">
+    <div class="section-title" id="tableTitle">All DR80 Securities</div>
+    <div class="section-pill" id="tableCount">— results</div>
+  </div>
+
+  <div class="filter-bar">
+    <div class="search-wrap"><span class="search-icon">⌕</span><input type="text" id="search" placeholder="Search name or ticker..."></div>
+    <select id="themeFilter"><option value="">All themes</option></select>
+    <select id="sectorFilter"><option value="">All sectors</option></select>
+    <select id="countryFilter"><option value="">All countries</option></select>
+    <button class="compare-btn" id="compareBtn" onclick="openCompare()" disabled>Compare (<span id="cmpCount">0</span>)</button>
+  </div>
+
+  <div class="col-cust-bar" id="colCustBar"></div>
+
+  <div class="table-card">
+    <div class="table-top">
+      <div class="table-lbl" id="tableLbl">DR80 Securities</div>
+      <div class="row-count" id="rowCount">— rows</div>
+    </div>
+    <div style="padding:6px 18px 4px;border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:10px">
+      <span style="font-size:11px;color:var(--text3);white-space:nowrap">← Scroll →</span>
+      <input type="range" id="tblScrollBar" min="0" max="1000" value="0" style="flex:1;accent-color:var(--navy);height:4px;cursor:pointer">
+    </div>
+    <div class="tbl-wrap" id="tblWrap">
+      <table>
+        <thead id="tblHead"></thead>
+        <tbody id="tblBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="disclaimer">
+    <div class="disc-hdr"><span style="font-size:18px">⚠️</span><span class="disc-title">คำเตือนและข้อจำกัดความรับผิดชอบ</span></div>
+    <div class="disc-text">
+      เครื่องมือนี้จัดทำขึ้นเพื่อ<strong>วัตถุประสงค์ด้านข้อมูลและการศึกษาเท่านั้น</strong> และไม่ถือเป็นคำแนะนำการลงทุน ผลการดำเนินงานในอดีตไม่ได้เป็นการรับประกันผลการดำเนินงานในอนาคต ผลตอบแทนอ้างอิง ณ วันที่ <strong>7 เมษายน 2569</strong> DR มีความเสี่ยงด้านตลาด สกุลเงิน สภาพคล่อง และประเทศ ธนาคารกรุงไทย จำกัด (มหาชน) ไม่รับผิดชอบต่อการตัดสินใจลงทุนที่เกิดจากการใช้ข้อมูลในเครื่องมือนี้
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="ulModal">
+  <div class="modal">
+    <div class="modal-hdr"><span class="modal-icon">⚠️</span><div class="modal-title">ข้อมูล Underlying Price (ไม่รวม FX)</div></div>
+    <div class="modal-body">
+      ข้อมูลที่แสดงในแท็บนี้เป็นราคาของ<strong>หลักทรัพย์อ้างอิง (Underlying)</strong> โดยไม่รวมผลกระทบจากอัตราแลกเปลี่ยน (FX)<br><br>
+      อาจมี<strong>ความแตกต่าง</strong>จากราคา DR ที่ซื้อขายบน SET เนื่องจาก FX ค่าธรรมเนียม และสภาพคล่อง<br><br>
+      <strong>กรุณาใช้เพื่อการเปรียบเทียบเท่านั้น</strong> ไม่ควรใช้เป็นข้อมูลหลักในการตัดสินใจลงทุน
+    </div>
+    <div class="modal-footer">
+      <button class="modal-confirm" onclick="confirmUL()">รับทราบ — ดูข้อมูล</button>
+      <label class="modal-skip"><input type="checkbox" id="skipULModal"> ไม่ต้องแสดงอีก</label>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="compareModal">
+  <div class="modal cmp-modal">
+    <div class="modal-hdr" style="justify-content:space-between">
+      <div class="modal-title">Compare Selected DRs</div>
+      <button onclick="closeCompare()" style="background:none;border:none;font-size:24px;cursor:pointer;color:var(--text3)">×</button>
+    </div>
+    <div id="compareContent"></div>
+  </div>
+</div>
+
+<script>
+
+const DR_RAW = [["SNDK US Equity", "SANDISK CORP", "US", "AI Supercycle", "Memory", 163.272055, 23.083588, 104.952485, 499.115341, 2201.874221, 0.93188, 410141242696.44543, 58.749168, false], ["6809 HK Equity", "MONTAGE TECHNOLOGY CO LTD-H", "CN - A", "AI Supercycle", "Fabless / Chips designer", 63.719712, 5.485232, 63.719712, 63.719712, 63.719712, 0.761532, 1234532457.529483, 54.830914, true], ["GEELY80 TB Equity", "GEELY AUTOMOBILE HOLDINGS-DR", "CN - H", "Nextgen tech", "Automotive", 41.258747, 55.384621, 43.262417, 27.04403, 30.322586, 0.784615, 1063163.976488, 83.016759, true], ["PETROC80 TB Equity", "PETROCHINA CO LTD-DR", "CN - H", "AI Supercycle", "Integrated oil & gas", 34.939759, 2.283105, 40.0, 21.73913, 21.73913, 0.933333, 508757.981904, 58.007106, true], ["GEV US Equity", "GE VERNOVA INC", "US", "AI Supercycle", "Energy components", 32.052091, 8.102636, 35.487375, 48.049889, 213.685456, 0.946203, 72592993344.46777, 57.666024, false], ["SPENGY80 TB Equity", "ENERGY SELECT SECTOR SPDR-DR", "US", "Thematic", "Energy", 30.872486, 5.405408, 35.41667, 32.653064, 32.653064, 0.866667, 2587418.379036, 55.791969, true], ["CATL80 TB Equity", "CONTEMPORARY AMPEREX TECH-DR", "CN - A", "AI Supercycle", "Lithium", 25.609756, 25.0, 27.475248, 3.413655, 47.142857, 0.887931, 7640174.404762, 55.579587, true], ["WUXIAT80 TB Equity", "WUXI APPTEC CO LTD-DR", "CN - H", "Nextgen tech", "Pharmaceutical sciences", 23.809519, 17.117113, 16.591924, 22.065723, 22.065723, 0.980952, 402955.775257, 67.476883, true], ["MRVL80 TB Equity", "MARVELL TECHNOLOGY INC-DR", "US", "AI Supercycle", "Fabless / Chips designer", 17.567568, 17.567568, 17.567568, 17.567568, 17.567568, 0.994318, 959805.584211, 66.550596, true], ["SBUX80 TB Equity", "STARBUCKS CORP-DR", "US", "Nextgen tech", "Consumer products", 17.557249, -0.645164, 9.999997, 13.235291, 15.789471, 0.932927, 223381.429792, 53.476479, true], ["UNIQLO80 TB Equity", "FAST RETAILING CO LTD-DR", "JP", "Nextgen tech", "Consumer products", 16.666668, 4.724411, 15.652176, 31.68317, 31.68317, 0.943262, 141223.370238, 56.078279, true], ["KO80 TB Equity", "COCA-COLA CO/THE-DR", "US", "Nextgen tech", "Consumer products", 15.596329, 1.612902, 17.757008, 15.596329, 7.692307, 0.976744, 305128.343512, 60.525526, true], ["SINGTE80 TB Equity", "SINGAPORE TELECOMMUNICATIONS", "SG", "Nextgen tech", "Communication services", 15.454544, 2.419353, 19.811319, 18.691587, 45.142855, 0.969697, 289308.785686, 58.959041, true], ["NEE US Equity", "NEXTERA ENERGY INC", "US", "AI Supercycle", "Electricity provider", 14.580506, 0.782527, 18.323342, 11.440937, 42.529977, 0.966844, 27579017526.21284, 55.534888, false], ["PEP80 TB Equity", "PEPSICO INC-DR", "US", "Nextgen tech", "Consumer products", 14.444441, 0.980389, 15.730334, 13.18681, 18.390801, 0.935185, 203336.194174, 49.10387, true], ["BYDCOM80 TB Equity", "BYD CO LTD-DR", "CN - H", "Nextgen tech", "Automotive", 12.820512, 9.999999, 12.820512, -2.222223, -70.068027, 0.215686, 10374084.012202, 53.469142, true], ["NFLX80 TB Equity", "NETFLIX INC-DR", "US", "Nextgen tech", "Media", 11.805557, 3.205129, 14.184398, -15.706806, -13.903743, 0.657143, 7550851.720238, 67.790538, true], ["NIKKEI80 TB Equity", "NEXT FUNDS NIKKEI 225 EXC-DR", "JP", "Index", "Index", 7.476636, 1.769912, 7.476636, 6.481481, 17.948718, 0.926829, 136808.138093, 50.604467, true], ["GLD US Equity", "SPDR GOLD SHARES", "US", "Geopolitics", "Commodity", 7.374208, -9.497811, 4.501135, 16.761315, 56.242006, 0.839023, 211864920196.1539, 45.316496, false], ["SUNNY80 TB Equity", "SUNNY OPTICAL TECHNOLOGY -DR", "CN - H", "AI Supercycle", "Photonics", 6.034484, 6.034484, 6.034484, 6.034484, 6.034484, 0.968504, 138112.697333, 58.312617, true], ["CAMBRI80 TB Equity", "CAMBRICON TECHNOLOGIES CO-DR", "CN - A", "AI Supercycle", "Fabless / Chips designer", 4.854371, 4.854371, 4.854371, 4.854371, 4.854371, 0.990741, 789404.540592, 57.436325, true], ["600111 CH Equity", "CHINA NORTHERN RARE EARTH -A", "CN - A", "AI Supercycle", "Precious metals mining", 3.842052, -9.706753, -3.663363, -8.432145, 113.658329, 0.765298, 17794962480.4346, 47.227979, false], ["SPBOND80 TB Equity", "STATE STREET SPDR PORTFOL-DR", "US", "Thematic", "Bonds", 3.703699, 0.598798, 3.703699, -9.189193, -9.189193, 0.902703, 287749.752932, 53.514016, true], ["600519 CH Equity", "KWEICHOW MOUTAI CO LTD-A", "CN - A", "Nextgen tech", "Consumer products", 2.056799, 4.175373, 2.246091, 1.291078, -2.978003, 0.884699, 21920624373.697845, 55.504181, false], ["SANOFI80 TB Equity", "SANOFI SA - DR", "US", "Nextgen tech", "Pharmaceutical sciences", 1.999998, 8.510636, 1.324501, -4.968946, -11.560695, 0.836957, 517024.39907, 59.94972, true], ["NONGFU80 TB Equity", "NONGFU SPRING CO LTD-DR", "CN - H", "Nextgen tech", "Consumer products", 1.562502, 7.14286, 0.515466, -11.363634, 39.285718, 0.833333, 574081.434799, 60.057149, true], ["BRKB80 TB Equity", "BERKSHIRE HATHAWAY INC-DR", "US", "Nextgen tech", "Financial", 0.641029, 3e-06, 0.641029, -3.680978, -7.100589, 0.872222, 1834674.55119, 50.760552, true], ["CYPC80 TB Equity", "CHINA YANGTZE POWER CO LT-DR", "CN - A", "AI Supercycle", "Electricity provider", 3e-06, 3e-06, 3e-06, 3e-06, 3e-06, 0.947368, 71337.529868, 47.767409, true], ["LOREAL80 TB Equity", "L'OREAL SA - DR", "EU", "Nextgen tech", "Consumer products", 2e-06, 2e-06, 1.503761, -5.594404, 5.468752, 0.864516, 64592.666669, 47.528861, true], ["JD80 TB Equity", "JD.COM INC-DR", "CN - H", "Nextgen tech", "Superapp", -2e-06, 5.04587, 0.438595, -21.034484, -22.372883, 0.7125, 4882158.23497, 51.89232, true], ["AAPL80 TB Equity", "APPLE INC-DRX", "US", "AI Supercycle", "Hyperscalers", -2e-06, 3.680979, 3.680979, 1.197603, 28.0303, 0.913514, 14475608.74494, 58.58169, true], ["6680 HK Equity", "JL MAG RARE-EARTH CO LTD -H", "CN - H", "AI Supercycle", "Precious metals mining", -0.103734, -10.251631, -4.464286, -19.75, 80.0, 0.657338, 374102836.938806, 42.581137, true], ["ZIJIN80 TB Equity", "ZIJIN MINING GROUP CO LTD-DR", "CN - H", "AI Supercycle", "Precious metals mining", -0.675676, -8.125, -3.921569, 7.29927, 7.29927, 0.776596, 2384899.580625, 42.300153, true], ["SP500US8 TB Equity", "STATE STREET SPDR PORTFOL-DR", "US", "Index", "Index", -0.787402, -0.787402, -0.787402, -3.076924, -3.076924, 0.954545, 1280493.136972, 49.925827, false], ["SPHLTH80 TB Equity", "HEALTH CARE SELECT SECTOR-DR", "US", "Thematic", "Healthcare", -1.646086, -1.646086, -3.629028, 4e-06, 4e-06, 0.926923, 257917.799041, 48.981666, true], ["AMD80 TB Equity", "ADVANCED MICRO DEVICES IN-DR", "US", "AI Supercycle", "Fabless / Chips designer", -2.083336, 15.573768, 6.015035, 1.438847, 113.636359, 0.815029, 23040120.809524, 60.728749, true], ["SPCOM80 TB Equity", "COMMUNICATION SERVICES SE-DR", "US", "Thematic", "Communication services", -2.162165, -3.208559, -2.162165, -2.688175, -2.688175, 0.947644, 15590.786238, 45.990651, true], ["CRM80 TB Equity", "SALESFORCE INC - DR", "US", "Nextgen tech", "", -2.419352, -2.419352, -2.419352, -2.419352, -2.419352, 0.923664, 13481.971053, 46.239847, true], ["GOOG80 TB Equity", "ALPHABET INC-DRX", "US", "AI Supercycle", "Hyperscalers", -2.429146, 2.553195, -2.032517, 18.137259, 77.205889, 0.872072, 26843357.238095, 51.173415, true], ["TOYOTA80 TB Equity", "TOYOTA MOTOR CORP-DR", "JP", "Nextgen tech", "Automotive", -2.919707, -4.999999, -0.746267, 3.100777, 16.666668, 0.835443, 255746.296994, 38.669633, true], ["TEL80 TB Equity", "TOKYO ELECTRON LTD-DR", "JP", "AI Supercycle", "Upstream Machines", -3.067485, -3.067485, -3.067485, -3.067485, -3.067485, 0.923529, 504370.852722, 43.744833, true], ["SPTECH80 TB Equity", "SS TECHNOLOGY SELECT SECTOR", "US", "Thematic", "Consumer technology", -3.278684, 1.724142, -2.747249, -7.812496, -7.812496, 0.769565, 36946.204762, 50.174796, true], ["AMZN80 TB Equity", "AMAZON.COM INC- DR", "US", "AI Supercycle", "Hyperscalers", -3.351954, 2.976192, -7.978722, -3.888888, 13.815791, 0.82381, 9164290.422619, 53.918926, true], ["300308 CH Equity", "ZHONGJI INNOLIGHT CO LTD-A", "CN - A", "AI Supercycle", "Photonics", -3.5669, 14.323469, -2.958357, 50.766034, 700.625858, 0.912766, 77079988916.39989, 53.192327, false], ["NAURA80 TB Equity", "NAURA TECHNOLOGY GROUP CO-DR", "CN - A", "AI Supercycle", "Upstream Machines", -3.80952, -3.80952, -3.80952, -3.80952, -3.80952, 0.893805, 973692.842106, 44.221207, true], ["NVDA80 TB Equity", "NVIDIA CORP-DRX", "US", "AI Supercycle", "Fabless / Chips designer", -4.166667, 1.769912, -1.709402, -5.737705, 53.743316, 0.839416, 29095416.190476, 52.999802, true], ["AVGO80 TB Equity", "BROADCOM INC-DR", "US", "AI Supercycle", "Fabless / Chips designer", -4.545459, -5e-06, -2.777782, -5.40541, 65.354323, 0.807692, 5900740.404762, 53.26601, true], ["MICRON80 TB Equity", "MICRON TECHNOLOGY INC - DR", "US", "AI Supercycle", "Memory", -4.651161, -4.651161, -4.651161, -4.651161, -4.651161, 0.787097, 1293820.608224, 48.152101, true], ["ANET US Equity", "ARISTA NETWORKS INC", "US", "AI Supercycle", "Networking", -5.501497, -7.960924, -2.944342, -13.104825, 85.198768, 0.76543, 26251502997.700497, 46.180456, false], ["300 HK Equity", "MIDEA GROUP CO LTD-H", "CN - H", "Nextgen tech", "Consumer technology", -5.711086, -0.17783, -4.426788, 3.758472, 32.078431, 0.886316, 1296037975.667208, 48.866918, false], ["FERARI80 TB Equity", "FERRARI NV - DR", "EU", "Nextgen tech", "Automotive", -5.982904, 0.917433, -5.172412, -31.677017, -20.289853, 0.654762, 141554.287143, 51.608083, true], ["SPFIN80 TB Equity", "FINANCIAL SELECT SECTOR S-DR", "US", "Thematic", "Financial", -6.395347, 0.625002, -9.039546, -6.395347, -6.395347, 0.915254, 78220.061857, 50.720093, true], ["BA US Equity", "BOEING CO/THE", "US", "Geopolitics", "Artillery machines", -6.791939, -5.644444, -6.934947, -4.291768, 52.887801, 0.834677, 51352160856.68768, 52.282139, false], ["MP US Equity", "MP MATERIALS CORP", "US", "AI Supercycle", "Precious metals mining", -6.912865, -15.140965, -18.128003, -30.635762, 113.2972, 0.510421, 9489059827.530058, 43.486595, false], ["PANW80 TB Equity", "PALO ALTO NETWORKS INC-DR", "US", "Nextgen tech", "Cybersecurity", -7.826084, 4e-06, -9.401706, -24.285712, -16.53543, 0.721088, 900978.923333, 53.437596, true], ["1318 HK Equity", "MAO GEPING COSMETICS CO LT-H", "CN - H", "Nextgen tech", "Consumer products", -8.338369, 0.797342, -13.757817, -25.417896, -15.675375, 0.580781, 549731661.537122, 46.188553, false], ["MA80 TB Equity", "MASTERCARD INC-DR", "US", "Nextgen tech", "Financial", -8.474576, -1.219512, -10.497237, -13.368984, -12.903226, 0.826531, 504709.55006, 49.009901, true], ["META80 TB Equity", "META PLATFORMS INC -DR", "US", "AI Supercycle", "Hyperscalers", -8.593753, -8.593753, -9.302329, -19.310348, -4.098364, 0.722222, 9013715.83631, 42.26526, true], ["VISA80 TB Equity", "VISA INC-DR", "US", "Nextgen tech", "Financial", -8.888887, -2.380951, -12.142856, -13.986013, -13.986013, 0.8, 1017030.094643, 45.015073, true], ["CRWD80 TB Equity", "CROWDSTRIKE HOLDINGS INC-DR", "US", "Nextgen tech", "Cybersecurity", -9.154932, -4.444447, -9.790212, -21.818184, -5.147062, 0.704918, 4104869.223884, 48.324376, true], ["PINGAN80 TB Equity", "PING AN INSURANCE GROUP C-DR", "CN - H", "Nextgen tech", "Financial", -9.42029, -3.100775, -13.194444, 12.612613, 38.888889, 0.85034, 13998551.535714, 41.959293, true], ["LLY80 TB Equity", "ELI LILLY & CO-DR", "US", "Nextgen tech", "Pharmaceutical sciences", -9.523811, -2.564104, -8.433736, 10.144926, 11.764704, 0.830601, 6559186.14881, 47.664698, true], ["HOOD80 TB Equity", "ROBINHOOD MARKETS INC-DR", "US", "Nextgen tech", "Financial", -9.6, -9.6, -9.6, -9.6, -9.6, 0.896825, 92478.199472, 36.627967, true], ["SANRIO80 TB Equity", "SANRIO CO LTD-DR", "JP", "Nextgen tech", "Consumer products", -9.734513, -9.734513, -9.734513, -9.734513, -9.734513, 0.878261, 18386.353337, 30.916636, true], ["ABBV US Equity", "ABBVIE INC", "US", "Nextgen tech", "Pharmaceutical sciences", -9.864375, -9.12728, -11.45146, -11.227075, 10.796035, 0.844287, 51020468511.97314, 37.922589, false], ["RKLB US Equity", "ROCKET LAB CORP", "US", "Spacetech", "Rocket launch", -10.948809, -5.330162, -19.517127, 10.014632, 286.244292, 0.679554, 54281179848.17641, 49.088745, false], ["IFLYTE80 TB Equity", "IFLYTEK CO LTD-DR", "CN - A", "Nextgen tech", "Consumer technology", -11.382111, -11.382111, -11.382111, -11.382111, -11.382111, 0.886179, 4745.803158, 22.362436, true], ["MNSO80 TB Equity", "MINISO GROUP HOLDING LTD-DR", "CN - H", "Nextgen tech", "Consumer products", -12.987013, -2.189781, -12.418301, -25.139665, -34.634146, 0.650485, 340611.757143, 44.335158, true], ["BKNG80 TB Equity", "BOOKING HOLDINGS INC-DR", "US", "Nextgen tech", "Superapp", -13.253009, 1.408455, -13.772452, -17.714282, -15.78947, 0.757895, 394311.956429, 56.652978, true], ["SONY80 TB Equity", "SONY GROUP CORP-DR", "JP", "Nextgen tech", "Consumer technology", -17.475726, 3e-06, -14.999998, -29.752064, -10.052908, 0.68, 636991.273333, 48.750113, true], ["TSLA80 TB Equity", "TESLA INC-DRX", "US", "AI Supercycle", "Hyperscalers", -17.857145, -9.448821, -15.441178, -22.297299, 25.683058, 0.732484, 18837569.738095, 38.175031, true], ["MSFT80 TB Equity", "MICROSOFT CORP-DRX", "US", "AI Supercycle", "Hyperscalers", -18.791944, -6.923074, -19.333331, -30.057801, -14.184394, 0.663043, 17817345.035714, 40.918412, true], ["XIAOMI80 TB Equity", "XIAOMI CORP-DR", "CN - H", "Nextgen tech", "Consumer technology", -19.375002, -7.194247, -16.233769, -42.920356, -24.561406, 0.505882, 22612720.797619, 38.74857, true], ["TENCEN80 TB Equity", "TENCENT HOLDINGS LTD-DR", "CN - H", "AI Supercycle", "Hyperscalers", -19.603963, -4.245287, -19.603963, -28.771933, 5.181343, 0.708772, 12539980.102381, 38.380129, true], ["HERMES80 TB Equity", "HERMES INTERNATIONAL SCA-DR", "EU", "Nextgen tech", "Consumer products", -20.512823, -11.428574, -20.000002, -23.456792, -25.301207, 0.65285, 796175.168304, 35.380632, true], ["NETEAS80 TB Equity", "NETEASE INC-DR", "CN - H", "Nextgen tech", "Consumer products", -20.879123, -5.26316, -19.553075, -26.153848, 11.627904, 0.699029, 226756.292857, 42.013592, true], ["BABA80 TB Equity", "ALIBABA GROUP HOLDING LTD-DR", "CN - H", "AI Supercycle", "Hyperscalers", -20.952381, -6.915887, -15.59322, -34.901961, 10.666667, 0.635897, 41813318.321429, 38.077425, true], ["BIDU80 TB Equity", "BAIDU INC-DR", "CN - H", "AI Supercycle", "Hyperscalers", -21.052632, -7.786885, -23.728814, -25.619835, 28.571429, 0.692308, 44703776.946429, 38.96179, true], ["MEITUA80 TB Equity", "MEITUAN-DR", "CN - H", "Nextgen tech", "Superapp", -21.327016, 3.105588, -20.192309, -24.886879, -47.301588, 0.495522, 2506040.391905, 47.105582, true], ["POPMAR80 TB Equity", "POP MART INTERNATIONAL GR-DR", "CN - H", "Nextgen tech", "Consumer products", -24.203824, -29.585801, -25.625002, -43.333335, 3.478258, 0.419014, 7146913.446429, 27.521285, true], ["COIN US Equity", "COINBASE GLOBAL INC -CLASS A", "US", "Nextgen tech", "Financial", -26.1024, -12.513142, -28.926933, -53.486084, 11.133007, 0.3931, 69613941864.92352, 44.461514, false], ["NIKE80 TB Equity", "NIKE INC-DR", "US", "Nextgen tech", "Consumer products", -26.262624, -19.780218, -28.431371, -37.068964, -22.340424, 0.557252, 796733.64494, 18.135944, true], ["GRAB80 TB Equity", "GRAB HOLDINGS LTD-DR", "US", "Nextgen tech", "Superapp", -26.875001, -6.400002, -29.518073, -45.581396, -30.769232, 0.539171, 602551.928571, 40.702932, true], ["NOVOB80 TB Equity", "NOVO NORDISK A/S-DR", "US", "Nextgen tech", "Pharmaceutical sciences", -27.108431, -1.626013, -30.857141, -37.305698, -44.999998, 0.448148, 4261150.565774, 38.763253, true], ["TRIPCO80 TB Equity", "TRIP.COM GROUP LTD-DR", "CN - H", "Nextgen tech", "Superapp", -31.77966, -5.294117, -33.471074, -32.352941, -16.58031, 0.636719, 7374874.425, 42.35585, true], ["ESTEE80 TB Equity", "ESTEE LAUDER COS INC/THE-DR", "EU", "Nextgen tech", "Consumer products", -32.142858, -20.833334, -33.913044, -22.448981, 20.634919, 0.592308, 8676245.805729, 28.394771, true], ["KUAISH80 TB Equity", "KUAISHOU TECHNOLOGY-DR", "CN - H", "Nextgen tech", "Media", -37.583892, -24.999999, -37.583892, -50.267379, -38.815789, 0.467337, 10557913.885119, 25.014729, true], ["BA US Equity", "BOEING CO/THE", "US", "Spacetech", "Artillery machines", -6.791939, -5.644444, -6.934947, -4.291768, 52.887801, 0.834677, 51352160856.68768, 52.282139, false]];
+const UL_RAW = [["SNDK US Equity", "SANDISK CORP", "US", "AI Supercycle", "Memory", 163.272055, 23.083588, 104.952485, 499.115341, 2201.874221, null, null, null, false], ["6809 HK Equity", "MONTAGE TECHNOLOGY CO LTD-H", "CN - A", "AI Supercycle", "Fabless / Chips designer", 63.719712, 5.485232, 63.719712, 63.719712, 63.719712, null, null, null, true], ["GEV US Equity", "GE VERNOVA INC", "US", "AI Supercycle", "Energy components", 32.052091, 8.102636, 35.487375, 48.049889, 213.685456, null, null, null, false], ["175 HK Equity", "GEELY AUTOMOBILE HOLDINGS LT", "CN - H", "Nextgen tech", "Automotive", 30.879121, 50.664137, 36.036551, 21.098119, 77.496274, null, null, null, false], ["XLE US Equity", "SS ENERGY SELECT SECTOR", "US", "Thematic", "Energy", 30.733845, 5.96591, 32.240196, 33.378032, 52.536742, null, null, null, false], ["MRVL US Equity", "MARVELL TECHNOLOGY INC", "US", "AI Supercycle", "Fabless / Chips designer", 22.508113, 18.19752, 29.383273, 25.916985, 114.725494, null, null, null, false], ["MU US Equity", "MICRON TECHNOLOGY INC", "US", "AI Supercycle", "Memory", 19.764127, -2.969277, 11.253132, 103.435839, 452.523051, null, null, null, false], ["NEE US Equity", "NEXTERA ENERGY INC", "US", "AI Supercycle", "Electricity provider", 14.580506, 0.782527, 18.323342, 11.440937, 42.529977, null, null, null, false], ["9983 JT Equity", "FAST RETAILING CO LTD", "JP", "Nextgen tech", "Consumer products", 13.885974, 2.940247, 14.647887, 38.259023, 56.35054, null, null, null, false], ["SBUX US Equity", "STARBUCKS CORP", "US", "Nextgen tech", "Consumer products", 12.873644, -5.001505, 9.332101, 16.594906, 18.474998, null, null, null, false], ["KO US Equity", "COCA-COLA CO/THE", "US", "Nextgen tech", "Consumer products", 11.71875, -0.745501, 14.332248, 15.61611, 12.944274, null, null, null, false], ["PEP US Equity", "PEPSICO INC", "US", "Nextgen tech", "Consumer products", 10.194752, -2.971587, 14.393107, 11.321824, 9.455965, null, null, null, false], ["ST SP Equity", "SINGAPORE TELECOMMUNICATIONS", "SG", "Nextgen tech", "Communication services", 9.170306, 1.010101, 13.895216, 19.047619, 48.809524, null, null, null, false], ["NFLX US Equity", "NETFLIX INC", "US", "Nextgen tech", "Media", 8.726234, 0.620423, 9.037805, -16.939533, 13.996981, null, null, null, false], ["2269 HK Equity", "WUXI BIOLOGICS CAYMAN INC", "CN - H", "Nextgen tech", "Pharmaceutical sciences", 7.498463, -1.242236, -3.156146, -16.714286, 91.356674, null, null, null, false], ["GLD US Equity", "SPDR GOLD SHARES", "US", "Geopolitics", "Commodity", 7.374208, -9.497811, 4.501135, 16.761315, 56.242006, null, null, null, false], ["1211 HK Equity", "BYD CO LTD-H", "CN - H", "Nextgen tech", "Automotive", 5.21519, 5.966344, 9.024134, -5.287147, -1.110406, null, null, null, false], ["8035 JT Equity", "TOKYO ELECTRON LTD", "JP", "AI Supercycle", "Upstream Machines", 4.142973, -1.181912, 0.759759, 27.81655, 125.439625, null, null, null, true], ["600111 CH Equity", "CHINA NORTHERN RARE EARTH -A", "CN - A", "AI Supercycle", "Precious metals mining", 3.842052, -9.706753, -3.663363, -8.432145, 113.658329, null, null, null, false], ["1321 JT Equity", "NF NIKKEI 225 ETF", "JP", "Index", "Index", 3.470032, 1.751825, 3.354958, 12.057878, 70.781011, null, null, null, false], ["600519 CH Equity", "KWEICHOW MOUTAI CO LTD-A", "CN - A", "Nextgen tech", "Consumer products", 2.056799, 4.175373, 2.246091, 1.291078, -2.978003, null, null, null, false], ["300750 CH Equity", "CONTEMPORARY AMPEREX TECHN-A", "CN - A", "AI Supercycle", "Lithium", 1.268876, 6.934268, 3.040352, -6.733512, 77.627548, null, null, null, false], ["SAN FP Equity", "SANOFI", "US", "Nextgen tech", "Pharmaceutical sciences", 0.315841, 8.93022, -0.205438, -2.663838, -9.659775, null, null, null, false], ["6680 HK Equity", "JL MAG RARE-EARTH CO LTD -H", "CN - H", "AI Supercycle", "Precious metals mining", -0.103734, -10.251631, -4.464286, -19.75, 80.0, null, null, null, true], ["8136 JT Equity", "SANRIO CO LTD", "JP", "Nextgen tech", "Consumer products", -0.444896, -14.885894, -1.164427, -36.073239, -8.255686, null, null, null, false], ["SPAB US Equity", "SS SPDR P AGG BOND ETF", "US", "Thematic", "Bonds", -0.738154, -1.313251, -1.007364, -1.084014, 0.749208, null, null, null, false], ["AMD US Equity", "ADVANCED MICRO DEVICES", "US", "AI Supercycle", "Fabless / Chips designer", -1.472237, 8.634297, 4.837631, 4.099094, 163.247241, null, null, null, false], ["9633 HK Equity", "NONGFU SPRING CO LTD-H", "CN - H", "Nextgen tech", "Consumer products", -1.491301, 6.588974, -0.709812, -10.264151, 46.563945, null, null, null, false], ["OR FP Equity", "L'OREAL", "EU", "Nextgen tech", "Consumer products", -1.782287, -1.295123, 0.617978, -5.550428, 6.654757, null, null, null, false], ["386 HK Equity", "CHINA PETROLEUM & CHEMICAL-H", "CN - H", "AI Supercycle", "Integrated oil & gas", -2.340426, -8.016032, -3.164557, 12.5, 22.074468, null, null, null, false], ["9618 HK Equity", "JD.COM INC-CLASS A", "CN - H", "Nextgen tech", "Superapp", -2.780191, 6.066351, -1.842105, -17.477876, -11.471519, null, null, null, false], ["600900 CH Equity", "CHINA YANGTZE POWER CO LTD-A", "CN - A", "AI Supercycle", "Electricity provider", -2.969211, -2.683826, -2.791042, -4.37139, -6.565481, null, null, null, false], ["SPY US Equity", "SS SPDR S&P 500 ETF TRUST-US", "US", "Index", "Index", -3.548165, -2.851372, -4.444734, -1.522896, 30.64158, null, null, null, false], ["300308 CH Equity", "ZHONGJI INNOLIGHT CO LTD-A", "CN - A", "AI Supercycle", "Photonics", -3.5669, 14.323469, -2.958357, 50.766034, 700.625858, null, null, null, false], ["BRK/B US Equity", "BERKSHIRE HATHAWAY INC-CL B", "US", "Nextgen tech", "Financial", -4.119955, -4.187449, -3.978875, -5.160262, -2.854928, null, null, null, false], ["7203 JT Equity", "TOYOTA MOTOR CORP", "JP", "Nextgen tech", "Automotive", -4.324801, -4.155615, -2.488756, 7.575256, 43.481138, null, null, null, false], ["2899 HK Equity", "ZIJIN MINING GROUP CO LTD-H", "CN - H", "AI Supercycle", "Precious metals mining", -4.38549, -9.38943, -6.85654, 3.033839, 146.304045, null, null, null, false], ["XLC US Equity", "SS COMM SELECT SECTOR SPDR", "US", "Thematic", "Communication services", -4.396919, -4.933649, -4.552052, -3.704978, 27.945051, null, null, null, false], ["AAPL US Equity", "APPLE INC", "US", "AI Supercycle", "Hyperscalers", -4.483229, -0.392489, -0.564668, 0.927948, 42.654028, null, null, null, false], ["GOOGL US Equity", "ALPHABET INC-CL A", "US", "AI Supercycle", "Hyperscalers", -4.810411, -2.079256, -6.82962, 22.06624, 104.422481, null, null, null, false], ["XLK US Equity", "SS TECHNOLOGY SELECT SECTOR", "US", "Thematic", "Consumer technology", -5.211366, -2.132228, -6.653928, -4.24251, 49.111522, null, null, null, false], ["ANET US Equity", "ARISTA NETWORKS INC", "US", "AI Supercycle", "Networking", -5.501497, -7.960924, -2.944342, -13.104825, 85.198768, null, null, null, false], ["300 HK Equity", "MIDEA GROUP CO LTD-H", "CN - H", "Nextgen tech", "Consumer technology", -5.711086, -0.17783, -4.426788, 3.758472, 32.078431, null, null, null, false], ["XLV US Equity", "SS HEALTH CARE SELECT SECTOR", "US", "Thematic", "Healthcare", -5.93531, -5.173085, -8.380309, 1.42134, 8.782627, null, null, null, false], ["NVDA US Equity", "NVIDIA CORP", "US", "AI Supercycle", "Fabless / Chips designer", -5.935928, -2.742951, -6.065253, -3.999136, 81.933633, null, null, null, false], ["AMZN US Equity", "AMAZON.COM INC", "US", "AI Supercycle", "Hyperscalers", -6.052983, -0.327887, -11.910087, -4.05357, 21.413896, null, null, null, false], ["RACE IM Equity", "FERRARI NV", "EU", "Nextgen tech", "Automotive", -6.576035, 0.169492, -6.958438, -29.826645, -18.34761, null, null, null, false], ["BA US Equity", "BOEING CO/THE", "US", "Geopolitics", "Artillery machines", -6.791939, -5.644444, -6.934947, -4.291768, 52.887801, null, null, null, false], ["MP US Equity", "MP MATERIALS CORP", "US", "AI Supercycle", "Precious metals mining", -6.912865, -15.140965, -18.128003, -30.635762, 113.2972, null, null, null, false], ["1318 HK Equity", "MAO GEPING COSMETICS CO LT-H", "CN - H", "Nextgen tech", "Consumer products", -8.338369, 0.797342, -13.757817, -25.417896, -15.675375, null, null, null, false], ["XLF US Equity", "SS FINANCIAL SELECT SECTOR", "US", "Thematic", "Financial", -9.193517, -0.894097, -10.3039, -7.234515, 13.132232, null, null, null, false], ["AVGO US Equity", "BROADCOM INC", "US", "AI Supercycle", "Fabless / Chips designer", -9.547784, -9.05857, -8.462884, -6.533696, 103.989875, null, null, null, false], ["PANW US Equity", "PALO ALTO NETWORKS INC", "US", "Nextgen tech", "Cybersecurity", -9.711771, -1.907936, -16.477567, -23.260995, 6.238518, null, null, null, false], ["ABBV US Equity", "ABBVIE INC", "US", "Nextgen tech", "Pharmaceutical sciences", -9.864375, -9.12728, -11.45146, -11.227075, 10.796035, null, null, null, false], ["2318 HK Equity", "PING AN INSURANCE GROUP CO-H", "CN - H", "Nextgen tech", "Financial", -9.88024, -3.910615, -15.33052, 14.123223, 47.54902, null, null, null, false], ["002371 CH Equity", "NAURA TECHNOLOGY GROUP CO-A", "CN - A", "AI Supercycle", "Upstream Machines", -10.880697, -6.57476, -17.954289, -7.6782, 31.905732, null, null, null, false], ["MA US Equity", "MASTERCARD INC - A", "US", "Nextgen tech", "Financial", -10.944187, -3.132968, -13.522555, -13.510624, 3.291317, null, null, null, false], ["RKLB US Equity", "ROCKET LAB CORP", "US", "Spacetech", "Rocket launch", -10.948809, -5.330162, -19.517127, 10.014632, 286.244292, null, null, null, false], ["2382 HK Equity", "SUNNY OPTICAL TECH", "CN - H", "AI Supercycle", "Photonics", -11.846946, 8.909091, -10.06006, -32.772166, 8.122744, null, null, null, false], ["META US Equity", "META PLATFORMS INC-CLASS A", "US", "AI Supercycle", "Hyperscalers", -11.898646, -11.487663, -11.665045, -19.641552, 10.996614, null, null, null, false], ["CRWD US Equity", "CROWDSTRIKE HOLDINGS INC - A", "US", "Nextgen tech", "Cybersecurity", -12.119144, -8.181884, -16.767245, -17.747929, 22.891227, null, null, null, false], ["V US Equity", "VISA INC-CLASS A SHARES", "US", "Nextgen tech", "Financial", -12.453825, -4.000384, -14.766217, -13.929406, -2.878462, null, null, null, false], ["LLY US Equity", "ELI LILLY & CO", "US", "Nextgen tech", "Pharmaceutical sciences", -14.189715, -8.065332, -16.337121, 9.889406, 28.094731, null, null, null, false], ["9896 HK Equity", "MINISO GROUP HOLDING LTD", "CN - H", "Nextgen tech", "Consumer products", -14.331551, -3.66807, -16.51902, -24.255319, 10.292599, null, null, null, false], ["002230 CH Equity", "IFLYTEK CO LTD - A", "CN - A", "Nextgen tech", "Consumer technology", -15.007433, -14.448597, -13.692949, -23.256203, 5.462084, null, null, null, false], ["BKNG US Equity", "BOOKING HOLDINGS INC", "US", "Nextgen tech", "Superapp", -17.253718, -0.809332, -19.115378, -15.971956, 3.771075, null, null, null, false], ["6758 JT Equity", "SONY GROUP CORP", "JP", "Nextgen tech", "Consumer technology", -18.705565, -0.896593, -16.599598, -26.261952, 14.087637, null, null, null, false], ["TSLA US Equity", "TESLA INC", "US", "AI Supercycle", "Hyperscalers", -19.460359, -11.502958, -18.217008, -18.534252, 51.236661, null, null, null, false], ["688256 CH Equity", "CAMBRICON TECHNOLOGIES-A", "CN - A", "AI Supercycle", "Fabless / Chips designer", -19.928058, -1.153651, -20.20819, -16.49097, 96.935381, null, null, null, false], ["9988 HK Equity", "ALIBABA GROUP HOLDING LTD", "CN - H", "AI Supercycle", "Hyperscalers", -20.469799, -7.925408, -18.779986, -33.277027, 16.979269, null, null, null, false], ["RMS FP Equity", "HERMES INTERNATIONAL", "EU", "Nextgen tech", "Consumer products", -20.746198, -12.421218, -20.633032, -21.158392, -21.896956, null, null, null, false], ["MSFT US Equity", "MICROSOFT CORP", "US", "AI Supercycle", "Hyperscalers", -21.157017, -8.922595, -22.874221, -28.836978, 4.197173, null, null, null, false], ["700 HK Equity", "TENCENT HOLDINGS LTD", "CN - H", "AI Supercycle", "Hyperscalers", -21.476726, -5.193798, -21.665332, -27.525926, 12.356454, null, null, null, false], ["9984 JP Equity", "SOFTBANK GROUP CORP", "JP", "AI Supercycle", "Hyperscalers", -22.621885, 0.847218, -23.253815, -32.077984, 144.867181, null, null, null, false], ["3690 HK Equity", "MEITUAN-CLASS B", "CN - H", "Nextgen tech", "Superapp", -23.279159, 1.969504, -23.205742, -22.613308, -40.245719, null, null, null, false], ["1810 HK Equity", "XIAOMI CORP-CLASS B", "CN - H", "Nextgen tech", "Consumer technology", -23.336643, -8.313539, -19.077568, -42.655525, -15.281207, null, null, null, false], ["9999 HK Equity", "NETEASE INC", "CN - H", "Nextgen tech", "Consumer products", -23.601399, -4.948341, -21.473495, -27.045075, 29.289941, null, null, null, false], ["9888 HK Equity", "BAIDU INC-CLASS A", "CN - H", "AI Supercycle", "Hyperscalers", -24.33936, -7.325383, -25.017229, -19.407407, 44.10596, null, null, null, false], ["COIN US Equity", "COINBASE GLOBAL INC -CLASS A", "US", "Nextgen tech", "Financial", -26.1024, -12.513142, -28.926933, -53.486084, 11.133007, null, null, null, false], ["9992 HK Equity", "POP MART INTERNATIONAL GROUP", "CN - H", "Nextgen tech", "Consumer products", -26.566546, -31.231814, -29.312064, -44.348509, 11.741529, null, null, null, false], ["CRM US Equity", "SALESFORCE INC", "US", "Nextgen tech", "", -27.044398, -6.921878, -30.471216, -22.820556, -24.233242, null, null, null, false], ["NOVOB DC Equity", "NOVO NORDISK A/S-B", "US", "Nextgen tech", "Pharmaceutical sciences", -28.266465, -6.915521, -35.343886, -36.944371, -45.421034, null, null, null, false], ["GRAB US Equity", "GRAB HOLDINGS LTD - CL A", "US", "Nextgen tech", "Superapp", -29.921261, -10.101012, -29.921261, -43.221692, 2.298849, null, null, null, false], ["NKE US Equity", "NIKE INC -CL B", "US", "Nextgen tech", "Consumer products", -30.420356, -22.112155, -30.35432, -36.105066, -20.823595, null, null, null, false], ["2097 HK Equity", "MIXUE GROUP-H", "CN - H", "Nextgen tech", "Consumer products", -30.432645, -12.654321, -34.702353, -24.533333, -19.464997, null, null, null, false], ["1024 HK Equity", "KUAISHOU TECHNOLOGY", "CN - H", "Nextgen tech", "Media", -32.226415, -25.846408, -39.118644, -47.638484, -1.427003, null, null, null, false], ["9961 HK Equity", "TRIP.COM GROUP LTD", "CN - H", "Nextgen tech", "Superapp", -33.001715, -5.788712, -34.9, -29.110708, -4.731707, null, null, null, false], ["EL US Equity", "ESTEE LAUDER COMPANIES-CL A", "EU", "Nextgen tech", "Consumer products", -33.579989, -23.448123, -32.639875, -23.489422, 33.918798, null, null, null, false], ["HOOD US Equity", "ROBINHOOD MARKETS INC - A", "US", "Nextgen tech", "Financial", -39.432342, -12.060493, -40.343679, -51.875863, 97.062973, null, null, null, false]];
+const TB_SET = new Set(["PETROC80", "AVGO80", "MA80", "ZIJIN80", "PEP80", "XIAOMI80", "PANW80", "GOOG80", "MICRON80", "CYPC80", "BIDU80", "KUAISH80", "WUXIAT80", "NAURA80", "SONY80", "CRWD80", "MEITUA80", "SPBOND80", "TEL80", "NIKKEI80", "SBUX80", "TOYOTA80", "SPTECH80", "AMZN80", "SP500US8", "MSFT80", "BABA80", "KO80", "FERARI80", "SANOFI80", "LLY80", "NOVOB80", "NONGFU80", "CRM80", "SPHLTH80", "CAMBRI80", "VISA80", "TENCEN80", "POPMAR80", "NVDA80", "GRAB80", "NIKE80", "SINGTE80", "JD80", "SPFIN80", "BYDCOM80", "CATL80", "SPCOM80", "BKNG80", "AAPL80", "TRIPCO80", "PINGAN80", "NETEAS80", "SANRIO80", "SUNNY80", "SPENGY80", "LOREAL80", "HOOD80", "HERMES80", "IFLYTE80", "ESTEE80", "UNIQLO80", "META80", "MNSO80", "GEELY80", "NFLX80", "AMD80", "TSLA80", "MRVL80", "BRKB80"]);
+// idx: [ticker,name,country,theme,sector,ytd,1m,3m,6m,1y,wk52h,tv,rsi,has80]
+const PIDX = {ytd:5,"1m":6,"3m":7,"6m":8,"1y":9};
+const PLAB = {ytd:"YTD","1m":"1 Month","3m":"3 Months","6m":"6 Months","1y":"1 Year"};
+const THEME_META = {
+  "AI Supercycle":{icon:"🤖",cls:"b-ai",color:"#7C3AED"},
+  "Nextgen tech":{icon:"🚀",cls:"b-nxt",color:"#0369A1"},
+  "Thematic":{icon:"📊",cls:"b-tmt",color:"#0C4A6E"},
+  "Index":{icon:"🌐",cls:"b-idx",color:"#4A6080"},
+  "Geopolitics":{icon:"🛡️",cls:"b-geo",color:"#991B1B"},
+  "Spacetech":{icon:"🛸",cls:"b-spc",color:"#92400E"}
+};
+const GOAL_THEMES = {
+  growth:["AI Supercycle","Nextgen tech","Spacetech"],
+  stability:["Thematic","Index"],
+  tech:["AI Supercycle","Nextgen tech"],
+  commodity:["Geopolitics"]
+};
+const GOAL_COUNTRIES = {regional:["CN - A","CN - H","JP","SG","EU","HK"]};
+const TREND_DEFS = [
+  {id:"high52",icon:"📈",name:"Near 52W High",desc:"52W ratio > 90%"},
+  {id:"low52",icon:"📉",name:"Near 52W Low",desc:"52W ratio < 20%"},
+  {id:"highTV",icon:"🔥",name:"Most Active",desc:"Top 20% by trading vol"},
+  {id:"rsiOB",icon:"⚡",name:"RSI Overbought",desc:"RSI > 70"},
+  {id:"rsiOS",icon:"🧊",name:"RSI Oversold",desc:"RSI < 30"}
+];
+const CTRY_COLORS = ["#003F88","#00AEEF","#29C5F6","#0284C7","#38BDF8","#7DD3FC","#BAE6FD","#93C5FD"];
+const SEC_COLORS  = ["#003F88","#00AEEF","#29C5F6","#0284C7","#38BDF8","#7DD3FC","#BAE6FD","#93C5FD"];
+
+let activeTab="dr",period="ytd",sortCol="ytd",sortDir=-1;
+let fTheme="",fSector="",fCountry="",fSearch="",fIdeaTheme="",fTrend="";
+let compareSet=new Set();
+let distChart=null,countryChart=null,sectorChart=null;
+let ulModalShown=localStorage.getItem("ulModalSkip")==="1";
+let fontScale=1.0;
+
+// Column visibility
+let visibleCols = {ytd:true,"1m":true,"3m":true,"6m":true,"1y":true,rsi:false,wk52h:false};
+
+function getRAW(){return activeTab==="dr"?DR_RAW:UL_RAW;}
+function getV(r){return r[PIDX[period]];}
+function fmtP(v,d=2){if(v==null||isNaN(v))return"—";return(v>=0?"+":"")+v.toFixed(d)+"%";}
+
+// RSI/52W calculated from actual values, not trend label
+function matchTrend(r,id){
+  const wk=r[10],tv=r[12]||r[13],rsi=r[12]; // DR_RAW: [ticker,name,country,theme,sector,ytd,1m,3m,6m,1y,wk52h,tv,rsi,has80]
+  // correct indices: wk52h=10, tv=11, rsi=12
+  const wk52h=r[10],trading_v=r[11],rsiVal=r[12];
+  if(id==="high52")return wk52h!=null&&wk52h>0.90;
+  if(id==="low52")return wk52h!=null&&wk52h<0.20;
+  if(id==="rsiOB")return rsiVal!=null&&rsiVal>70;
+  if(id==="rsiOS")return rsiVal!=null&&rsiVal<30;
+  if(id==="highTV"){
+    const tvs=DR_RAW.filter(x=>x[11]!=null).map(x=>x[11]).sort((a,b)=>a-b);
+    const p80=tvs[Math.floor(tvs.length*0.8)];
+    return trading_v!=null&&trading_v>=p80;
+  }
+  return false;
+}
+function getTrendCount(id){return DR_RAW.filter(r=>matchTrend(r,id)).length;}
+
+function filtered(){
+  const raw=getRAW();
+  return raw.filter(r=>{
+    if(fIdeaTheme&&r[3]!==fIdeaTheme)return false;
+    if(fTheme&&r[3]!==fTheme)return false;
+    if(fSector&&r[4]!==fSector)return false;
+    if(fCountry&&r[2]!==fCountry)return false;
+    if(fSearch){const q=fSearch.toLowerCase();if(!r[1].toLowerCase().includes(q)&&!r[0].toLowerCase().includes(q))return false;}
+    if(fTrend&&activeTab==="dr"){const dr=DR_RAW.find(x=>x[0]===r[0]);if(!dr||!matchTrend(dr,fTrend))return false;}
+    return true;
+  });
+}
+
+function relevantSectors(){
+  return[...new Set(getRAW().map(r=>r[4]).filter(Boolean))].sort();
+}
+
+function allSorted(data){
+  const CI={name:1,ticker:0,country:2,theme:3,sector:4,ytd:5,"1m":6,"3m":7,"6m":8,"1y":9,rsi:12,wk52h:10};
+  const idx=CI[sortCol]??PIDX[period];
+  return[...data].sort((a,b)=>{
+    const av=a[idx],bv=b[idx];
+    if(av==null&&bv==null)return 0;if(av==null)return 1;if(bv==null)return -1;
+    return typeof av==="string"?sortDir*av.localeCompare(bv):sortDir*(av-bv);
+  });
+}
+
+function setFontScale(s){
+  fontScale=Math.max(0.7,Math.min(1.5,s));
+  document.documentElement.style.setProperty("--fs",fontScale.toFixed(2));
+  document.getElementById("fsLabel").textContent=Math.round(fontScale*100)+"%";
+}
+
+function updateHeroMovers(){
+  const seen=new Set(),deduped=[];
+  DR_RAW.forEach(r=>{const v=getV(r);if(v!=null&&!isNaN(v)&&!seen.has(r[0])){seen.add(r[0]);deduped.push(r);}});
+  deduped.sort((a,b)=>getV(b)-getV(a));
+  document.getElementById("moverPeriodBadge").textContent=PLAB[period]+" · Full Universe";
+  const rS=(items,elId,cls)=>{
+    const el=document.getElementById(elId);el.innerHTML="";
+    items.slice(0,5).forEach((r,i)=>{
+      const v=getV(r);
+      el.innerHTML+=`<div class="hm-row"><div class="hm-num ${cls}">${i+1}</div><div class="hm-info"><div class="hm-name" title="${r[1]}">${r[1].replace(/-DR$|-DRX$/,"").substring(0,20)}</div><div class="hm-ticker-sm">${r[0].split(" ")[0]}</div></div><div class="hm-pct ${v>=0?"pos":"neg"}">${fmtP(v,1)}</div></div>`;
+    });
+  };
+  rS(deduped,"heroGainers","g");
+  rS([...deduped].reverse(),"heroLosers","r");
+}
+
+function updateMetrics(data){
+  const vals=data.map(r=>getV(r)).filter(v=>v!=null&&!isNaN(v));
+  const g=vals.filter(v=>v>0).length,l=vals.filter(v=>v<=0).length;
+  const s=[...vals].sort((a,b)=>a-b);
+  const m=s.length%2===0?(s[s.length/2-1]+s[s.length/2])/2:s[Math.floor(s.length/2)];
+  document.getElementById("mTotal").textContent=data.length;
+  document.getElementById("mGain").textContent=g;
+  document.getElementById("mGainPct").textContent=(vals.length?(g/vals.length*100).toFixed(0):0)+"% of view";
+  document.getElementById("mLose").textContent=l;
+  document.getElementById("mLosePct").textContent=(vals.length?(l/vals.length*100).toFixed(0):0)+"% of view";
+  const mEl=document.getElementById("mMed");
+  mEl.textContent=isNaN(m)?"—":fmtP(m,1);mEl.className="mc-val "+(m>=0?"pos":"neg");
+  document.getElementById("mPeriodLbl").textContent=PLAB[period];
+  document.getElementById("mThemes").textContent=new Set(data.map(r=>r[3]).filter(Boolean)).size;
+}
+
+function updateIdeas(){
+  const grid=document.getElementById("ideaGrid");grid.innerHTML="";
+  Object.keys(THEME_META).forEach(t=>{
+    const meta=THEME_META[t];
+    const rows=getRAW().filter(r=>r[3]===t);
+    const vals=rows.map(r=>getV(r)).filter(v=>v!=null&&!isNaN(v));
+    const avg=vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:0;
+    const card=document.createElement("div");
+    card.className="idea-card"+(fIdeaTheme===t?" active":"");
+    card.innerHTML=`<span class="idea-icon">${meta.icon}</span><div class="idea-name">${t}</div><div class="idea-count">${rows.length} DRs</div><div class="idea-perf ${avg>=0?"pos":"neg"}">${fmtP(avg,1)} avg</div>`;
+    card.onclick=()=>{fIdeaTheme=fIdeaTheme===t?"":t;render();};
+    grid.appendChild(card);
+  });
+}
+
+function updateTrending(){
+  const col=document.getElementById("trendingCol");
+  const grid=document.getElementById("trendGrid");
+  if(activeTab!=="dr"){col.style.opacity="0.4";col.style.pointerEvents="none";return;}
+  col.style.opacity="1";col.style.pointerEvents="auto";
+  grid.innerHTML="";
+  TREND_DEFS.forEach(td=>{
+    const cnt=getTrendCount(td.id);
+    if(cnt===0)return; // hide if 0
+    const btn=document.createElement("div");
+    btn.className="trend-btn"+(fTrend===td.id?" active":"");
+    btn.innerHTML=`<div class="trend-icon">${td.icon}</div><div class="trend-name">${td.name}</div><div class="trend-desc">${td.desc}</div><div class="trend-count">${cnt} DRs</div>`;
+    btn.onclick=()=>{fTrend=fTrend===td.id?"":td.id;render();};
+    grid.appendChild(btn);
+  });
+}
+
+function updateHeatmap(){
+  const el=document.getElementById("heatmapEl");el.innerHTML="";
+  const raw=getRAW();
+  Object.keys(THEME_META).forEach(theme=>{
+    const meta=THEME_META[theme];
+    const themeRows=raw.filter(r=>r[3]===theme);
+    const sm={};
+    themeRows.forEach(r=>{
+      const sec=r[4];
+      if(!sec||!sec.trim())return; // skip empty sector
+      const v=getV(r);
+      if(v!=null&&!isNaN(v)){if(!sm[sec])sm[sec]=[];sm[sec].push(v);}
+    });
+    if(!Object.keys(sm).length)return;
+    const group=document.createElement("div");group.className="hm-theme-group";
+    group.innerHTML=`<div class="hm-theme-label"><div class="hm-theme-dot" style="background:${meta.color}"></div>${meta.icon} ${theme}</div><div class="hm-sectors" id="hm_${theme.replace(/[^a-zA-Z0-9]/g,"_")}"></div>`;
+    el.appendChild(group);
+    const secGrid=group.querySelector(".hm-sectors");
+    const allVals=Object.values(sm).flat();
+    const mx=Math.max(...allVals.map(Math.abs))||1;
+    Object.entries(sm).sort((a,b)=>{
+      const avgA=a[1].reduce((x,y)=>x+y,0)/a[1].length;
+      const avgB=b[1].reduce((x,y)=>x+y,0)/b[1].length;
+      return avgB-avgA;
+    }).forEach(([sec,vals])=>{
+      if(!sec||!sec.trim())return;
+      const avg=vals.reduce((a,b)=>a+b,0)/vals.length;
+      const norm=Math.abs(avg)/mx;
+      let bg,tc;
+      if(avg>=0){bg=`rgba(0,122,77,${(0.15+norm*0.6).toFixed(2)})`;tc=norm>0.4?"#002A17":"#005A35";}
+      else{bg=`rgba(192,57,43,${(0.15+norm*0.6).toFixed(2)})`;tc=norm>0.4?"#4A0000":"#8B1A1A";}
+      const cell=document.createElement("div");
+      cell.className="hm-cell"+(fSector===sec?" selected":"");
+      cell.style.background=bg;cell.title=sec+" ("+fmtP(avg,1)+")";
+      cell.onclick=()=>{fSector=fSector===sec?"":sec;document.getElementById("sectorFilter").value=fSector;document.getElementById("hmReset").classList.toggle("show",fSector!=="");render();};
+      cell.innerHTML=`<div class="hm-cell-name" style="color:${tc}">${sec}</div><div class="hm-cell-val" style="color:${tc}">${fmtP(avg,1)}</div>`;
+      secGrid.appendChild(cell);
+    });
+  });
+}
+
+function updateDonut(data,canvasId,legendId,colorsArr,keyFn){
+  const cm={};data.forEach(r=>{const k=keyFn(r);if(k)cm[k]=(cm[k]||0)+1;});
+  const entries=Object.entries(cm).sort((a,b)=>b[1]-a[1]).slice(0,7);
+  const total=entries.reduce((s,[,v])=>s+v,0);
+  const labels=entries.map(([k])=>k);
+  const vals=entries.map(([,v])=>v);
+  const colors=labels.map((_,i)=>colorsArr[i]||colorsArr[colorsArr.length-1]);
+  const existing=Chart.getChart(canvasId);
+  if(existing)existing.destroy();
+  new Chart(document.getElementById(canvasId),{
+    type:"doughnut",
+    data:{labels,datasets:[{data:vals,backgroundColor:colors,borderWidth:2,borderColor:"#fff"}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:"58%",
+      plugins:{legend:{display:false},
+        tooltip:{callbacks:{label:c=>`${c.label}: ${c.parsed} (${(c.parsed/total*100).toFixed(0)}%)`}}}}
+  });
+  const leg=document.getElementById(legendId);leg.innerHTML="";
+  entries.forEach(([k,v],i)=>{
+    leg.innerHTML+=`<div class="donut-row"><div class="donut-left"><div class="donut-dot" style="background:${colors[i]}"></div><div class="donut-name">${k}</div></div><div class="donut-pct">${(v/total*100).toFixed(0)}%</div></div>`;
+  });
+}
+
+function updateExposure(data){
+  document.getElementById("expIdeaTag").textContent=fIdeaTheme||"All";
+  updateDonut(data,"countryDonut","countryLegend",CTRY_COLORS,r=>r[2]);
+  updateDonut(data,"sectorDonut","sectorLegend",SEC_COLORS,r=>r[4]);
+}
+
+function updateDist(data){
+  document.getElementById("distIdeaTag").textContent=fIdeaTheme||"All";
+  const vals=data.map(r=>getV(r)).filter(v=>v!=null&&!isNaN(v));
+  if(!vals.length)return;
+  const avg=vals.reduce((a,b)=>a+b,0)/vals.length;
+  const max=Math.max(...vals),min=Math.min(...vals);
+  const avgEl=document.getElementById("dAvg");avgEl.textContent=fmtP(avg,1);avgEl.className="dist-stat-val "+(avg>=0?"pos":"neg");
+  document.getElementById("dMax").textContent=fmtP(max,1);
+  document.getElementById("dMin").textContent=fmtP(min,1);
+  const bins=[{l:"<-30",c:0},{l:"-20~-30",c:0},{l:"-10~-20",c:0},{l:"0~-10",c:0},{l:"0~10",c:0},{l:"10~20",c:0},{l:"20~30",c:0},{l:">30",c:0}];
+  vals.forEach(v=>{if(v<-30)bins[0].c++;else if(v<-20)bins[1].c++;else if(v<-10)bins[2].c++;else if(v<0)bins[3].c++;else if(v<10)bins[4].c++;else if(v<20)bins[5].c++;else if(v<30)bins[6].c++;else bins[7].c++;});
+  if(distChart)distChart.destroy();
+  distChart=new Chart(document.getElementById("distChart"),{
+    type:"bar",
+    data:{labels:bins.map(b=>b.l),datasets:[{data:bins.map(b=>b.c),backgroundColor:bins.map((_,i)=>i<4?"rgba(192,57,43,0.72)":"rgba(0,122,77,0.72)"),borderRadius:3,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:10},color:"#8FA3BE"},grid:{display:false}},y:{ticks:{font:{size:11},color:"#8FA3BE",stepSize:1},grid:{color:"rgba(0,0,0,0.05)"}}}}
+  });
+}
+
+function updateColCustomizer(){
+  const bar=document.getElementById("colCustBar");
+  bar.innerHTML="<span style='font-size:13px;color:var(--text2);font-weight:600;margin-right:4px'>Columns:</span>";
+  const allCols=[
+    {id:"ytd",label:"YTD %"},{id:"1m",label:"1M %"},{id:"3m",label:"3M %"},
+    {id:"6m",label:"6M %"},{id:"1y",label:"1Y %"},
+    {id:"rsi",label:"RSI",drOnly:true},{id:"wk52h",label:"52W High %",drOnly:true}
+  ];
+  allCols.forEach(col=>{
+    if(col.drOnly&&activeTab!=="dr")return;
+    const btn=document.createElement("label");
+    btn.className="col-cust-btn"+(visibleCols[col.id]?" active":"");
+    btn.style.cursor="pointer";
+    btn.innerHTML=`<input type="checkbox" ${visibleCols[col.id]?"checked":""} style="accent-color:var(--navy)"> ${col.label}`;
+    btn.querySelector("input").onchange=(e)=>{
+      visibleCols[col.id]=e.target.checked;
+      btn.classList.toggle("active",e.target.checked);
+      updateTable(filtered());
+    };
+    bar.appendChild(btn);
+  });
+}
+
+function updateTable(data){
+  const rows=allSorted(data);
+  document.getElementById("tableCount").textContent=rows.length+" results";
+  document.getElementById("rowCount").textContent=rows.length+" rows";
+  document.getElementById("tableLbl").textContent=activeTab==="dr"?"DR80 Securities":"UL Price — For Reference Only";
+  // Update thead
+  const colDefs=[
+    {id:"chk",label:"",w:"28px",nosort:true},
+    {id:"name",label:"Name",col:"name"},
+    {id:"ticker",label:"Ticker",col:"ticker"},
+    {id:"country",label:"Country",col:"country"},
+    {id:"theme",label:"Theme",col:"theme"},
+    {id:"sector",label:"Sector",col:"sector"},
+    {id:"signal",label:"Signal",nosort:true,right:true},
+    {id:"research",label:"Research",nosort:true,right:true},
+    {id:"ytd",label:"YTD %",col:"ytd",right:true,vis:"ytd"},
+    {id:"1m",label:"1M %",col:"1m",right:true,vis:"1m"},
+    {id:"3m",label:"3M %",col:"3m",right:true,vis:"3m"},
+    {id:"6m",label:"6M %",col:"6m",right:true,vis:"6m"},
+    {id:"1y",label:"1Y %",col:"1y",right:true,vis:"1y"},
+    {id:"rsi",label:"RSI",col:"rsi",right:true,vis:"rsi",drOnly:true},
+    {id:"wk52h",label:"52W High",col:"wk52h",right:true,vis:"wk52h",drOnly:true}
+  ];
+  const thead=document.getElementById("tblHead");thead.innerHTML="";
+  const tr=document.createElement("tr");
+  colDefs.forEach(c=>{
+    if(c.drOnly&&activeTab!=="dr")return;
+    if(c.vis&&!visibleCols[c.vis])return;
+    const th=document.createElement("th");
+    if(c.w)th.style.width=c.w;
+    if(c.right)th.style.textAlign="right";
+    if(c.col){
+      th.dataset.col=c.col;
+      th.innerHTML=`${c.label}<span class="sort-arrow" id="sa-${c.col}">${sortCol===c.col?(sortDir===1?" ↑":" ↓"):""}</span>`;
+      if(sortCol===c.col)th.classList.add("sorted");
+      th.addEventListener("click",()=>{if(sortCol===c.col)sortDir*=-1;else{sortCol=c.col;sortDir=-1;}render();});
+    }else{th.textContent=c.label;}
+    tr.appendChild(th);
+  });
+  thead.appendChild(tr);
+
+  const allVals=getRAW().map(r=>getV(r)).filter(v=>v!=null&&!isNaN(v)).sort((a,b)=>a-b);
+  const tb=document.getElementById("tblBody");tb.innerHTML="";
+  rows.forEach(r=>{
+    const [ticker,name,country,theme,sector,ytd,m1,m3,m6,y1,wk52h,tv,rsi,has80]=r;
+    const tc=(THEME_META[theme]||{}).cls||"";
+    const v=getV(r);
+    const idx=allVals.findIndex(x=>x===v);
+    const pct=allVals.length?idx/allVals.length:0.5;
+    const sig=pct>=0.8?'<span class="badge b-perf b-top">Top 20%</span>':pct<=0.2?'<span class="badge b-perf b-bot">Bot 20%</span>':'<span class="badge b-perf b-mid">Mid</span>';
+    const tkShort=ticker.split(" ")[0];
+    const isTB=TB_SET.has(tkShort);
+    const resLink=isTB?`<a class="settrade-link" href="https://www.settrade.com/th/equities/dr/quote/${tkShort}/research" target="_blank">📊 Research</a>`:'<span style="color:var(--text3);font-size:11px">—</span>';
+    const upcomingBadge=!has80?'<span class="badge b-upcoming" style="margin-left:5px;font-size:10px">Upcoming</span>':"";
+    const chk=compareSet.has(ticker)?"checked":"";
+    const cleanName=name.replace(/-DR$|-DRX$/,"");
+    const trEl=document.createElement("tr");
+    let cells=`<td><input type="checkbox" class="chk" ${chk} onchange="handleChk('${ticker.replace(/'/g,"\'")}',this.checked)"></td>`;
+    cells+=`<td><div class="td-name" title="${cleanName}">${cleanName}${upcomingBadge}</div><div class="td-ticker-sm">${ticker}</div></td>`;
+    cells+=`<td><div style="font-family:'IBM Plex Mono',monospace;font-size:11px">${tkShort}</div></td>`;
+    cells+=`<td style="font-size:13px;color:var(--text2)">${country}</td>`;
+    cells+=`<td><span class="badge ${tc}">${theme}</span></td>`;
+    cells+=`<td style="font-size:12px;color:var(--text2)">${sector||"—"}</td>`;
+    cells+=`<td style="text-align:right">${sig}</td>`;
+    cells+=`<td style="text-align:right">${resLink}</td>`;
+    if(visibleCols["ytd"])cells+=`<td class="td-num ${ytd>0?"pos":ytd<0?"neg":"neu"}">${fmtP(ytd)}</td>`;
+    if(visibleCols["1m"])cells+=`<td class="td-num ${m1>0?"pos":m1<0?"neg":"neu"}">${fmtP(m1)}</td>`;
+    if(visibleCols["3m"])cells+=`<td class="td-num ${m3>0?"pos":m3<0?"neg":"neu"}">${fmtP(m3)}</td>`;
+    if(visibleCols["6m"])cells+=`<td class="td-num ${m6>0?"pos":m6<0?"neg":"neu"}">${fmtP(m6)}</td>`;
+    if(visibleCols["1y"])cells+=`<td class="td-num ${y1>0?"pos":y1<0?"neg":"neu"}">${fmtP(y1)}</td>`;
+    if(activeTab==="dr"){
+      if(visibleCols["rsi"])cells+=`<td class="td-num ${rsi!=null?(rsi>70?"neg":rsi<30?"pos":"neu"):"neu"}">${rsi!=null?rsi.toFixed(1):"—"}</td>`;
+      if(visibleCols["wk52h"])cells+=`<td class="td-num">${wk52h!=null?(wk52h*100).toFixed(1)+"%":"—"}</td>`;
+    }
+    trEl.innerHTML=cells;
+    tb.appendChild(trEl);
+  });
+
+  // Update scroll bar
+  const tblWrap=document.getElementById("tblWrap");
+  const scrollBar=document.getElementById("tblScrollBar");
+  scrollBar.max=Math.max(0,tblWrap.scrollWidth-tblWrap.clientWidth);
+  scrollBar.value=tblWrap.scrollLeft;
+}
+
+function handleChk(ticker,on){
+  if(on){if(compareSet.size>=4){alert("สามารถเลือกได้สูงสุด 4 รายการ");return;}compareSet.add(ticker);}
+  else compareSet.delete(ticker);
+  document.getElementById("cmpCount").textContent=compareSet.size;
+  document.getElementById("compareBtn").disabled=compareSet.size<2;
+}
+
+function updateStatusBar(){
+  const inner=document.getElementById("filterBar");
+  const tags=[];
+  tags.push(`<div class="fs-tag period">⏱ ${PLAB[period]}</div>`);
+  if(fIdeaTheme)tags.push(`<div class="fs-tag idea">💡 ${fIdeaTheme} <span class="fs-x" onclick="fIdeaTheme='';render()">✕</span></div>`);
+  if(fTrend&&activeTab==="dr"){const td=TREND_DEFS.find(t=>t.id===fTrend);tags.push(`<div class="fs-tag trend">📡 ${td?.name||fTrend} <span class="fs-x" onclick="fTrend='';render()">✕</span></div>`);}
+  if(fSector)tags.push(`<div class="fs-tag sector">▦ ${fSector} <span class="fs-x" onclick="resetSector()">✕</span></div>`);
+  if(fTheme)tags.push(`<div class="fs-tag search">🏷 ${fTheme} <span class="fs-x" onclick="fTheme='';document.getElementById('themeFilter').value='';render()">✕</span></div>`);
+  if(fCountry)tags.push(`<div class="fs-tag search">🌍 ${fCountry} <span class="fs-x" onclick="fCountry='';document.getElementById('countryFilter').value='';render()">✕</span></div>`);
+  if(fSearch)tags.push(`<div class="fs-tag search">🔍 "${fSearch}" <span class="fs-x" onclick="fSearch='';document.getElementById('search').value='';render()">✕</span></div>`);
+  const hasFilters=fIdeaTheme||fTrend||fSector||fTheme||fCountry||fSearch;
+  inner.innerHTML=`<div class="fs-label2">Viewing:</div>${tags.join("")}${hasFilters?'<button class="fs-clear" onclick="clearAll()">Clear all</button>':""}`;
+}
+
+function resetSector(){fSector="";document.getElementById("sectorFilter").value="";document.getElementById("hmReset").classList.remove("show");render();}
+
+function clearAll(){
+  fIdeaTheme="";fTrend="";fSector="";fTheme="";fCountry="";fSearch="";
+  document.getElementById("search").value="";
+  document.getElementById("themeFilter").value="";
+  document.getElementById("countryFilter").value="";
+  document.getElementById("hmReset").classList.remove("show");
+  render();
+}
+
+function populate(){
+  const raw=getRAW();
+  const tSel=document.getElementById("themeFilter");
+  const cSel=document.getElementById("countryFilter");
+  const sSel=document.getElementById("sectorFilter");
+  tSel.innerHTML="<option value=''>All themes</option>";
+  [...new Set(raw.map(r=>r[3]).filter(Boolean))].sort().forEach(v=>{const o=document.createElement("option");o.value=v;o.textContent=v;tSel.appendChild(o);});
+  cSel.innerHTML="<option value=''>All countries</option>";
+  [...new Set(raw.map(r=>r[2]).filter(Boolean))].sort().forEach(v=>{const o=document.createElement("option");o.value=v;o.textContent=v;cSel.appendChild(o);});
+  sSel.innerHTML="<option value=''>All sectors</option>";
+  [...new Set(raw.map(r=>r[4]).filter(Boolean))].sort().forEach(v=>{const o=document.createElement("option");o.value=v;o.textContent=v;sSel.appendChild(o);});
+}
+
+function openCompare(){
+  const selected=getRAW().filter(r=>compareSet.has(r[0]));
+  if(selected.length<2)return;
+  const periods=["ytd","1m","3m","6m","1y"],pLabels=["YTD","1M","3M","6M","1Y"];
+  const colors=["#003F88","#00AEEF","#007A4D","#D97706"];
+  let html=`<div style="position:relative;height:260px;margin-bottom:18px"><canvas id="ccc"></canvas></div><table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr><th style="text-align:left;padding:9px;border-bottom:2px solid #E2E8F0;color:#4A6080">Security</th>`;
+  pLabels.forEach(p=>html+=`<th style="text-align:right;padding:9px;border-bottom:2px solid #E2E8F0;font-family:'IBM Plex Mono',monospace;color:#4A6080">${p}</th>`);
+  html+=`</tr></thead><tbody>`;
+  selected.forEach((r,i)=>{
+    html+=`<tr><td style="padding:9px;border-bottom:1px solid #F1F5F9"><span style="display:inline-block;width:12px;height:12px;background:${colors[i]};border-radius:2px;margin-right:8px;vertical-align:middle"></span><strong>${r[1].replace(/-DR$|-DRX$/,"")}</strong></td>`;
+    periods.forEach(p=>{const v=r[PIDX[p]];html+=`<td style="text-align:right;padding:9px;border-bottom:1px solid #F1F5F9;font-family:'IBM Plex Mono',monospace;color:${v!=null&&v>=0?"#007A4D":"#C0392B"}">${fmtP(v)}</td>`;});
+    html+=`</tr>`;
+  });
+  html+=`</tbody></table>`;
+  document.getElementById("compareContent").innerHTML=html;
+  document.getElementById("compareModal").classList.add("open");
+  const datasets=selected.map((r,i)=>({label:r[1].replace(/-DR$|-DRX$/,""),data:periods.map(p=>r[PIDX[p]]),borderColor:colors[i],backgroundColor:colors[i]+"22",tension:0.35,fill:true,borderWidth:2.5,pointRadius:5,pointBackgroundColor:colors[i]}));
+  new Chart(document.getElementById("ccc"),{type:"line",data:{labels:pLabels,datasets},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:"top",labels:{font:{family:"Sarabun",size:13},boxWidth:14}}},scales:{y:{ticks:{callback:v=>(v>=0?"+":"")+v.toFixed(0)+"%",font:{family:"IBM Plex Mono",size:11},color:"#8FA3BE"},grid:{color:"rgba(0,0,0,0.05)"}},x:{grid:{display:false},ticks:{font:{family:"IBM Plex Mono",size:11},color:"#8FA3BE"}}}}});
+}
+function closeCompare(){document.getElementById("compareModal").classList.remove("open");}
+
+function switchTab(tab){
+  if(tab==="ul"&&!ulModalShown){document.getElementById("ulModal").classList.add("open");return;}
+  activateTab(tab);
+}
+function confirmUL(){
+  if(document.getElementById("skipULModal").checked){localStorage.setItem("ulModalSkip","1");ulModalShown=true;}
+  document.getElementById("ulModal").classList.remove("open");
+  activateTab("ul");
+}
+function activateTab(tab){
+  activeTab=tab;
+  document.getElementById("tabDR").classList.toggle("active",tab==="dr");
+  document.getElementById("tabUL").classList.toggle("active",tab==="ul");
+  document.getElementById("ulBanner").classList.toggle("show",tab==="ul");
+  fTrend="";fIdeaTheme="";fSector="";fTheme="";fCountry="";fSearch="";
+  document.getElementById("search").value="";
+  document.getElementById("hmReset").classList.remove("show");
+  populate();updateColCustomizer();render();
+}
+
+function render(){
+  const data=filtered();
+  updateMetrics(data);
+  updateIdeas();
+  updateTrending();
+  updateHeatmap();
+  updateExposure(data);
+  updateDist(data);
+  updateTable(data);
+  updateStatusBar();
+  updateHeroMovers();
+}
+
+document.addEventListener("DOMContentLoaded",function(){
+  document.getElementById("themeFilter").addEventListener("change",e=>{fTheme=e.target.value;render();});
+  document.getElementById("sectorFilter").addEventListener("change",e=>{fSector=e.target.value;render();});
+  document.getElementById("countryFilter").addEventListener("change",e=>{fCountry=e.target.value;render();});
+  document.getElementById("search").addEventListener("input",e=>{fSearch=e.target.value;render();});
+  document.getElementById("compareModal").addEventListener("click",e=>{if(e.target===e.currentTarget)closeCompare();});
+  document.getElementById("ulModal").addEventListener("click",e=>{if(e.target===e.currentTarget)document.getElementById("ulModal").classList.remove("open");});
+  document.getElementById("periodBtns").addEventListener("click",e=>{
+    if(!e.target.classList.contains("pbtn"))return;
+    document.querySelectorAll(".pbtn").forEach(b=>b.classList.remove("active"));
+    e.target.classList.add("active");period=e.target.dataset.p;
+    if(!["name","ticker","country","theme","sector"].includes(sortCol))sortCol=period;
+    render();
+  });
+  // Table scroll bar
+  const tblWrap=document.getElementById("tblWrap");
+  const scrollBar=document.getElementById("tblScrollBar");
+  scrollBar.addEventListener("input",()=>{tblWrap.scrollLeft=parseInt(scrollBar.value);});
+  tblWrap.addEventListener("scroll",()=>{scrollBar.value=tblWrap.scrollLeft;scrollBar.max=Math.max(0,tblWrap.scrollWidth-tblWrap.clientWidth);});
+  populate();updateColCustomizer();render();
+});
+
+</script>
+</body>
+</html>
