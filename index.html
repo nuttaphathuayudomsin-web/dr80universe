@@ -865,10 +865,9 @@ function updateTable(data){
     const tkShort=ticker.split(" ")[0];
     const isTB=TB_SET.has(tkShort);
     const resLink=isTB?`<a class="settrade-link" href="https://www.settrade.com/th/equities/dr/quote/${tkShort}/research" target="_blank" onclick="track('research_click','${tkShort}')">📊 Research</a>`:'<span style="color:var(--text3);font-size:11px">—</span>';
-    const isTBinDR = activeTab==="dr"
-      ? ticker.includes("TB Equity")
-      : DR_RAW.some(d=>d[1]===name&&d[0].includes("TB Equity"));
-    const upcomingBadge=!isTBinDR?'<span class="badge b-upcoming" style="margin-left:5px;font-size:10px">Upcoming</span>':"";
+    const drMatch = activeTab==="ul" ? DR_RAW.find(d=>d[1]===name) : null;
+    const checkTicker = activeTab==="dr" ? ticker : (drMatch ? drMatch[0] : ticker);
+    const upcomingBadge=!checkTicker.includes("TB Equity")?'<span class="badge b-upcoming" style="margin-left:5px;font-size:10px">Upcoming</span>':"";
     const chk=compareSet.has(ticker)?"checked":"";
     const cleanName=name.replace(/-DR$|-DRX$/,"");
     const trEl=document.createElement("tr");
@@ -1078,7 +1077,503 @@ document.addEventListener("DOMContentLoaded",function(){
 let portfolios = JSON.parse(localStorage.getItem("dr80_portfolios")||"[]");
 let activePFIdx = portfolios.length>0?0:-1;
 let pfTab = "build";
-let pfSearch = "";
+let pfPickerSearch = "";
+let pfPickerTheme = "";
+
+function getCurrentPF(){return activePFIdx>=0&&activePFIdx<portfolios.length?portfolios[activePFIdx]:null;}
+
+function savePFLocal(){
+  localStorage.setItem("dr80_portfolios",JSON.stringify(portfolios));
+  document.getElementById("pfabBadge").textContent=portfolios.length;
+}
+
+function savePFSheet(action="save"){
+  const pf=getCurrentPF();if(!pf)return;
+  try{fetch(GA_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({type:"portfolio",session:SESSION_ID,name:pf.name,holdings:pf.holdings,action})});}catch(e){}
+  track("portfolio_"+action,pf.name);
+}
+
+function openPortfolio(){
+  document.getElementById("pfPanel").classList.add("open");
+  if(portfolios.length===0)newPortfolio();
+  else renderPF();
+}
+function closePortfolio(){document.getElementById("pfPanel").classList.remove("open");}
+
+function switchPFTab(tab){
+  pfTab=tab;
+  document.querySelectorAll(".pf-tab").forEach(t=>t.classList.remove("active"));
+  document.getElementById("pftab-"+tab).classList.add("active");
+  renderPF();
+}
+
+function newPortfolio(){
+  const name="Portfolio "+(portfolios.length+1);
+  portfolios.push({name,holdings:[]});
+  activePFIdx=portfolios.length-1;
+  savePFLocal();pfTab="build";renderPF();
+}
+
+function deletePortfolio(idx){
+  if(!confirm("Delete this portfolio?"))return;
+  portfolios.splice(idx,1);
+  activePFIdx=Math.min(activePFIdx,portfolios.length-1);
+  savePFLocal();renderPF();
+}
+
+function selectPortfolio(idx){activePFIdx=idx;pfTab="build";renderPF();}
+
+function toggleHolding(ticker,checked){
+  const pf=getCurrentPF();if(!pf)return;
+  if(checked){
+    if(pf.holdings.find(h=>h.ticker===ticker))return;
+    const r=DR_RAW.find(x=>x[0]===ticker);if(!r)return;
+    const used=pf.holdings.reduce((s,h)=>s+h.weight,0);
+    const w=Math.max(0,parseFloat((100-used).toFixed(1)));
+    pf.holdings.push({ticker,name:r[1].replace(/-DR$|-DRX$/,""),weight:Math.min(100,w)});
+  } else {
+    pf.holdings=pf.holdings.filter(h=>h.ticker!==ticker);
+  }
+  savePFLocal();savePFSheet();
+  // update weight total without full re-render
+  updateWeightDisplay();
+  // re-render picker row checkbox state
+  const cb=document.getElementById("pf_chk_"+ticker.replace(/[^a-zA-Z0-9]/g,"_"));
+  if(cb)cb.checked=checked;
+}
+
+function updateWeight(ticker,val){
+  const pf=getCurrentPF();if(!pf)return;
+  const h=pf.holdings.find(x=>x.ticker===ticker);
+  if(h)h.weight=Math.max(0,Math.min(100,parseFloat(val)||0));
+  savePFLocal();updateWeightDisplay();
+  const s=document.getElementById("pfsl_"+ticker.replace(/[^a-zA-Z0-9]/g,"_"));
+  if(s)s.value=h?h.weight:0;
+}
+
+function updateSlider(ticker,val){
+  const pf=getCurrentPF();if(!pf)return;
+  const h=pf.holdings.find(x=>x.ticker===ticker);
+  if(h)h.weight=parseFloat(val)||0;
+  savePFLocal();updateWeightDisplay();
+  const inp=document.getElementById("pfinp_"+ticker.replace(/[^a-zA-Z0-9]/g,"_"));
+  if(inp)inp.value=parseFloat(val).toFixed(1);
+}
+
+function updateWeightDisplay(){
+  const pf=getCurrentPF();if(!pf)return;
+  const total=pf.holdings.reduce((s,h)=>s+h.weight,0);
+  const ok=Math.abs(total-100)<0.1;
+  const el=document.getElementById("pfWeightTotal");
+  if(el){el.textContent="Total: "+total.toFixed(1)+"%";el.className=ok?"pf-weight-ok":"pf-weight-warn";}
+  // update quick returns if shown
+  if(ok){
+    const rets=calcPFReturns(pf);
+    ["ytd","1m","3m","6m","1y"].forEach(p=>{
+      const el=document.getElementById("pfqr_"+p);
+      if(el){el.textContent=(rets[p]>=0?"+":"")+rets[p].toFixed(1)+"%";el.className="pf-scard-val "+(rets[p]>=0?"pos":"neg");}
+    });
+  }
+}
+
+function renamePF(){
+  const pf=getCurrentPF();if(!pf)return;
+  const name=prompt("Portfolio name:",pf.name);
+  if(name&&name.trim()){pf.name=name.trim();savePFLocal();savePFSheet();renderPF();}
+}
+
+function calcPFReturns(pf){
+  const total=pf.holdings.reduce((s,h)=>s+h.weight,0);
+  if(total===0)return{ytd:0,"1m":0,"3m":0,"6m":0,"1y":0};
+  const res={ytd:0,"1m":0,"3m":0,"6m":0,"1y":0};
+  pf.holdings.forEach(h=>{
+    const r=DR_RAW.find(x=>x[0]===h.ticker);if(!r)return;
+    const w=h.weight/total;
+    Object.keys(PIDX).forEach(p=>{const v=r[PIDX[p]];if(v!=null)res[p]+=w*v;});
+  });
+  return res;
+}
+
+function calcRisk(pf){
+  const total=pf.holdings.reduce((s,h)=>s+h.weight,0);if(total===0)return"conservative";
+  let aggScore=0;
+  pf.holdings.forEach(h=>{
+    const r=DR_RAW.find(x=>x[0]===h.ticker);if(!r)return;
+    const w=h.weight/total;
+    if(["AI Supercycle","Spacetech","Geopolitics"].includes(r[3]))aggScore+=w*2;
+    if(["CN - A","CN - H","HK"].includes(r[2]))aggScore+=w*1;
+  });
+  if(aggScore>1.5)return"aggressive";
+  if(aggScore>0.7)return"balanced";
+  return"conservative";
+}
+
+function getRiskLabel(risk){
+  if(risk==="aggressive")return{label:"🔴 Aggressive",cls:"risk-aggressive",desc:"พอร์ตมีความเสี่ยงสูง เหมาะสำหรับนักลงทุนที่รับความเสี่ยงได้สูง"};
+  if(risk==="balanced")return{label:"🟡 Balanced",cls:"risk-balanced",desc:"พอร์ตมีความเสี่ยงปานกลาง เหมาะสำหรับนักลงทุนทั่วไป"};
+  return{label:"🟢 Conservative",cls:"risk-conservative",desc:"พอร์ตมีความเสี่ยงต่ำ เน้นความมั่นคง"};
+}
+
+function getBenchmarks(pf){
+  const rets=calcPFReturns(pf);
+  const defs=[
+    {name:"Your Portfolio",color:"#003F88",vals:rets},
+    {name:"SP500",color:"#00AEEF",ticker:"SP500US8 TB Equity"},
+    {name:"Nikkei 225",color:"#29C5F6",ticker:"NIKKEI80 TB Equity"},
+    {name:"SPDR Energy",color:"#0284C7",ticker:"SPENGY80 TB Equity"},
+  ];
+  defs.forEach(b=>{
+    if(!b.ticker)return;
+    const r=DR_RAW.find(x=>x[0]===b.ticker);
+    b.vals=r?{ytd:r[5],"1m":r[6],"3m":r[7],"6m":r[8],"1y":r[9]}:{ytd:0,"1m":0,"3m":0,"6m":0,"1y":0};
+  });
+  return defs;
+}
+
+function renderPF(){
+  const body=document.getElementById("pfBody");
+  const pf=getCurrentPF();
+
+  // ── SAVED TAB ──
+  if(pfTab==="saved"){
+    let html=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div style="font-size:calc(15px * var(--fs));font-weight:700;color:var(--navy)">Saved Portfolios</div>
+      <button class="pf-new-btn" onclick="newPortfolio()">+ New Portfolio</button>
+    </div>`;
+    if(portfolios.length===0){
+      html+=`<div style="text-align:center;padding:40px;color:var(--text3);font-size:calc(14px * var(--fs))">No portfolios yet.</div>`;
+    } else {
+      portfolios.forEach((p,i)=>{
+        const rets=calcPFReturns(p);
+        const total=p.holdings.reduce((s,h)=>s+h.weight,0);
+        html+=`<div class="pf-portfolio-card ${i===activePFIdx?"active":""}" onclick="selectPortfolio(${i})">
+          <div><div class="pf-pname">${p.name}</div><div class="pf-pmeta">${p.holdings.length} securities · ${total.toFixed(0)}% allocated</div></div>
+          <div style="display:flex;align-items:center;gap:16px">
+            <div style="text-align:right">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:calc(15px * var(--fs));font-weight:700;color:${rets.ytd>=0?"var(--green)":"var(--red)"}">${rets.ytd>=0?"+":""}${rets.ytd.toFixed(1)}%</div>
+              <div style="font-size:calc(10px * var(--fs));color:var(--text3)">YTD</div>
+            </div>
+            <button class="pf-pdel" onclick="event.stopPropagation();deletePortfolio(${i})">🗑</button>
+          </div>
+        </div>`;
+      });
+    }
+    body.innerHTML=html;return;
+  }
+
+  if(!pf){
+    body.innerHTML=`<div style="text-align:center;padding:40px;color:var(--text3)">
+      <div style="font-size:40px;margin-bottom:16px">📊</div>
+      <button class="pf-new-btn" onclick="newPortfolio()">+ Create Portfolio</button>
+    </div>`;return;
+  }
+
+  // ── BUILD TAB ──
+  if(pfTab==="build"){
+    const total=pf.holdings.reduce((s,h)=>s+h.weight,0);
+    const isOk=Math.abs(total-100)<0.1;
+    const rets=isOk?calcPFReturns(pf):null;
+
+    // Filter DR_RAW for picker
+    const themes=[...new Set(DR_RAW.map(r=>r[3]).filter(Boolean))].sort();
+    const pickerRows=DR_RAW.filter(r=>{
+      if(!r[3])return false;
+      if(pfPickerTheme&&r[3]!==pfPickerTheme)return false;
+      if(pfPickerSearch){const q=pfPickerSearch.toLowerCase();return r[1].toLowerCase().includes(q)||r[0].toLowerCase().includes(q);}
+      return true;
+    });
+
+    // Dedupe by ticker for display
+    const seen=new Set(),deduped=[];
+    pickerRows.forEach(r=>{if(!seen.has(r[0])){seen.add(r[0]);deduped.push(r);}});
+
+    let html=`
+    <!-- Portfolio name + new btn -->
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:calc(16px * var(--fs));font-weight:700;color:var(--navy)">${pf.name}</span>
+        <button onclick="renamePF()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px">✏️</button>
+      </div>
+      <button class="pf-new-btn" onclick="newPortfolio()" style="background:white;color:var(--navy);border:1.5px solid var(--border)">+ New</button>
+    </div>
+
+    <!-- 2-column layout: picker left, holdings right -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;flex:1;min-height:0">
+
+      <!-- LEFT: DR Universe Picker -->
+      <div style="display:flex;flex-direction:column;gap:8px;min-height:0">
+        <div style="font-size:calc(12px * var(--fs));font-weight:700;color:var(--text2);letter-spacing:0.07em;text-transform:uppercase">DR Universe — select to add</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <input style="flex:1;min-width:120px;background:white;border:1.5px solid var(--border);color:var(--text);font-family:'Sarabun',sans-serif;font-size:calc(12px * var(--fs));padding:7px 10px;border-radius:var(--r-sm);outline:none" 
+            placeholder="Search..." value="${pfPickerSearch}"
+            oninput="pfPickerSearch=this.value;renderPF()">
+          <select style="font-size:calc(12px * var(--fs));padding:7px 24px 7px 8px;border-radius:var(--r-sm);border:1.5px solid var(--border);background:white;color:var(--text2);appearance:none;-webkit-appearance:none;background-image:url('data:image/svg+xml,%3Csvg width=\\'10\\' height=\\'6\\' viewBox=\\'0 0 10 6\\' fill=\\'none\\' xmlns=\\'http://www.w3.org/2000/svg\\'%3E%3Cpath d=\\'M1 1L5 5L9 1\\' stroke=\\'%238FA3BE\\' stroke-width=\\'1.5\\'/%3E%3C/svg%3E');background-repeat:no-repeat;background-position:right 8px center;outline:none"
+            onchange="pfPickerTheme=this.value;renderPF()">
+            <option value="">All themes</option>
+            ${themes.map(t=>`<option value="${t}" ${pfPickerTheme===t?"selected":""}>${t}</option>`).join("")}
+          </select>
+        </div>
+        <div style="flex:1;overflow-y:auto;border:1px solid var(--border);border-radius:var(--r-sm);background:white">
+          <table style="width:100%;border-collapse:collapse;font-size:calc(12px * var(--fs))">
+            <thead>
+              <tr style="background:var(--gray50);border-bottom:2px solid var(--border)">
+                <th style="width:28px;padding:8px 10px"></th>
+                <th style="text-align:left;padding:8px 10px;font-weight:700;color:var(--text3);font-size:calc(10px * var(--fs));letter-spacing:0.08em;text-transform:uppercase">Name</th>
+                <th style="text-align:right;padding:8px 10px;font-weight:700;color:var(--text3);font-size:calc(10px * var(--fs));letter-spacing:0.08em;text-transform:uppercase">YTD</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${deduped.map(r=>{
+                const isIn=!!pf.holdings.find(h=>h.ticker===r[0]);
+                const safeId=r[0].replace(/[^a-zA-Z0-9]/g,"_");
+                const ytd=r[5];
+                return`<tr style="border-bottom:1px solid var(--border2);${isIn?"background:var(--sky-pale);":""}transition:background 0.1s" onmouseover="this.style.background='var(--sky-pale)'" onmouseout="this.style.background='${isIn?"var(--sky-pale)":"white"}'">
+                  <td style="padding:8px 10px"><input type="checkbox" id="pf_chk_${safeId}" ${isIn?"checked":""} style="accent-color:var(--navy);width:14px;height:14px;cursor:pointer" onchange="toggleHolding('${r[0].replace(/'/g,"\\'")}',this.checked)"></td>
+                  <td style="padding:8px 10px;cursor:pointer" onclick="document.getElementById('pf_chk_${safeId}').click()">
+                    <div style="font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px">${r[1].replace(/-DR$|-DRX$/,"")}</div>
+                    <div style="font-family:'IBM Plex Mono',monospace;font-size:calc(10px * var(--fs));color:var(--text3)">${r[0].split(" ")[0]} · ${r[3]}</div>
+                  </td>
+                  <td style="padding:8px 10px;text-align:right;font-family:'IBM Plex Mono',monospace;font-weight:600;color:${ytd!=null&&ytd>=0?"var(--green)":"var(--red)"}">${ytd!=null?(ytd>=0?"+":"")+ytd.toFixed(1)+"%":"—"}</td>
+                </tr>`;
+              }).join("")}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- RIGHT: Holdings with weights -->
+      <div style="display:flex;flex-direction:column;gap:8px;min-height:0">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div style="font-size:calc(12px * var(--fs));font-weight:700;color:var(--text2);letter-spacing:0.07em;text-transform:uppercase">Holdings & Weights</div>
+          <span id="pfWeightTotal" class="${isOk?"pf-weight-ok":"pf-weight-warn"}" style="font-size:calc(13px * var(--fs));font-weight:700">Total: ${total.toFixed(1)}%</span>
+        </div>
+
+        ${pf.holdings.length===0?
+          `<div style="flex:1;display:flex;align-items:center;justify-content:center;background:white;border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text3);font-size:calc(13px * var(--fs));text-align:center;padding:24px">
+            ← Check securities<br>from the universe
+          </div>`:
+          `<div style="flex:1;overflow-y:auto;border:1px solid var(--border);border-radius:var(--r-sm);background:white">
+            <table style="width:100%;border-collapse:collapse;font-size:calc(12px * var(--fs))">
+              <thead>
+                <tr style="background:var(--gray50);border-bottom:2px solid var(--border)">
+                  <th style="text-align:left;padding:8px 10px;font-weight:700;color:var(--text3);font-size:calc(10px * var(--fs));letter-spacing:0.08em;text-transform:uppercase">Security</th>
+                  <th style="text-align:right;padding:8px 10px;font-weight:700;color:var(--text3);font-size:calc(10px * var(--fs));letter-spacing:0.08em;text-transform:uppercase;width:70px">Weight</th>
+                  <th style="padding:8px 10px;width:90px"></th>
+                  <th style="width:20px"></th>
+                </tr>
+              </thead>
+              <tbody>
+                ${pf.holdings.map(h=>{
+                  const safeId=h.ticker.replace(/[^a-zA-Z0-9]/g,"_");
+                  const r=DR_RAW.find(x=>x[0]===h.ticker);
+                  const ytd=r?r[5]:null;
+                  return`<tr style="border-bottom:1px solid var(--border2)">
+                    <td style="padding:8px 10px">
+                      <div style="font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px">${h.name}</div>
+                      <div style="font-family:'IBM Plex Mono',monospace;font-size:calc(10px * var(--fs));color:${ytd!=null&&ytd>=0?"var(--green)":"var(--red)"}">${ytd!=null?(ytd>=0?"+":"")+ytd.toFixed(1)+"%":"—"}</div>
+                    </td>
+                    <td style="padding:8px 10px;text-align:right">
+                      <input id="pfinp_${safeId}" type="number" min="0" max="100" step="0.5" value="${h.weight.toFixed(1)}"
+                        style="width:58px;border:1.5px solid var(--border);border-radius:5px;padding:4px 6px;font-family:'IBM Plex Mono',monospace;font-size:calc(12px * var(--fs));text-align:right;outline:none;background:white;color:var(--text)"
+                        oninput="updateWeight('${h.ticker.replace(/'/g,"\\'")}',this.value)">
+                    </td>
+                    <td style="padding:8px 10px">
+                      <input type="range" id="pfsl_${safeId}" min="0" max="100" step="0.5" value="${h.weight}"
+                        style="width:80px;accent-color:var(--navy);cursor:pointer;height:4px"
+                        oninput="updateSlider('${h.ticker.replace(/'/g,"\\'")}',this.value)">
+                    </td>
+                    <td style="padding:4px 6px">
+                      <button onclick="toggleHolding('${h.ticker.replace(/'/g,"\\'")}',false)" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:15px;line-height:1">✕</button>
+                    </td>
+                  </tr>`;
+                }).join("")}
+              </tbody>
+            </table>
+          </div>`
+        }
+
+        ${!isOk&&pf.holdings.length>0?
+          `<div style="background:var(--amber-bg);border:1px solid #FCD34D;border-radius:var(--r-sm);padding:9px 12px;font-size:calc(12px * var(--fs));color:#78350F">
+            ⚠️ Total must be 100%. Currently ${total.toFixed(1)}% — ${total<100?"need +"+(100-total).toFixed(1)+"%":"over by "+(total-100).toFixed(1)+"%"}
+          </div>`:""}
+
+        ${isOk&&rets?
+          `<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px">
+            ${["ytd","1m","3m","6m","1y"].map(p=>`
+              <div style="background:var(--gray50);border:1px solid var(--border2);border-radius:8px;padding:10px;text-align:center">
+                <div style="font-size:calc(10px * var(--fs));color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px">${PLAB[p]}</div>
+                <div id="pfqr_${p}" style="font-family:'IBM Plex Mono',monospace;font-size:calc(15px * var(--fs));font-weight:700;color:${rets[p]>=0?"var(--green)":"var(--red)"}">${rets[p]>=0?"+":""}${rets[p].toFixed(1)}%</div>
+              </div>`).join("")}
+          </div>
+          <button class="pf-new-btn" onclick="switchPFTab('summary')" style="align-self:flex-start">View Full Summary →</button>`:""}
+      </div>
+    </div>`;
+
+    body.innerHTML=html;
+    return;
+  }
+
+  // ── SUMMARY TAB ──
+  if(pfTab==="summary"){
+    const rets=calcPFReturns(pf);
+    const total=pf.holdings.reduce((s,h)=>s+h.weight,0);
+    if(pf.holdings.length===0||total===0){
+      body.innerHTML=`<div style="text-align:center;padding:40px;color:var(--text3);font-size:calc(14px * var(--fs))">Add securities in the Build tab first.</div>`;
+      return;
+    }
+    const risk=calcRisk(pf);
+    const rl=getRiskLabel(risk);
+    const benches=getBenchmarks(pf);
+
+    // Weighted compositions
+    const themeW={},ctryW={},sectW={};
+    pf.holdings.forEach(h=>{
+      const r=DR_RAW.find(x=>x[0]===h.ticker);if(!r)return;
+      const w=h.weight/total*100;
+      themeW[r[3]||"Other"]=(themeW[r[3]||"Other"]||0)+w;
+      ctryW[r[2]||"Other"]=(ctryW[r[2]||"Other"]||0)+w;
+      sectW[r[4]||"Other"]=(sectW[r[4]||"Other"]||0)+w;
+    });
+
+    // Benchmark — find max absolute value across all periods for scaling
+    const benchPeriod="ytd";
+    const maxBench=Math.max(1,...benches.map(b=>Math.abs(b.vals[benchPeriod]||0)));
+
+    let html=`<div id="pfSummaryExport">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+      <div style="font-size:calc(17px * var(--fs));font-weight:700;color:var(--navy)">${pf.name}</div>
+      <div class="risk-badge ${rl.cls}">${rl.label}</div>
+    </div>
+    <div style="font-size:calc(12px * var(--fs));color:var(--text2);margin-bottom:14px">${rl.desc}</div>
+
+    <!-- Return summary -->
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:16px">
+      ${["ytd","1m","3m","6m","1y"].map(p=>`
+        <div style="background:white;border-radius:var(--r-sm);padding:13px;text-align:center;box-shadow:var(--shadow)">
+          <div style="font-size:calc(10px * var(--fs));color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:5px">${PLAB[p]}</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:calc(18px * var(--fs));font-weight:700;color:${rets[p]>=0?"var(--green)":"var(--red)"}">${rets[p]>=0?"+":""}${rets[p].toFixed(1)}%</div>
+        </div>`).join("")}
+    </div>
+
+    <!-- 3-col charts -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px">
+      <!-- Theme donut -->
+      <div style="background:white;border-radius:var(--r);padding:16px;box-shadow:var(--shadow)">
+        <div style="font-size:calc(11px * var(--fs));font-weight:700;color:var(--text2);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:12px">Theme Mix</div>
+        <div style="position:relative;height:130px"><canvas id="pfThemeChart"></canvas></div>
+        <div style="margin-top:8px;display:flex;flex-direction:column;gap:3px">
+          ${Object.entries(themeW).sort((a,b)=>b[1]-a[1]).map(([t,w],i)=>{
+            const colors=["#7C3AED","#0369A1","#0C4A6E","#4A6080","#991B1B","#92400E"];
+            return`<div style="display:flex;align-items:center;justify-content:space-between;font-size:calc(11px * var(--fs))">
+              <div style="display:flex;align-items:center;gap:5px"><div style="width:8px;height:8px;border-radius:2px;background:${colors[i%colors.length]};flex-shrink:0"></div><span style="color:var(--text2)">${t}</span></div>
+              <strong style="color:var(--text)">${w.toFixed(1)}%</strong>
+            </div>`;
+          }).join("")}
+        </div>
+      </div>
+
+      <!-- Country donut -->
+      <div style="background:white;border-radius:var(--r);padding:16px;box-shadow:var(--shadow)">
+        <div style="font-size:calc(11px * var(--fs));font-weight:700;color:var(--text2);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:12px">Country</div>
+        <div style="position:relative;height:130px"><canvas id="pfCtryChart"></canvas></div>
+        <div style="margin-top:8px;display:flex;flex-direction:column;gap:3px">
+          ${Object.entries(ctryW).sort((a,b)=>b[1]-a[1]).map(([c,w],i)=>{
+            const colors=["#003F88","#00AEEF","#29C5F6","#0284C7","#38BDF8","#7DD3FC","#BAE6FD"];
+            return`<div style="display:flex;align-items:center;justify-content:space-between;font-size:calc(11px * var(--fs))">
+              <div style="display:flex;align-items:center;gap:5px"><div style="width:8px;height:8px;border-radius:2px;background:${colors[i%colors.length]};flex-shrink:0"></div><span style="color:var(--text2)">${c}</span></div>
+              <strong style="color:var(--text)">${w.toFixed(1)}%</strong>
+            </div>`;
+          }).join("")}
+        </div>
+      </div>
+
+      <!-- Benchmark bars -->
+      <div style="background:white;border-radius:var(--r);padding:16px;box-shadow:var(--shadow)">
+        <div style="font-size:calc(11px * var(--fs));font-weight:700;color:var(--text2);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:12px">vs Benchmark (YTD)</div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          ${benches.map(b=>{
+            const val=b.vals[benchPeriod]||0;
+            const barW=Math.round(Math.abs(val)/maxBench*100);
+            const col=val>=0?"var(--green)":"var(--red)";
+            return`<div>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+                <span style="font-size:calc(12px * var(--fs));color:var(--text2);font-weight:600">${b.name}</span>
+                <span style="font-family:'IBM Plex Mono',monospace;font-size:calc(13px * var(--fs));font-weight:700;color:${col}">${val>=0?"+":""}${val.toFixed(1)}%</span>
+              </div>
+              <div style="height:8px;background:var(--gray100);border-radius:4px;overflow:hidden">
+                <div style="height:100%;width:${barW}%;background:${col};border-radius:4px;transition:width 0.4s"></div>
+              </div>
+            </div>`;
+          }).join("")}
+        </div>
+      </div>
+    </div>
+
+    <!-- Holdings table -->
+    <div style="background:white;border-radius:var(--r);padding:16px;box-shadow:var(--shadow)">
+      <div style="font-size:calc(11px * var(--fs));font-weight:700;color:var(--text2);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:10px">Holdings</div>
+      <table style="width:100%;border-collapse:collapse;font-size:calc(12px * var(--fs))">
+        <thead><tr style="border-bottom:2px solid var(--border)">
+          <th style="text-align:left;padding:7px 10px;color:var(--text3);font-size:calc(10px * var(--fs));font-weight:700;letter-spacing:0.08em;text-transform:uppercase">Security</th>
+          <th style="text-align:right;padding:7px 10px;color:var(--text3);font-size:calc(10px * var(--fs));font-weight:700;letter-spacing:0.08em;text-transform:uppercase">Weight</th>
+          <th style="text-align:right;padding:7px 10px;color:var(--text3);font-size:calc(10px * var(--fs));font-weight:700;letter-spacing:0.08em;text-transform:uppercase">YTD</th>
+          <th style="text-align:right;padding:7px 10px;color:var(--text3);font-size:calc(10px * var(--fs));font-weight:700;letter-spacing:0.08em;text-transform:uppercase">1Y</th>
+        </tr></thead>
+        <tbody>
+          ${pf.holdings.map(h=>{
+            const r=DR_RAW.find(x=>x[0]===h.ticker);
+            const ytd=r?r[5]:null;const y1=r?r[9]:null;
+            const wPct=(h.weight/total*100).toFixed(1);
+            return`<tr style="border-bottom:1px solid var(--border2)">
+              <td style="padding:8px 10px"><div style="font-weight:600;color:var(--text)">${h.name}</div><div style="font-family:'IBM Plex Mono',monospace;font-size:calc(10px * var(--fs));color:var(--text3)">${h.ticker.split(" ")[0]}</div></td>
+              <td style="padding:8px 10px;text-align:right;font-family:'IBM Plex Mono',monospace;font-weight:700;color:var(--navy)">${wPct}%</td>
+              <td style="padding:8px 10px;text-align:right;font-family:'IBM Plex Mono',monospace;color:${ytd!=null&&ytd>=0?"var(--green)":"var(--red)"}">${ytd!=null?(ytd>=0?"+":"")+ytd.toFixed(1)+"%":"—"}</td>
+              <td style="padding:8px 10px;text-align:right;font-family:'IBM Plex Mono',monospace;color:${y1!=null&&y1>=0?"var(--green)":"var(--red)"}">${y1!=null?(y1>=0?"+":"")+y1.toFixed(1)+"%":"—"}</td>
+            </tr>`;
+          }).join("")}
+        </tbody>
+      </table>
+    </div>
+    </div>`;
+
+    body.innerHTML=html;
+
+    // Draw theme donut
+    const tE=Object.entries(themeW).sort((a,b)=>b[1]-a[1]);
+    const tC=["#7C3AED","#0369A1","#0C4A6E","#4A6080","#991B1B","#92400E"];
+    new Chart(document.getElementById("pfThemeChart"),{type:"doughnut",
+      data:{labels:tE.map(([t])=>t),datasets:[{data:tE.map(([,w])=>w),backgroundColor:tC.slice(0,tE.length),borderWidth:2,borderColor:"#fff"}]},
+      options:{responsive:true,maintainAspectRatio:false,cutout:"60%",plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.label}: ${c.parsed.toFixed(1)}%`}}}}});
+
+    // Draw country donut
+    const cE=Object.entries(ctryW).sort((a,b)=>b[1]-a[1]);
+    const cC=["#003F88","#00AEEF","#29C5F6","#0284C7","#38BDF8","#7DD3FC","#BAE6FD"];
+    new Chart(document.getElementById("pfCtryChart"),{type:"doughnut",
+      data:{labels:cE.map(([c])=>c),datasets:[{data:cE.map(([,w])=>w),backgroundColor:cC.slice(0,cE.length),borderWidth:2,borderColor:"#fff"}]},
+      options:{responsive:true,maintainAspectRatio:false,cutout:"60%",plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.label}: ${c.parsed.toFixed(1)}%`}}}}});
+  }
+}
+
+function exportPortfolioImage(){
+  if(pfTab!=="summary"){switchPFTab("summary");setTimeout(exportPortfolioImage,600);return;}
+  const el=document.getElementById("pfSummaryExport");
+  if(!el){return;}
+  const pf=getCurrentPF();
+  html2canvas(el,{backgroundColor:"#F5F7FA",scale:2}).then(canvas=>{
+    const a=document.createElement("a");
+    a.download=(pf?pf.name.replace(/\s/g,"_"):"portfolio")+"_DR80.png";
+    a.href=canvas.toDataURL("image/png");
+    a.click();
+    track("portfolio_export",pf?pf.name:"");
+  });
+}
+
+// init badge
+document.getElementById("pfabBadge").textContent=portfolios.length;
+</script>
+</body>
+</html>
 
 function getCurrentPF(){return activePFIdx>=0&&activePFIdx<portfolios.length?portfolios[activePFIdx]:null;}
 
