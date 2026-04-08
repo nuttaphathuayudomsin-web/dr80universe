@@ -260,7 +260,95 @@ select:focus{border-color:var(--sky)}
 ::-webkit-scrollbar-track{background:var(--gray50)}
 ::-webkit-scrollbar-thumb{background:var(--gray200);border-radius:4px}
 ::-webkit-scrollbar-thumb:hover{background:var(--gray400)}
-@media(max-width:1100px){.charts-row{grid-template-columns:1fr 1fr}.hero-inner{grid-template-columns:1fr}.hero-movers{display:none}}
+/* ── PORTFOLIO BUILDER ── */
+.pfab{position:fixed;bottom:28px;right:28px;z-index:500;display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,var(--navy),var(--navy2));color:white;border:none;border-radius:30px;padding:14px 22px;font-family:'Sarabun',sans-serif;font-size:calc(14px * var(--fs));font-weight:700;cursor:pointer;box-shadow:0 4px 20px rgba(0,63,136,0.35);transition:all 0.2s;white-space:nowrap}
+.pfab:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,63,136,0.45)}
+.pfab-icon{font-size:18px}
+.pfab-badge{background:var(--sky);color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+
+.pf-panel{position:fixed;inset:0;z-index:600;display:none;align-items:stretch}
+.pf-panel.open{display:flex}
+.pf-backdrop{position:absolute;inset:0;background:rgba(0,20,60,0.5);backdrop-filter:blur(3px)}
+.pf-drawer{position:relative;margin-left:auto;width:min(900px,95vw);background:var(--gray50);display:flex;flex-direction:column;box-shadow:-8px 0 40px rgba(0,0,0,0.2);overflow:hidden}
+.pf-header{background:var(--navy);color:white;padding:18px 24px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.pf-header-left{display:flex;align-items:center;gap:12px}
+.pf-title{font-size:calc(17px * var(--fs));font-weight:700}
+.pf-subtitle{font-size:calc(12px * var(--fs));color:rgba(255,255,255,0.55);margin-top:2px}
+.pf-close{background:none;border:none;color:rgba(255,255,255,0.6);font-size:24px;cursor:pointer;line-height:1;padding:0 4px}
+.pf-close:hover{color:white}
+.pf-tabs{display:flex;background:var(--navy-dark);padding:0 24px;flex-shrink:0}
+.pf-tab{font-size:calc(13px * var(--fs));font-weight:500;color:rgba(255,255,255,0.45);padding:10px 18px;cursor:pointer;border:none;border-bottom:2px solid transparent;background:none;font-family:'Sarabun',sans-serif;margin-bottom:-1px;transition:all 0.15s}
+.pf-tab.active{color:var(--sky2);border-bottom-color:var(--sky2);font-weight:600}
+.pf-body{flex:1;overflow-y:auto;padding:20px 24px;display:flex;flex-direction:column;gap:16px}
+
+/* Portfolio list */
+.pf-list-row{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.pf-portfolio-card{background:white;border:1.5px solid var(--border);border-radius:var(--r);padding:12px 16px;cursor:pointer;transition:all 0.13s;display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:var(--shadow)}
+.pf-portfolio-card:hover{border-color:var(--sky);box-shadow:var(--shadow-md)}
+.pf-portfolio-card.active{border-color:var(--navy);background:var(--sky-pale)}
+.pf-pname{font-size:calc(13px * var(--fs));font-weight:600;color:var(--navy)}
+.pf-pmeta{font-size:calc(11px * var(--fs));color:var(--text3)}
+.pf-pdel{background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:0;line-height:1}
+.pf-pdel:hover{color:var(--red)}
+.pf-new-btn{background:var(--navy);color:white;border:none;border-radius:var(--r-sm);padding:9px 18px;font-family:'Sarabun',sans-serif;font-size:calc(13px * var(--fs));font-weight:600;cursor:pointer;white-space:nowrap;transition:all 0.13s}
+.pf-new-btn:hover{background:var(--navy2)}
+
+/* Security picker */
+.pf-search-add{display:flex;gap:8px;margin-bottom:12px}
+.pf-search-input{flex:1;background:white;border:1.5px solid var(--border);color:var(--text);font-family:'Sarabun',sans-serif;font-size:calc(13px * var(--fs));padding:9px 12px;border-radius:var(--r-sm);outline:none;box-shadow:var(--shadow)}
+.pf-search-input:focus{border-color:var(--sky)}
+.pf-dropdown{background:white;border:1.5px solid var(--border);border-radius:var(--r-sm);max-height:200px;overflow-y:auto;box-shadow:var(--shadow-md);display:none;position:absolute;z-index:10;width:100%;top:100%;left:0}
+.pf-dropdown.show{display:block}
+.pf-dd-item{padding:9px 12px;cursor:pointer;font-size:calc(13px * var(--fs));border-bottom:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between}
+.pf-dd-item:hover{background:var(--sky-pale)}
+.pf-dd-name{font-weight:600;color:var(--text)}
+.pf-dd-ticker{font-family:'IBM Plex Mono',monospace;font-size:calc(10px * var(--fs));color:var(--text3)}
+
+/* Holdings table */
+.pf-holdings{background:white;border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;margin-bottom:4px}
+.pf-h-head{display:grid;grid-template-columns:1fr 80px 100px 80px 24px;gap:8px;padding:9px 14px;background:var(--gray50);border-bottom:2px solid var(--border);font-size:calc(10px * var(--fs));font-weight:700;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase}
+.pf-h-row{display:grid;grid-template-columns:1fr 80px 100px 80px 24px;gap:8px;padding:10px 14px;border-bottom:1px solid var(--border2);align-items:center;transition:background 0.1s}
+.pf-h-row:hover{background:var(--sky-pale)}
+.pf-h-row:last-child{border-bottom:none}
+.pf-h-name{font-size:calc(13px * var(--fs));font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pf-h-ticker{font-family:'IBM Plex Mono',monospace;font-size:calc(10px * var(--fs));color:var(--text3)}
+.pf-weight-input{width:100%;border:1.5px solid var(--border);border-radius:6px;padding:5px 8px;font-family:'IBM Plex Mono',monospace;font-size:calc(13px * var(--fs));text-align:right;outline:none;transition:border-color 0.13s;background:white;color:var(--text)}
+.pf-weight-input:focus{border-color:var(--sky)}
+.pf-weight-slider{width:100%;accent-color:var(--navy);height:4px;cursor:pointer}
+.pf-del-btn{background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;line-height:1}
+.pf-del-btn:hover{color:var(--red)}
+.pf-weight-total{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;font-size:calc(13px * var(--fs));font-weight:600;border-top:2px solid var(--border)}
+.pf-weight-ok{color:var(--green)}.pf-weight-warn{color:var(--red)}
+
+/* Summary cards */
+.pf-summary-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.pf-scard{background:white;border-radius:var(--r-sm);padding:14px;box-shadow:var(--shadow);text-align:center}
+.pf-scard-lbl{font-size:calc(10px * var(--fs));color:var(--text3);letter-spacing:0.07em;text-transform:uppercase;margin-bottom:5px}
+.pf-scard-val{font-family:'IBM Plex Mono',monospace;font-size:calc(18px * var(--fs));font-weight:700}
+.pf-scard-val.pos{color:var(--green)}.pf-scard-val.neg{color:var(--red)}
+
+/* Risk badge */
+.risk-badge{display:inline-flex;align-items:center;gap:8px;border-radius:var(--r-sm);padding:10px 18px;font-size:calc(14px * var(--fs));font-weight:700}
+.risk-aggressive{background:#FEE2E2;color:#991B1B;border:2px solid #FCA5A5}
+.risk-balanced{background:#FEF3C7;color:#92400E;border:2px solid #FCD34D}
+.risk-conservative{background:#DCFCE7;color:#166534;border:2px solid #86EFAC}
+
+/* Charts row in portfolio */
+.pf-charts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.pf-chart-card{background:white;border-radius:var(--r);padding:16px;box-shadow:var(--shadow)}
+.pf-chart-title{font-size:calc(11px * var(--fs));font-weight:700;color:var(--text2);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:12px}
+
+/* Benchmark */
+.pf-bench-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.pf-bench-lbl{font-size:calc(13px * var(--fs));color:var(--text2);font-weight:500;width:140px;flex-shrink:0}
+.pf-bench-bar-track{flex:1;height:8px;background:var(--gray100);border-radius:4px;overflow:hidden;position:relative}
+.pf-bench-bar-fill{height:100%;border-radius:4px;transition:width 0.3s}
+.pf-bench-val{font-family:'IBM Plex Mono',monospace;font-size:calc(12px * var(--fs));font-weight:600;width:65px;text-align:right;flex-shrink:0}
+
+/* Export btn */
+.pf-export-btn{background:white;border:1.5px solid var(--border);border-radius:var(--r-sm);padding:8px 16px;font-family:'Sarabun',sans-serif;font-size:calc(13px * var(--fs));font-weight:600;color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:6px;box-shadow:var(--shadow);transition:all 0.13s}
+.pf-export-btn:hover{border-color:var(--sky);color:var(--navy)}
+
 @media(max-width:800px){.metrics{grid-template-columns:repeat(2,1fr)}.idea-trend-grid{grid-template-columns:1fr}.charts-row{grid-template-columns:1fr}.content{padding:14px 16px}.hero{padding:22px 16px}.header{padding:0 16px}.page-tabs{padding:0 16px}.filter-status{padding:0 16px}}
 </style>
 </head>
@@ -777,7 +865,10 @@ function updateTable(data){
     const tkShort=ticker.split(" ")[0];
     const isTB=TB_SET.has(tkShort);
     const resLink=isTB?`<a class="settrade-link" href="https://www.settrade.com/th/equities/dr/quote/${tkShort}/research" target="_blank" onclick="track('research_click','${tkShort}')">📊 Research</a>`:'<span style="color:var(--text3);font-size:11px">—</span>';
-    const upcomingBadge=!ticker.includes("TB Equity")?'<span class="badge b-upcoming" style="margin-left:5px;font-size:10px">Upcoming</span>':"";
+    const isTBinDR = activeTab==="dr"
+      ? ticker.includes("TB Equity")
+      : DR_RAW.some(d=>d[1]===name&&d[0].includes("TB Equity"));
+    const upcomingBadge=!isTBinDR?'<span class="badge b-upcoming" style="margin-left:5px;font-size:10px">Upcoming</span>':"";
     const chk=compareSet.has(ticker)?"checked":"";
     const cleanName=name.replace(/-DR$|-DRX$/,"");
     const trEl=document.createElement("tr");
@@ -947,6 +1038,479 @@ document.addEventListener("DOMContentLoaded",function(){
   track("page_load","dr80_dashboard");
 });
 
+</script>
+<!-- PORTFOLIO FAB -->
+<button class="pfab" onclick="openPortfolio()">
+  <span class="pfab-icon">📊</span>
+  Build Portfolio
+  <span class="pfab-badge" id="pfabBadge">0</span>
+</button>
+
+<!-- PORTFOLIO PANEL -->
+<div class="pf-panel" id="pfPanel">
+  <div class="pf-backdrop" onclick="closePortfolio()"></div>
+  <div class="pf-drawer">
+    <div class="pf-header">
+      <div class="pf-header-left">
+        <div>
+          <div class="pf-title">📊 Portfolio Builder</div>
+          <div class="pf-subtitle">สร้างพอร์ตโฟลิโอจาก DR80</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <button class="pf-export-btn" onclick="exportPortfolioImage()" style="background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.2);color:white">📷 Export</button>
+        <button class="pf-close" onclick="closePortfolio()">×</button>
+      </div>
+    </div>
+    <div class="pf-tabs">
+      <button class="pf-tab active" onclick="switchPFTab('build')" id="pftab-build">Build</button>
+      <button class="pf-tab" onclick="switchPFTab('summary')" id="pftab-summary">Summary & Risk</button>
+      <button class="pf-tab" onclick="switchPFTab('saved')" id="pftab-saved">Saved Portfolios</button>
+    </div>
+    <div class="pf-body" id="pfBody"></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<script>
+// ── PORTFOLIO STATE ──
+let portfolios = JSON.parse(localStorage.getItem("dr80_portfolios")||"[]");
+let activePFIdx = portfolios.length>0?0:-1;
+let pfTab = "build";
+let pfSearch = "";
+
+function getCurrentPF(){return activePFIdx>=0&&activePFIdx<portfolios.length?portfolios[activePFIdx]:null;}
+
+function savePFLocal(){
+  localStorage.setItem("dr80_portfolios",JSON.stringify(portfolios));
+  document.getElementById("pfabBadge").textContent=portfolios.length;
+}
+
+function savePFSheet(action="save"){
+  const pf=getCurrentPF();if(!pf)return;
+  try{
+    fetch(GA_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({type:"portfolio",session:SESSION_ID,name:pf.name,holdings:pf.holdings,action})});
+  }catch(e){}
+  track("portfolio_"+action, pf.name);
+}
+
+function openPortfolio(){
+  document.getElementById("pfPanel").classList.add("open");
+  if(portfolios.length===0) newPortfolio();
+  else renderPF();
+}
+function closePortfolio(){document.getElementById("pfPanel").classList.remove("open");}
+function switchPFTab(tab){
+  pfTab=tab;
+  document.querySelectorAll(".pf-tab").forEach(t=>t.classList.remove("active"));
+  document.getElementById("pftab-"+tab).classList.add("active");
+  renderPF();
+}
+
+function newPortfolio(){
+  const name="Portfolio "+(portfolios.length+1);
+  portfolios.push({name,holdings:[]});
+  activePFIdx=portfolios.length-1;
+  savePFLocal();
+  pfTab="build";
+  renderPF();
+}
+
+function deletePortfolio(idx){
+  if(!confirm("Delete this portfolio?"))return;
+  portfolios.splice(idx,1);
+  activePFIdx=Math.min(activePFIdx,portfolios.length-1);
+  savePFLocal();
+  renderPF();
+}
+
+function selectPortfolio(idx){
+  activePFIdx=idx;pfTab="build";
+  renderPF();
+}
+
+function addHolding(ticker){
+  const pf=getCurrentPF();if(!pf)return;
+  if(pf.holdings.find(h=>h.ticker===ticker)){return;}
+  const r=DR_RAW.find(x=>x[0]===ticker);if(!r)return;
+  const existing_weight=pf.holdings.reduce((s,h)=>s+h.weight,0);
+  const w=Math.max(0,Math.min(100,Math.round((100-existing_weight)/Math.max(1,1))));
+  pf.holdings.push({ticker,name:r[1].replace(/-DR$|-DRX$/,""),weight:w});
+  savePFLocal();savePFSheet();
+  pfSearch="";renderPF();
+}
+
+function removeHolding(ticker){
+  const pf=getCurrentPF();if(!pf)return;
+  pf.holdings=pf.holdings.filter(h=>h.ticker!==ticker);
+  savePFLocal();savePFSheet();renderPF();
+}
+
+function updateWeight(ticker,val){
+  const pf=getCurrentPF();if(!pf)return;
+  const h=pf.holdings.find(x=>x.ticker===ticker);
+  if(h){h.weight=Math.max(0,Math.min(100,parseFloat(val)||0));}
+  savePFLocal();
+  // update total display without full re-render
+  const total=pf.holdings.reduce((s,h)=>s+h.weight,0);
+  const el=document.getElementById("pfWeightTotal");
+  if(el){
+    el.textContent="Total: "+total.toFixed(1)+"%";
+    el.className=Math.abs(total-100)<0.1?"pf-weight-ok":"pf-weight-warn";
+  }
+  // sync slider if input changed
+  const slider=document.getElementById("slider_"+ticker.replace(/[^a-zA-Z0-9]/g,"_"));
+  if(slider)slider.value=val;
+}
+
+function updateSlider(ticker,val){
+  updateWeight(ticker,val);
+  const input=document.getElementById("input_"+ticker.replace(/[^a-zA-Z0-9]/g,"_"));
+  if(input)input.value=parseFloat(val).toFixed(1);
+}
+
+function renamePF(){
+  const pf=getCurrentPF();if(!pf)return;
+  const name=prompt("Portfolio name:",pf.name);
+  if(name&&name.trim()){pf.name=name.trim();savePFLocal();savePFSheet();renderPF();}
+}
+
+function calcPFReturns(pf){
+  const total=pf.holdings.reduce((s,h)=>s+h.weight,0);
+  if(total===0)return{ytd:0,"1m":0,"3m":0,"6m":0,"1y":0};
+  const res={ytd:0,"1m":0,"3m":0,"6m":0,"1y":0};
+  pf.holdings.forEach(h=>{
+    const r=DR_RAW.find(x=>x[0]===h.ticker);if(!r)return;
+    const w=h.weight/total;
+    ["ytd","1m","3m","6m","1y"].forEach((p,i)=>{const v=r[PIDX[p]];if(v!=null)res[p]+=w*v;});
+  });
+  return res;
+}
+
+function calcRisk(pf){
+  const total=pf.holdings.reduce((s,h)=>s+h.weight,0);if(total===0)return"conservative";
+  const aggressive_themes=["AI Supercycle","Spacetech","Geopolitics"];
+  const em_countries=["CN - A","CN - H","HK"];
+  let aggScore=0;
+  pf.holdings.forEach(h=>{
+    const r=DR_RAW.find(x=>x[0]===h.ticker);if(!r)return;
+    const w=h.weight/total;
+    if(aggressive_themes.includes(r[3]))aggScore+=w*2;
+    if(em_countries.includes(r[2]))aggScore+=w*1;
+  });
+  if(aggScore>1.5)return"aggressive";
+  if(aggScore>0.7)return"balanced";
+  return"conservative";
+}
+
+function getRiskLabel(risk){
+  if(risk==="aggressive")return{label:"🔴 Aggressive",cls:"risk-aggressive",desc:"พอร์ตมีความเสี่ยงสูง เหมาะสำหรับนักลงทุนที่รับความเสี่ยงได้สูง"};
+  if(risk==="balanced")return{label:"🟡 Balanced",cls:"risk-balanced",desc:"พอร์ตมีความเสี่ยงปานกลาง เหมาะสำหรับนักลงทุนทั่วไป"};
+  return{label:"🟢 Conservative",cls:"risk-conservative",desc:"พอร์ตมีความเสี่ยงต่ำ เน้นความมั่นคง"};
+}
+
+function getBenchmarks(pf){
+  const rets=calcPFReturns(pf);
+  const benches=[
+    {name:"Your Portfolio",ticker:"portfolio",vals:rets,color:"#003F88"},
+    {name:"SP500 (SP500US8)",ticker:"SP500US8 TB Equity",color:"#00AEEF"},
+    {name:"Nikkei 225 (NIKKEI80)",ticker:"NIKKEI80 TB Equity",color:"#29C5F6"},
+    {name:"SPDR Energy (SPENGY80)",ticker:"SPENGY80 TB Equity",color:"#0284C7"},
+  ];
+  benches.forEach(b=>{
+    if(b.ticker==="portfolio")return;
+    const r=DR_RAW.find(x=>x[0]===b.ticker);
+    b.vals=r?{ytd:r[5],"1m":r[6],"3m":r[7],"6m":r[8],"1y":r[9]}:{ytd:0,"1m":0,"3m":0,"6m":0,"1y":0};
+  });
+  return benches;
+}
+
+function renderPF(){
+  const body=document.getElementById("pfBody");
+  const pf=getCurrentPF();
+
+  if(pfTab==="saved"){
+    let html=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div style="font-size:calc(15px * var(--fs));font-weight:700;color:var(--navy)">Saved Portfolios</div>
+      <button class="pf-new-btn" onclick="newPortfolio()">+ New Portfolio</button>
+    </div>`;
+    if(portfolios.length===0){
+      html+=`<div style="text-align:center;padding:40px;color:var(--text3);font-size:calc(14px * var(--fs))">No portfolios yet. Create one to get started.</div>`;
+    } else {
+      portfolios.forEach((p,i)=>{
+        const rets=calcPFReturns(p);
+        const total=p.holdings.reduce((s,h)=>s+h.weight,0);
+        html+=`<div class="pf-portfolio-card ${i===activePFIdx?"active":""}" onclick="selectPortfolio(${i})">
+          <div>
+            <div class="pf-pname">${p.name}</div>
+            <div class="pf-pmeta">${p.holdings.length} securities · Total weight: ${total.toFixed(0)}%</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:16px">
+            <div style="text-align:right">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:calc(14px * var(--fs));font-weight:700;color:${rets.ytd>=0?"var(--green)":"var(--red)"}">${rets.ytd>=0?"+":""}${rets.ytd.toFixed(1)}%</div>
+              <div style="font-size:calc(10px * var(--fs));color:var(--text3)">YTD weighted</div>
+            </div>
+            <button class="pf-pdel" onclick="event.stopPropagation();deletePortfolio(${i})">🗑</button>
+          </div>
+        </div>`;
+      });
+    }
+    body.innerHTML=html;
+    return;
+  }
+
+  if(!pf){
+    body.innerHTML=`<div style="text-align:center;padding:40px;color:var(--text3)">
+      <div style="font-size:40px;margin-bottom:16px">📊</div>
+      <div style="font-size:calc(15px * var(--fs));font-weight:600;margin-bottom:8px">No portfolio selected</div>
+      <button class="pf-new-btn" onclick="newPortfolio()">+ Create Portfolio</button>
+    </div>`;
+    return;
+  }
+
+  if(pfTab==="build"){
+    const total=pf.holdings.reduce((s,h)=>s+h.weight,0);
+    const isOk=Math.abs(total-100)<0.1;
+
+    // search dropdown
+    const filtered_search=pfSearch.length>0?DR_RAW.filter(r=>
+      (r[1].toLowerCase().includes(pfSearch.toLowerCase())||r[0].toLowerCase().includes(pfSearch.toLowerCase()))
+      &&!pf.holdings.find(h=>h.ticker===r[0])
+    ).slice(0,8):[];
+
+    let html=`
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:4px">
+      <div>
+        <span style="font-size:calc(17px * var(--fs));font-weight:700;color:var(--navy)">${pf.name}</span>
+        <button onclick="renamePF()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px;margin-left:6px">✏️</button>
+      </div>
+      <button class="pf-new-btn" onclick="newPortfolio()" style="background:white;color:var(--navy);border:1.5px solid var(--border)">+ New Portfolio</button>
+    </div>
+
+    <div style="position:relative">
+      <div class="pf-search-add">
+        <input class="pf-search-input" placeholder="🔍 Add security — search name or ticker..." 
+          id="pfSearchInput"
+          value="${pfSearch}"
+          oninput="pfSearch=this.value;renderPF()"
+          onfocus="document.getElementById('pfDD').classList.add('show')"
+        >
+      </div>
+      <div class="pf-dropdown ${filtered_search.length>0&&pfSearch.length>0?"show":""}" id="pfDD">
+        ${filtered_search.map(r=>`
+          <div class="pf-dd-item" onclick="addHolding('${r[0].replace(/'/g,"\\'")}')">
+            <div>
+              <div class="pf-dd-name">${r[1].replace(/-DR$|-DRX$/,"")}</div>
+              <div class="pf-dd-ticker">${r[0]} · ${r[3]}</div>
+            </div>
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:${(r[5]||0)>=0?"var(--green)":"var(--red)"}">${r[5]!=null?(r[5]>=0?"+":"")+r[5].toFixed(1)+"%":"—"}</span>
+          </div>
+        `).join("")}
+        ${filtered_search.length===0&&pfSearch.length>0?`<div style="padding:12px;color:var(--text3);font-size:13px;text-align:center">No matches found</div>`:""}
+      </div>
+    </div>`;
+
+    if(pf.holdings.length===0){
+      html+=`<div style="text-align:center;padding:32px;color:var(--text3);background:white;border-radius:var(--r);box-shadow:var(--shadow)">
+        <div style="font-size:32px;margin-bottom:10px">🔍</div>
+        <div style="font-size:calc(14px * var(--fs))">Search and add securities above to build your portfolio</div>
+      </div>`;
+    } else {
+      html+=`<div class="pf-holdings">
+        <div class="pf-h-head">
+          <div>Security</div><div style="text-align:right">Weight %</div><div>Slider</div><div style="text-align:right">YTD</div><div></div>
+        </div>`;
+      pf.holdings.forEach(h=>{
+        const r=DR_RAW.find(x=>x[0]===h.ticker);
+        const ytd=r?r[5]:null;
+        const safeId=h.ticker.replace(/[^a-zA-Z0-9]/g,"_");
+        html+=`<div class="pf-h-row">
+          <div><div class="pf-h-name">${h.name}</div><div class="pf-h-ticker">${h.ticker}</div></div>
+          <div><input class="pf-weight-input" id="input_${safeId}" type="number" min="0" max="100" step="0.5" value="${h.weight.toFixed(1)}" 
+            onchange="updateWeight('${h.ticker.replace(/'/g,"\\'")}',this.value)"
+            oninput="updateWeight('${h.ticker.replace(/'/g,"\\'")}',this.value)"></div>
+          <div><input type="range" class="pf-weight-slider" id="slider_${safeId}" min="0" max="100" step="0.5" value="${h.weight}"
+            oninput="updateSlider('${h.ticker.replace(/'/g,"\\'")}',this.value)"></div>
+          <div class="td-num ${ytd!=null&&ytd>=0?"pos":"neg"}">${ytd!=null?(ytd>=0?"+":"")+ytd.toFixed(1)+"%":"—"}</div>
+          <div><button class="pf-del-btn" onclick="removeHolding('${h.ticker.replace(/'/g,"\\'")}')">✕</button></div>
+        </div>`;
+      });
+      html+=`<div class="pf-weight-total">
+        <span style="font-size:calc(12px * var(--fs));color:var(--text3)">${pf.holdings.length} securities</span>
+        <span id="pfWeightTotal" class="${isOk?"pf-weight-ok":"pf-weight-warn"}">Total: ${total.toFixed(1)}%</span>
+      </div></div>`;
+
+      if(!isOk){
+        html+=`<div style="background:var(--amber-bg);border:1px solid #FCD34D;border-radius:var(--r-sm);padding:10px 14px;font-size:calc(12px * var(--fs));color:#78350F">
+          ⚠️ Weights must sum to 100%. Currently ${total.toFixed(1)}% — ${total<100?"add "+(100-total).toFixed(1)+"% more":"reduce "+(total-100).toFixed(1)+"%"}
+        </div>`;
+      } else {
+        // Quick return summary
+        const rets=calcPFReturns(pf);
+        html+=`<div class="pf-summary-grid">
+          ${["ytd","1m","3m","6m","1y"].map(p=>`
+            <div class="pf-scard">
+              <div class="pf-scard-lbl">${PLAB[p]}</div>
+              <div class="pf-scard-val ${rets[p]>=0?"pos":"neg"}">${rets[p]>=0?"+":""}${rets[p].toFixed(1)}%</div>
+            </div>`).join("")}
+        </div>
+        <button class="pf-new-btn" onclick="switchPFTab('summary')" style="align-self:flex-start">View Full Summary →</button>`;
+      }
+    }
+    body.innerHTML=html;
+    // re-focus search if active
+    if(pfSearch.length>0){
+      const inp=document.getElementById("pfSearchInput");
+      if(inp){inp.focus();inp.setSelectionRange(inp.value.length,inp.value.length);}
+    }
+    return;
+  }
+
+  if(pfTab==="summary"){
+    const rets=calcPFReturns(pf);
+    const total=pf.holdings.reduce((s,h)=>s+h.weight,0);
+    if(pf.holdings.length===0||total===0){
+      body.innerHTML=`<div style="text-align:center;padding:40px;color:var(--text3);font-size:calc(14px * var(--fs))">Add securities in the Build tab first.</div>`;
+      return;
+    }
+    const risk=calcRisk(pf);
+    const rl=getRiskLabel(risk);
+    const benches=getBenchmarks(pf);
+    const norm_total=total;
+
+    // Theme composition
+    const themeW={};
+    pf.holdings.forEach(h=>{
+      const r=DR_RAW.find(x=>x[0]===h.ticker);if(!r)return;
+      const t=r[3]||"Other";
+      themeW[t]=(themeW[t]||0)+h.weight/norm_total*100;
+    });
+    // Country composition
+    const ctryW={};
+    pf.holdings.forEach(h=>{
+      const r=DR_RAW.find(x=>x[0]===h.ticker);if(!r)return;
+      const c=r[2]||"Other";
+      ctryW[c]=(ctryW[c]||0)+h.weight/norm_total*100;
+    });
+    // Sector composition
+    const sectW={};
+    pf.holdings.forEach(h=>{
+      const r=DR_RAW.find(x=>x[0]===h.ticker);if(!r)return;
+      const s=r[4]||"Other";
+      sectW[s]=(sectW[s]||0)+h.weight/norm_total*100;
+    });
+
+    const benchPeriod="ytd";
+    const maxBench=Math.max(...benches.map(b=>Math.abs(b.vals[benchPeriod]||0)),1);
+
+    let html=`
+    <div id="pfSummaryExport">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+      <div style="font-size:calc(17px * var(--fs));font-weight:700;color:var(--navy)">${pf.name}</div>
+      <div class="risk-badge ${rl.cls}">${rl.label}</div>
+    </div>
+    <div style="font-size:calc(12px * var(--fs));color:var(--text2);margin-bottom:16px">${rl.desc}</div>
+
+    <div class="pf-summary-grid" style="margin-bottom:16px">
+      ${["ytd","1m","3m","6m","1y"].map(p=>`
+        <div class="pf-scard">
+          <div class="pf-scard-lbl">${PLAB[p]}</div>
+          <div class="pf-scard-val ${rets[p]>=0?"pos":"neg"}">${rets[p]>=0?"+":""}${rets[p].toFixed(1)}%</div>
+        </div>`).join("")}
+    </div>
+
+    <div class="pf-charts" style="margin-bottom:16px">
+      <div class="pf-chart-card">
+        <div class="pf-chart-title">Theme Composition</div>
+        <div style="position:relative;height:160px"><canvas id="pfThemeChart"></canvas></div>
+        <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px">
+          ${Object.entries(themeW).sort((a,b)=>b[1]-a[1]).map(([t,w],i)=>{
+            const colors=["#7C3AED","#0369A1","#0C4A6E","#4A6080","#991B1B","#92400E"];
+            return`<div style="display:flex;align-items:center;justify-content:space-between;font-size:calc(11px * var(--fs))"><div style="display:flex;align-items:center;gap:5px"><div style="width:9px;height:9px;border-radius:2px;background:${colors[i%colors.length]};flex-shrink:0"></div>${t}</div><strong>${w.toFixed(1)}%</strong></div>`;
+          }).join("")}
+        </div>
+      </div>
+      <div class="pf-chart-card">
+        <div class="pf-chart-title">Country Exposure</div>
+        <div style="position:relative;height:160px"><canvas id="pfCtryChart"></canvas></div>
+        <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px">
+          ${Object.entries(ctryW).sort((a,b)=>b[1]-a[1]).map(([c,w],i)=>{
+            const colors=["#003F88","#00AEEF","#29C5F6","#0284C7","#38BDF8","#7DD3FC","#BAE6FD"];
+            return`<div style="display:flex;align-items:center;justify-content:space-between;font-size:calc(11px * var(--fs))"><div style="display:flex;align-items:center;gap:5px"><div style="width:9px;height:9px;border-radius:2px;background:${colors[i%colors.length]};flex-shrink:0"></div>${c}</div><strong>${w.toFixed(1)}%</strong></div>`;
+          }).join("")}
+        </div>
+      </div>
+      <div class="pf-chart-card">
+        <div class="pf-chart-title">vs Benchmark (YTD)</div>
+        ${benches.map(b=>`
+          <div class="pf-bench-row">
+            <div class="pf-bench-lbl" style="font-size:calc(11px * var(--fs))">${b.name.split("(")[0].trim()}</div>
+            <div class="pf-bench-bar-track">
+              <div class="pf-bench-bar-fill" style="width:${Math.abs((b.vals[benchPeriod]||0)/maxBench*100).toFixed(0)}%;background:${(b.vals[benchPeriod]||0)>=0?"var(--green)":"var(--red)"}"></div>
+            </div>
+            <div class="pf-bench-val" style="color:${(b.vals[benchPeriod]||0)>=0?"var(--green)":"var(--red)"}">${(b.vals[benchPeriod]||0)>=0?"+":""}${(b.vals[benchPeriod]||0).toFixed(1)}%</div>
+          </div>`).join("")}
+      </div>
+    </div>
+
+    <div class="pf-chart-card" style="margin-bottom:0">
+      <div class="pf-chart-title">Holdings</div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        ${pf.holdings.map(h=>{
+          const r=DR_RAW.find(x=>x[0]===h.ticker);
+          const ytd=r?r[5]:null;
+          const wPct=(h.weight/norm_total*100).toFixed(1);
+          return`<div style="display:flex;align-items:center;gap:10px;font-size:calc(12px * var(--fs))">
+            <div style="flex:1;font-weight:600;color:var(--text)">${h.name}</div>
+            <div style="font-family:'IBM Plex Mono',monospace;color:var(--text3)">${h.ticker.split(" ")[0]}</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-weight:700;color:var(--navy);width:50px;text-align:right">${wPct}%</div>
+            <div style="font-family:'IBM Plex Mono',monospace;width:60px;text-align:right;color:${ytd!=null&&ytd>=0?"var(--green)":"var(--red)"}">${ytd!=null?(ytd>=0?"+":"")+ytd.toFixed(1)+"%":"—"}</div>
+          </div>`;
+        }).join("")}
+      </div>
+    </div>
+    </div>`;
+
+    body.innerHTML=html;
+
+    // Draw theme donut
+    const themeEntries=Object.entries(themeW).sort((a,b)=>b[1]-a[1]);
+    const tColors=["#7C3AED","#0369A1","#0C4A6E","#4A6080","#991B1B","#92400E"];
+    new Chart(document.getElementById("pfThemeChart"),{
+      type:"doughnut",
+      data:{labels:themeEntries.map(([t])=>t),datasets:[{data:themeEntries.map(([,w])=>w),backgroundColor:tColors.slice(0,themeEntries.length),borderWidth:2,borderColor:"#fff"}]},
+      options:{responsive:true,maintainAspectRatio:false,cutout:"60%",plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.label}: ${c.parsed.toFixed(1)}%`}}}}
+    });
+
+    // Draw country donut
+    const ctryEntries=Object.entries(ctryW).sort((a,b)=>b[1]-a[1]);
+    const cColors=["#003F88","#00AEEF","#29C5F6","#0284C7","#38BDF8","#7DD3FC","#BAE6FD"];
+    new Chart(document.getElementById("pfCtryChart"),{
+      type:"doughnut",
+      data:{labels:ctryEntries.map(([c])=>c),datasets:[{data:ctryEntries.map(([,w])=>w),backgroundColor:cColors.slice(0,ctryEntries.length),borderWidth:2,borderColor:"#fff"}]},
+      options:{responsive:true,maintainAspectRatio:false,cutout:"60%",plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.label}: ${c.parsed.toFixed(1)}%`}}}}
+    });
+  }
+}
+
+function exportPortfolioImage(){
+  const el=document.getElementById("pfSummaryExport")||document.getElementById("pfBody");
+  if(!el){alert("Switch to Summary tab first");return;}
+  if(!document.getElementById("pfSummaryExport")){switchPFTab("summary");setTimeout(exportPortfolioImage,500);return;}
+  html2canvas(el,{backgroundColor:"#F5F7FA",scale:2}).then(canvas=>{
+    const a=document.createElement("a");
+    const pf=getCurrentPF();
+    a.download=(pf?pf.name.replace(/\s/g,"_"):"portfolio")+"_DR80.png";
+    a.href=canvas.toDataURL("image/png");
+    a.click();
+    track("portfolio_export",pf?pf.name:"");
+  });
+}
+
+// init badge
+document.getElementById("pfabBadge").textContent=portfolios.length;
 </script>
 </body>
 </html>
