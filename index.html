@@ -1080,6 +1080,11 @@ function render(){
   updateHeroMovers();
 }
 
+function agreeDisclaimer(){
+  document.getElementById("disclaimerModal").style.display="none";
+  track("disclaimer_agreed","");
+}
+
 document.addEventListener("DOMContentLoaded",function(){
   document.getElementById("themeFilter").addEventListener("change",e=>{fTheme=e.target.value;render();});
   document.getElementById("sectorFilter").addEventListener("change",e=>{fSector=e.target.value;render();});
@@ -1102,12 +1107,6 @@ document.addEventListener("DOMContentLoaded",function(){
   populate();updateColCustomizer();render();
   track("page_load","dr80_dashboard");
   document.getElementById("disclaimerModal").style.display="flex";
-  document.getElementById("agreeBtn").addEventListener("click",agreeDisclaimer);
-}
-
-function agreeDisclaimer(){
-  document.getElementById("disclaimerModal").style.display="none";
-  track("disclaimer_agreed","");
 });
 
 </script>
@@ -1657,7 +1656,7 @@ document.getElementById("pfabBadge").textContent=portfolios.length;
     <!-- Footer — agree button, no skip -->
     <div style="padding:18px 28px;border-top:2px solid #E2E8F0;background:#F5F7FA;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:16px">
       <div style="font-size:12px;color:#8FA3BE;flex:1">ข้อมูลอ้างอิง ณ วันที่ <strong>7 เมษายน 2569</strong> · ธนาคารกรุงไทย จำกัด (มหาชน)</div>
-      <button id="agreeBtn" style="background:#003F88;color:white;border:none;border-radius:10px;padding:12px 32px;font-family:'Sarabun',sans-serif;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap;box-shadow:0 4px 14px rgba(0,63,136,0.3);position:relative;z-index:2001;pointer-events:all">
+      <button id="agreeBtn" onclick="agreeDisclaimer()" style="background:#003F88;color:white;border:none;border-radius:10px;padding:12px 32px;font-family:'Sarabun',sans-serif;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap;box-shadow:0 4px 14px rgba(0,63,136,0.3);position:relative;z-index:2001;pointer-events:all">
         รับทราบและยอมรับ — เข้าใช้งาน
       </button>
     </div>
