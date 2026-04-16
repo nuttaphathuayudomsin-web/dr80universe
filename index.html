@@ -673,6 +673,10 @@ let fontScale=1.0;
 // Column visibility
 let visibleCols = {ytd:true,"1m":true,"3m":true,"6m":true,"1y":true,rsi:false,wk52h:false,div:false};
 
+function getRAW(){return activeTab==="dr"?DR_RAW:UL_RAW;}
+function getV(r){return r[PIDX[period]];}
+function fmtP(v,d=2){if(v==null||isNaN(v))return"—";return(v>=0?"+":"")+v.toFixed(d)+"%";}
+
 // RSI/52W calculated from actual values — idx: wk52h=10, tv=11, rsi=12, div=13, subtheme=14
 function matchTrend(r,id){
   const wk52h=r[10],rsiVal=r[12],sub=r[14]||"";
