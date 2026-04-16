@@ -143,8 +143,14 @@ body{font-family:'Sarabun',sans-serif;background:var(--gray50);color:var(--text)
 .trend-count{font-family:'IBM Plex Mono',monospace;font-size:calc(14px * var(--fs));color:var(--amber);font-weight:700;margin-top:4px}
 .trend-note{background:var(--amber-bg);border:1px solid #FCD34D;border-radius:var(--r-sm);padding:10px 13px;font-size:calc(12px * var(--fs));color:#78350F}
 /* CHARTS ROW */
-.charts-row{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px;margin-bottom:20px}
+.charts-row{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px;margin-bottom:20px;align-items:start}
 .chart-card{background:white;border-radius:var(--r);padding:20px;box-shadow:var(--shadow)}
+.chart-card.heatmap-card{display:flex;flex-direction:column;max-height:520px}
+.heatmap-scroll{flex:1;overflow-y:auto;overflow-x:hidden}
+.heatmap-scroll::-webkit-scrollbar{width:4px}
+.heatmap-scroll::-webkit-scrollbar-track{background:var(--gray50);border-radius:2px}
+.heatmap-scroll::-webkit-scrollbar-thumb{background:var(--gray200);border-radius:2px}
+.heatmap-scroll::-webkit-scrollbar-thumb:hover{background:var(--gray400)}
 .chart-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
 .chart-title{font-size:calc(12px * var(--fs));font-weight:700;color:var(--text2);letter-spacing:0.08em;text-transform:uppercase}
 .chart-sub{font-size:calc(11px * var(--fs));color:var(--text3)}
@@ -487,15 +493,15 @@ select:focus{border-color:var(--sky)}
   </div>
 
   <div class="charts-row">
-    <div class="chart-card">
-      <div class="chart-hdr">
+    <div class="chart-card heatmap-card">
+      <div class="chart-hdr" style="flex-shrink:0">
         <div class="chart-title">Sector Heat Map</div>
         <div style="display:flex;align-items:center;gap:7px">
           <button class="hm-reset" id="hmReset" onclick="resetSector()">✕ Reset</button>
           <div class="chart-sub">grouped by theme · คลิกเพื่อกรอง</div>
         </div>
       </div>
-      <div id="heatmapEl"></div>
+      <div class="heatmap-scroll"><div id="heatmapEl"></div></div>
     </div>
     <div class="chart-card">
       <div class="chart-hdr"><div class="chart-title">Exposure</div><div class="chart-idea-tag" id="expIdeaTag">All</div></div>
@@ -941,7 +947,7 @@ function updateTable(data){
     const tkShort=ticker.split(" ")[0];
     const isTB=TB_SET.has(tkShort);
     const resLink=isTB?`<a class="settrade-link" href="https://www.settrade.com/th/equities/dr/quote/${tkShort}/research" target="_blank" onclick="track('research_click','${tkShort}')">📊 Research</a>`:'<span style="color:var(--text3);font-size:11px">—</span>';
-    const drMatch = activeTab==="ul" ? DR_RAW.find(d=>d[1]===name) : null;
+    const drMatch = activeTab==="ul" ? DR_RAW.find(d=>d[1].replace(/-DR$|-DRX$/,"")===name.replace(/-DR$|-DRX$/,"")) : null;
     const checkTicker = activeTab==="dr" ? ticker : (drMatch ? drMatch[0] : ticker);
     const upcomingBadge=!checkTicker.includes("TB Equity")?'<span class="badge b-upcoming" style="margin-left:5px;font-size:10px">Upcoming</span>':"";
     const chk=compareSet.has(ticker)?"checked":"";
