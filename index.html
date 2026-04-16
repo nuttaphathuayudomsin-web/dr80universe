@@ -892,8 +892,8 @@ function updateColCustomizer(){
   const allCols=[
     {id:"ytd",label:"YTD %"},{id:"1m",label:"1M %"},{id:"3m",label:"3M %"},
     {id:"6m",label:"6M %"},{id:"1y",label:"1Y %"},
-    {id:"wk52h",label:"52W High %",drOnly:true},
-    {id:"div",label:"Div Yield %",drOnly:true},
+    {id:"wk52h",label:"52W High %"},
+    {id:"div",label:"Div Yield %"},
     {id:"rsi",label:"RSI",ulOnly:true}
   ];
   allCols.forEach(col=>{
@@ -932,8 +932,8 @@ function updateTable(data){
     {id:"3m",label:"3M %",col:"3m",right:true,vis:"3m"},
     {id:"6m",label:"6M %",col:"6m",right:true,vis:"6m"},
     {id:"1y",label:"1Y %",col:"1y",right:true,vis:"1y"},
-    {id:"wk52h",label:"52W High",col:"wk52h",right:true,vis:"wk52h",drOnly:true},
-    {id:"div",label:"Div Yield %",col:"div",right:true,vis:"div",drOnly:true},
+    {id:"wk52h",label:"52W High",col:"wk52h",right:true,vis:"wk52h"},
+    {id:"div",label:"Div Yield %",col:"div",right:true,vis:"div"},
     {id:"rsi",label:"RSI",col:"rsi",right:true,vis:"rsi",ulOnly:true}
   ];
   const thead=document.getElementById("tblHead");thead.innerHTML="";
@@ -1004,13 +1004,12 @@ function updateTable(data){
     if(visibleCols["3m"])cells+=`<td class="td-num ${m3>0?"pos":m3<0?"neg":"neu"}">${fmtP(m3)}</td>`;
     if(visibleCols["6m"])cells+=`<td class="td-num ${m6>0?"pos":m6<0?"neg":"neu"}">${fmtP(m6)}</td>`;
     if(visibleCols["1y"])cells+=`<td class="td-num ${y1>0?"pos":y1<0?"neg":"neu"}">${fmtP(y1)}</td>`;
-    if(activeTab==="dr"){
-      if(visibleCols["wk52h"])cells+=`<td class="td-num">${wk52h!=null?(wk52h*100).toFixed(1)+"%":"—"}</td>`;
-      if(visibleCols["div"])cells+=`<td class="td-num">${div!=null?div.toFixed(2)+"%":"—"}</td>`;
-    }
-    if(activeTab==="ul"){
-      if(visibleCols["rsi"])cells+=`<td class="td-num ${ulRsi!=null?(ulRsi>70?"neg":ulRsi<30?"pos":"neu"):"neu"}">${ulRsi!=null?ulRsi.toFixed(1):"—"}</td>`;
-    }
+    // wk52h and div: DR tab uses own data, UL tab uses drData match
+    const dispWk52h = activeTab==="dr" ? wk52h : ulWk52h;
+    const dispDiv   = activeTab==="dr" ? div    : ulDiv;
+    if(visibleCols["wk52h"])cells+=`<td class="td-num">${dispWk52h!=null?(dispWk52h*100).toFixed(1)+"%":"—"}</td>`;
+    if(visibleCols["div"])cells+=`<td class="td-num">${dispDiv!=null?dispDiv.toFixed(2)+"%":"—"}</td>`;
+    if(activeTab==="ul"&&visibleCols["rsi"])cells+=`<td class="td-num ${ulRsi!=null?(ulRsi>70?"neg":ulRsi<30?"pos":"neu"):"neu"}">${ulRsi!=null?ulRsi.toFixed(1):"—"}</td>`;
     trEl.innerHTML=cells;
     tb.appendChild(trEl);
   });
