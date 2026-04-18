@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -273,7 +274,33 @@ select:focus{border-color:var(--sky)}
 ::-webkit-scrollbar-track{background:var(--gray50)}
 ::-webkit-scrollbar-thumb{background:var(--gray200);border-radius:4px}
 ::-webkit-scrollbar-thumb:hover{background:var(--gray400)}
-/* ── PORTFOLIO BUILDER ── */
+/* ── STICKY FILTER SIDEBAR ── */
+.sticky-sidebar{position:fixed;left:0;top:50%;transform:translateY(-50%);z-index:400;display:flex;flex-direction:column;gap:6px;padding:10px 8px;background:white;border-radius:0 var(--r) var(--r) 0;box-shadow:4px 0 20px rgba(0,63,136,0.12);border:1px solid var(--border);border-left:none;max-height:80vh;overflow-y:auto;transition:transform 0.3s ease,opacity 0.3s ease;opacity:0;pointer-events:none;transform:translateY(-50%) translateX(-100%)}
+.sticky-sidebar.visible{opacity:1;pointer-events:all;transform:translateY(-50%) translateX(0)}
+.sticky-sidebar::-webkit-scrollbar{width:3px}
+.sticky-sidebar::-webkit-scrollbar-thumb{background:var(--gray200);border-radius:2px}
+.sb-section{font-size:9px;font-weight:700;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;padding:2px 4px;margin-top:4px}
+.sb-section:first-child{margin-top:0}
+.sb-idea{display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:var(--r-sm);cursor:pointer;transition:all 0.13s;border:1.5px solid var(--border);background:white;width:100%;text-align:left;font-family:'Sarabun',sans-serif}
+.sb-idea:hover{border-color:var(--sky);background:var(--sky-pale)}
+.sb-idea.active{border-color:var(--navy);background:var(--navy)}
+.sb-idea.active .sb-idea-name{color:white}
+.sb-idea.active .sb-idea-perf{color:#4FFFB0}
+.sb-idea.active .sb-idea-perf.neg{color:#FF9090}
+.sb-idea-icon{font-size:14px;flex-shrink:0}
+.sb-idea-name{font-size:11px;font-weight:600;color:var(--navy);line-height:1.2}
+.sb-idea-perf{font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;margin-left:auto;flex-shrink:0}
+.sb-idea-perf.pos{color:var(--green)}.sb-idea-perf.neg{color:var(--red)}
+.sb-trend{display:flex;align-items:center;gap:5px;padding:5px 8px;border-radius:var(--r-sm);cursor:pointer;transition:all 0.13s;border:1.5px solid var(--border);background:white;width:100%;text-align:left;font-family:'Sarabun',sans-serif}
+.sb-trend:hover{border-color:var(--amber)}
+.sb-trend.active{border-color:var(--amber);background:#FFFBEB}
+.sb-trend-icon{font-size:12px;flex-shrink:0}
+.sb-trend-name{font-size:10px;font-weight:600;color:var(--text);flex:1}
+.sb-trend-count{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--amber);font-weight:700;flex-shrink:0}
+.sb-divider{border-top:1px solid var(--border2);margin:4px 0}
+.sb-clear{font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--text3);background:none;border:1px solid var(--border);border-radius:4px;padding:3px 6px;cursor:pointer;width:100%;text-align:center;font-weight:600}
+.sb-clear:hover{color:var(--red);border-color:var(--red)}
+@media(max-width:800px){.sticky-sidebar{display:none}}
 .pfab{position:fixed;bottom:28px;right:28px;z-index:500;display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,var(--navy),var(--navy2));color:white;border:none;border-radius:30px;padding:14px 22px;font-family:'Sarabun',sans-serif;font-size:calc(14px * var(--fs));font-weight:700;cursor:pointer;box-shadow:0 4px 20px rgba(0,63,136,0.35);transition:all 0.2s;white-space:nowrap}
 .pfab:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,63,136,0.45)}
 .pfab-icon{font-size:18px}
@@ -285,116 +312,117 @@ select:focus{border-color:var(--sky)}
 .pf-panel{position:fixed;inset:0;z-index:600;display:none;align-items:center;justify-content:center;padding:20px}
 .pf-panel.open{display:flex}
 .pf-backdrop{position:absolute;inset:0;background:rgba(0,20,60,0.55);backdrop-filter:blur(3px)}
-.pf-drawer{position:relative;width:100%;max-width:1200px;height:90vh;background:var(--gray50);display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,0.3);overflow:hidden;border-radius:var(--r)}
-.pf-header{background:var(--navy);color:white;padding:18px 24px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.pf-drawer{position:relative;width:100%;max-width:1200px;height:90vh;background:var(–gray50);display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,0.3);overflow:hidden;border-radius:var(–r)}
+.pf-header{background:var(–navy);color:white;padding:18px 24px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .pf-header-left{display:flex;align-items:center;gap:12px}
-.pf-title{font-size:calc(17px * var(--fs));font-weight:700}
-.pf-subtitle{font-size:calc(12px * var(--fs));color:rgba(255,255,255,0.55);margin-top:2px}
+.pf-title{font-size:calc(17px * var(–fs));font-weight:700}
+.pf-subtitle{font-size:calc(12px * var(–fs));color:rgba(255,255,255,0.55);margin-top:2px}
 .pf-close{background:none;border:none;color:rgba(255,255,255,0.6);font-size:24px;cursor:pointer;line-height:1;padding:0 4px}
 .pf-close:hover{color:white}
-.pf-tabs{display:flex;background:var(--navy-dark);padding:0 24px;flex-shrink:0}
-.pf-tab{font-size:calc(13px * var(--fs));font-weight:500;color:rgba(255,255,255,0.45);padding:10px 18px;cursor:pointer;border:none;border-bottom:2px solid transparent;background:none;font-family:'Sarabun',sans-serif;margin-bottom:-1px;transition:all 0.15s}
-.pf-tab.active{color:var(--sky2);border-bottom-color:var(--sky2);font-weight:600}
+.pf-tabs{display:flex;background:var(–navy-dark);padding:0 24px;flex-shrink:0}
+.pf-tab{font-size:calc(13px * var(–fs));font-weight:500;color:rgba(255,255,255,0.45);padding:10px 18px;cursor:pointer;border:none;border-bottom:2px solid transparent;background:none;font-family:‘Sarabun’,sans-serif;margin-bottom:-1px;transition:all 0.15s}
+.pf-tab.active{color:var(–sky2);border-bottom-color:var(–sky2);font-weight:600}
 .pf-body{flex:1;overflow-y:auto;padding:20px 24px;display:flex;flex-direction:column;gap:16px}
 .pf-body.split-mode{padding:0;overflow:hidden}
 
 /* Portfolio list */
 .pf-list-row{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
-.pf-portfolio-card{background:white;border:1.5px solid var(--border);border-radius:var(--r);padding:12px 16px;cursor:pointer;transition:all 0.13s;display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:var(--shadow)}
-.pf-portfolio-card:hover{border-color:var(--sky);box-shadow:var(--shadow-md)}
-.pf-portfolio-card.active{border-color:var(--navy);background:var(--sky-pale)}
-.pf-pname{font-size:calc(13px * var(--fs));font-weight:600;color:var(--navy)}
-.pf-pmeta{font-size:calc(11px * var(--fs));color:var(--text3)}
-.pf-pdel{background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:0;line-height:1}
-.pf-pdel:hover{color:var(--red)}
-.pf-new-btn{background:var(--navy);color:white;border:none;border-radius:var(--r-sm);padding:9px 18px;font-family:'Sarabun',sans-serif;font-size:calc(13px * var(--fs));font-weight:600;cursor:pointer;white-space:nowrap;transition:all 0.13s}
-.pf-new-btn:hover{background:var(--navy2)}
+.pf-portfolio-card{background:white;border:1.5px solid var(–border);border-radius:var(–r);padding:12px 16px;cursor:pointer;transition:all 0.13s;display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:var(–shadow)}
+.pf-portfolio-card:hover{border-color:var(–sky);box-shadow:var(–shadow-md)}
+.pf-portfolio-card.active{border-color:var(–navy);background:var(–sky-pale)}
+.pf-pname{font-size:calc(13px * var(–fs));font-weight:600;color:var(–navy)}
+.pf-pmeta{font-size:calc(11px * var(–fs));color:var(–text3)}
+.pf-pdel{background:none;border:none;color:var(–text3);cursor:pointer;font-size:16px;padding:0;line-height:1}
+.pf-pdel:hover{color:var(–red)}
+.pf-new-btn{background:var(–navy);color:white;border:none;border-radius:var(–r-sm);padding:9px 18px;font-family:‘Sarabun’,sans-serif;font-size:calc(13px * var(–fs));font-weight:600;cursor:pointer;white-space:nowrap;transition:all 0.13s}
+.pf-new-btn:hover{background:var(–navy2)}
 
 /* Split build layout */
 .pf-split{display:grid;grid-template-columns:1fr 420px;gap:0;flex:1;overflow:hidden}
-.pf-left{display:flex;flex-direction:column;border-right:1px solid var(--border);overflow:hidden}
+.pf-left{display:flex;flex-direction:column;border-right:1px solid var(–border);overflow:hidden}
 .pf-right{display:flex;flex-direction:column;overflow:hidden;background:white}
-.pf-left-hdr{padding:14px 18px;border-bottom:1px solid var(--border);flex-shrink:0;background:white}
-.pf-right-hdr{padding:14px 18px;border-bottom:2px solid var(--border);flex-shrink:0;background:var(--gray50);display:flex;align-items:center;justify-content:space-between}
-.pf-right-title{font-size:calc(13px * var(--fs));font-weight:700;color:var(--navy);letter-spacing:0.05em;text-transform:uppercase}
+.pf-left-hdr{padding:14px 18px;border-bottom:1px solid var(–border);flex-shrink:0;background:white}
+.pf-right-hdr{padding:14px 18px;border-bottom:2px solid var(–border);flex-shrink:0;background:var(–gray50);display:flex;align-items:center;justify-content:space-between}
+.pf-right-title{font-size:calc(13px * var(–fs));font-weight:700;color:var(–navy);letter-spacing:0.05em;text-transform:uppercase}
 .pf-universe-list{flex:1;overflow-y:auto}
-.pf-universe-item{display:grid;grid-template-columns:32px 1fr auto;align-items:center;gap:10px;padding:10px 18px;border-bottom:1px solid var(--border2);cursor:pointer;transition:background 0.1s}
-.pf-universe-item:hover{background:var(--sky-pale)}
-.pf-universe-item.selected{background:var(--sky-light)}
-.pf-ui-chk{width:16px;height:16px;accent-color:var(--navy);cursor:pointer;flex-shrink:0}
-.pf-ui-name{font-size:calc(13px * var(--fs));font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pf-ui-sub{font-family:'IBM Plex Mono',monospace;font-size:calc(10px * var(--fs));color:var(--text3)}
-.pf-ui-ret{font-family:'IBM Plex Mono',monospace;font-size:calc(12px * var(--fs));font-weight:600;flex-shrink:0}
+.pf-universe-item{display:grid;grid-template-columns:32px 1fr auto;align-items:center;gap:10px;padding:10px 18px;border-bottom:1px solid var(–border2);cursor:pointer;transition:background 0.1s}
+.pf-universe-item:hover{background:var(–sky-pale)}
+.pf-universe-item.selected{background:var(–sky-light)}
+.pf-ui-chk{width:16px;height:16px;accent-color:var(–navy);cursor:pointer;flex-shrink:0}
+.pf-ui-name{font-size:calc(13px * var(–fs));font-weight:600;color:var(–text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pf-ui-sub{font-family:‘IBM Plex Mono’,monospace;font-size:calc(10px * var(–fs));color:var(–text3)}
+.pf-ui-ret{font-family:‘IBM Plex Mono’,monospace;font-size:calc(12px * var(–fs));font-weight:600;flex-shrink:0}
 .pf-tray{flex:1;overflow-y:auto;padding:0}
-.pf-tray-item{padding:12px 16px;border-bottom:1px solid var(--border2);display:flex;flex-direction:column;gap:8px;transition:background 0.1s}
-.pf-tray-item:hover{background:var(--sky-pale)}
+.pf-tray-item{padding:12px 16px;border-bottom:1px solid var(–border2);display:flex;flex-direction:column;gap:8px;transition:background 0.1s}
+.pf-tray-item:hover{background:var(–sky-pale)}
 .pf-tray-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.pf-tray-name{font-size:calc(13px * var(--fs));font-weight:600;color:var(--text);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pf-tray-ret{font-family:'IBM Plex Mono',monospace;font-size:calc(12px * var(--fs));font-weight:600;flex-shrink:0}
+.pf-tray-name{font-size:calc(13px * var(–fs));font-weight:600;color:var(–text);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pf-tray-ret{font-family:‘IBM Plex Mono’,monospace;font-size:calc(12px * var(–fs));font-weight:600;flex-shrink:0}
 .pf-tray-controls{display:flex;align-items:center;gap:8px}
-.pf-tray-ticker{font-family:'IBM Plex Mono',monospace;font-size:calc(10px * var(--fs));color:var(--text3)}
-.pf-tray-footer{padding:12px 16px;border-top:2px solid var(--border);flex-shrink:0;background:var(--gray50)}
-.pf-tray-total{display:flex;align-items:center;justify-content:space-between;font-size:calc(13px * var(--fs));font-weight:700;margin-bottom:8px}
+.pf-tray-ticker{font-family:‘IBM Plex Mono’,monospace;font-size:calc(10px * var(–fs));color:var(–text3)}
+.pf-tray-footer{padding:12px 16px;border-top:2px solid var(–border);flex-shrink:0;background:var(–gray50)}
+.pf-tray-total{display:flex;align-items:center;justify-content:space-between;font-size:calc(13px * var(–fs));font-weight:700;margin-bottom:8px}
 .pf-theme-filter{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
-.pf-theme-chip{font-size:calc(11px * var(--fs));padding:3px 10px;border-radius:20px;border:1px solid var(--border);background:white;cursor:pointer;color:var(--text2);transition:all 0.12s;font-family:'Sarabun',sans-serif}
-.pf-theme-chip:hover{border-color:var(--sky);color:var(--navy)}
-.pf-theme-chip.active{background:var(--navy);border-color:var(--navy);color:white}
-.pf-search-input{flex:1;background:white;border:1.5px solid var(--border);color:var(--text);font-family:'Sarabun',sans-serif;font-size:calc(13px * var(--fs));padding:9px 12px;border-radius:var(--r-sm);outline:none;box-shadow:var(--shadow)}
-.pf-search-input:focus{border-color:var(--sky)}
-.pf-dropdown{background:white;border:1.5px solid var(--border);border-radius:var(--r-sm);max-height:200px;overflow-y:auto;box-shadow:var(--shadow-md);display:none;position:absolute;z-index:10;width:100%;top:100%;left:0}
+.pf-theme-chip{font-size:calc(11px * var(–fs));padding:3px 10px;border-radius:20px;border:1px solid var(–border);background:white;cursor:pointer;color:var(–text2);transition:all 0.12s;font-family:‘Sarabun’,sans-serif}
+.pf-theme-chip:hover{border-color:var(–sky);color:var(–navy)}
+.pf-theme-chip.active{background:var(–navy);border-color:var(–navy);color:white}
+.pf-search-input{flex:1;background:white;border:1.5px solid var(–border);color:var(–text);font-family:‘Sarabun’,sans-serif;font-size:calc(13px * var(–fs));padding:9px 12px;border-radius:var(–r-sm);outline:none;box-shadow:var(–shadow)}
+.pf-search-input:focus{border-color:var(–sky)}
+.pf-dropdown{background:white;border:1.5px solid var(–border);border-radius:var(–r-sm);max-height:200px;overflow-y:auto;box-shadow:var(–shadow-md);display:none;position:absolute;z-index:10;width:100%;top:100%;left:0}
 .pf-dropdown.show{display:block}
-.pf-dd-item{padding:9px 12px;cursor:pointer;font-size:calc(13px * var(--fs));border-bottom:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between}
-.pf-dd-item:hover{background:var(--sky-pale)}
-.pf-dd-name{font-weight:600;color:var(--text)}
-.pf-dd-ticker{font-family:'IBM Plex Mono',monospace;font-size:calc(10px * var(--fs));color:var(--text3)}
+.pf-dd-item{padding:9px 12px;cursor:pointer;font-size:calc(13px * var(–fs));border-bottom:1px solid var(–border2);display:flex;align-items:center;justify-content:space-between}
+.pf-dd-item:hover{background:var(–sky-pale)}
+.pf-dd-name{font-weight:600;color:var(–text)}
+.pf-dd-ticker{font-family:‘IBM Plex Mono’,monospace;font-size:calc(10px * var(–fs));color:var(–text3)}
 
 /* Holdings table */
-.pf-holdings{background:white;border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;margin-bottom:4px}
-.pf-h-head{display:grid;grid-template-columns:1fr 80px 100px 80px 24px;gap:8px;padding:9px 14px;background:var(--gray50);border-bottom:2px solid var(--border);font-size:calc(10px * var(--fs));font-weight:700;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase}
-.pf-h-row{display:grid;grid-template-columns:1fr 80px 100px 80px 24px;gap:8px;padding:10px 14px;border-bottom:1px solid var(--border2);align-items:center;transition:background 0.1s}
-.pf-h-row:hover{background:var(--sky-pale)}
+.pf-holdings{background:white;border-radius:var(–r);box-shadow:var(–shadow);overflow:hidden;margin-bottom:4px}
+.pf-h-head{display:grid;grid-template-columns:1fr 80px 100px 80px 24px;gap:8px;padding:9px 14px;background:var(–gray50);border-bottom:2px solid var(–border);font-size:calc(10px * var(–fs));font-weight:700;color:var(–text3);letter-spacing:0.08em;text-transform:uppercase}
+.pf-h-row{display:grid;grid-template-columns:1fr 80px 100px 80px 24px;gap:8px;padding:10px 14px;border-bottom:1px solid var(–border2);align-items:center;transition:background 0.1s}
+.pf-h-row:hover{background:var(–sky-pale)}
 .pf-h-row:last-child{border-bottom:none}
-.pf-h-name{font-size:calc(13px * var(--fs));font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pf-h-ticker{font-family:'IBM Plex Mono',monospace;font-size:calc(10px * var(--fs));color:var(--text3)}
-.pf-weight-input{width:100%;border:1.5px solid var(--border);border-radius:6px;padding:5px 8px;font-family:'IBM Plex Mono',monospace;font-size:calc(13px * var(--fs));text-align:right;outline:none;transition:border-color 0.13s;background:white;color:var(--text)}
-.pf-weight-input:focus{border-color:var(--sky)}
-.pf-weight-slider{width:100%;accent-color:var(--navy);height:4px;cursor:pointer}
-.pf-del-btn{background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;line-height:1}
-.pf-del-btn:hover{color:var(--red)}
-.pf-weight-total{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;font-size:calc(13px * var(--fs));font-weight:600;border-top:2px solid var(--border)}
-.pf-weight-ok{color:var(--green)}.pf-weight-warn{color:var(--red)}
+.pf-h-name{font-size:calc(13px * var(–fs));font-weight:600;color:var(–text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pf-h-ticker{font-family:‘IBM Plex Mono’,monospace;font-size:calc(10px * var(–fs));color:var(–text3)}
+.pf-weight-input{width:100%;border:1.5px solid var(–border);border-radius:6px;padding:5px 8px;font-family:‘IBM Plex Mono’,monospace;font-size:calc(13px * var(–fs));text-align:right;outline:none;transition:border-color 0.13s;background:white;color:var(–text)}
+.pf-weight-input:focus{border-color:var(–sky)}
+.pf-weight-slider{width:100%;accent-color:var(–navy);height:4px;cursor:pointer}
+.pf-del-btn{background:none;border:none;color:var(–text3);cursor:pointer;font-size:16px;line-height:1}
+.pf-del-btn:hover{color:var(–red)}
+.pf-weight-total{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;font-size:calc(13px * var(–fs));font-weight:600;border-top:2px solid var(–border)}
+.pf-weight-ok{color:var(–green)}.pf-weight-warn{color:var(–red)}
 
 /* Summary cards */
 .pf-summary-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
-.pf-scard{background:white;border-radius:var(--r-sm);padding:14px;box-shadow:var(--shadow);text-align:center}
-.pf-scard-lbl{font-size:calc(10px * var(--fs));color:var(--text3);letter-spacing:0.07em;text-transform:uppercase;margin-bottom:5px}
-.pf-scard-val{font-family:'IBM Plex Mono',monospace;font-size:calc(18px * var(--fs));font-weight:700}
-.pf-scard-val.pos{color:var(--green)}.pf-scard-val.neg{color:var(--red)}
+.pf-scard{background:white;border-radius:var(–r-sm);padding:14px;box-shadow:var(–shadow);text-align:center}
+.pf-scard-lbl{font-size:calc(10px * var(–fs));color:var(–text3);letter-spacing:0.07em;text-transform:uppercase;margin-bottom:5px}
+.pf-scard-val{font-family:‘IBM Plex Mono’,monospace;font-size:calc(18px * var(–fs));font-weight:700}
+.pf-scard-val.pos{color:var(–green)}.pf-scard-val.neg{color:var(–red)}
 
 /* Risk badge */
-.risk-badge{display:inline-flex;align-items:center;gap:8px;border-radius:var(--r-sm);padding:10px 18px;font-size:calc(14px * var(--fs));font-weight:700}
+.risk-badge{display:inline-flex;align-items:center;gap:8px;border-radius:var(–r-sm);padding:10px 18px;font-size:calc(14px * var(–fs));font-weight:700}
 .risk-aggressive{background:#FEE2E2;color:#991B1B;border:2px solid #FCA5A5}
 .risk-balanced{background:#FEF3C7;color:#92400E;border:2px solid #FCD34D}
 .risk-conservative{background:#DCFCE7;color:#166534;border:2px solid #86EFAC}
 
 /* Charts row in portfolio */
 .pf-charts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
-.pf-chart-card{background:white;border-radius:var(--r);padding:16px;box-shadow:var(--shadow)}
-.pf-chart-title{font-size:calc(11px * var(--fs));font-weight:700;color:var(--text2);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:12px}
+.pf-chart-card{background:white;border-radius:var(–r);padding:16px;box-shadow:var(–shadow)}
+.pf-chart-title{font-size:calc(11px * var(–fs));font-weight:700;color:var(–text2);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:12px}
 
 /* Benchmark */
 .pf-bench-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
-.pf-bench-lbl{font-size:calc(13px * var(--fs));color:var(--text2);font-weight:500;width:140px;flex-shrink:0}
-.pf-bench-bar-track{flex:1;height:8px;background:var(--gray100);border-radius:4px;overflow:hidden;position:relative}
+.pf-bench-lbl{font-size:calc(13px * var(–fs));color:var(–text2);font-weight:500;width:140px;flex-shrink:0}
+.pf-bench-bar-track{flex:1;height:8px;background:var(–gray100);border-radius:4px;overflow:hidden;position:relative}
 .pf-bench-bar-fill{height:100%;border-radius:4px;transition:width 0.3s}
-.pf-bench-val{font-family:'IBM Plex Mono',monospace;font-size:calc(12px * var(--fs));font-weight:600;width:65px;text-align:right;flex-shrink:0}
+.pf-bench-val{font-family:‘IBM Plex Mono’,monospace;font-size:calc(12px * var(–fs));font-weight:600;width:65px;text-align:right;flex-shrink:0}
 
 /* Export btn */
-.pf-export-btn{background:white;border:1.5px solid var(--border);border-radius:var(--r-sm);padding:8px 16px;font-family:'Sarabun',sans-serif;font-size:calc(13px * var(--fs));font-weight:600;color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:6px;box-shadow:var(--shadow);transition:all 0.13s}
-.pf-export-btn:hover{border-color:var(--sky);color:var(--navy)}
+.pf-export-btn{background:white;border:1.5px solid var(–border);border-radius:var(–r-sm);padding:8px 16px;font-family:‘Sarabun’,sans-serif;font-size:calc(13px * var(–fs));font-weight:600;color:var(–text2);cursor:pointer;display:flex;align-items:center;gap:6px;box-shadow:var(–shadow);transition:all 0.13s}
+.pf-export-btn:hover{border-color:var(–sky);color:var(–navy)}
 
 @media(max-width:800px){.metrics{grid-template-columns:repeat(2,1fr)}.idea-trend-grid{grid-template-columns:1fr}.charts-row{grid-template-columns:1fr}.content{padding:14px 16px}.hero{padding:22px 16px}.header{padding:0 16px}.page-tabs{padding:0 16px}.filter-status{padding:0 16px}}
 </style>
+
 </head>
 <body>
 
@@ -492,6 +520,10 @@ select:focus{border-color:var(--sky)}
     </div>
   </div>
 
+  <!-- Sentinel: sidebar appears when user scrolls past this -->
+
+  <div id="sidebarSentinel"></div>
+
   <div class="charts-row">
     <div class="chart-card heatmap-card">
       <div class="chart-hdr" style="flex-shrink:0">
@@ -562,41 +594,56 @@ select:focus{border-color:var(--sky)}
       <strong>1. วัตถุประสงค์ของเครื่องมือ</strong><br>
       แดชบอร์ดนี้จัดทำขึ้นเพื่อ<strong>วัตถุประสงค์ด้านข้อมูลและการศึกษาเท่านั้น</strong> และไม่ถือเป็นคำแนะนำการลงทุน การชักชวน การเสนอขาย หรือคำแนะนำทางการเงินหรือกฎหมายใด ๆ ทั้งสิ้น การนำเสนอข้อมูลในที่นี้ไม่ได้มีวัตถุประสงค์เพื่อทดแทนคำแนะนำจากผู้เชี่ยวชาญทางการเงินที่ได้รับใบอนุญาต<br><br>
 
-      <strong>2. ความถูกต้องและความครบถ้วนของข้อมูล</strong><br>
-      ข้อมูลที่แสดงในแดชบอร์ดนี้ได้รับมาจากแหล่งข้อมูลที่เชื่อว่ามีความน่าเชื่อถือ อย่างไรก็ตาม ธนาคารกรุงไทย จำกัด (มหาชน) <strong>ไม่รับประกันความถูกต้อง ความครบถ้วน ความทันสมัย หรือความเหมาะสม</strong>ของข้อมูลดังกล่าวแต่อย่างใด ข้อมูลอาจมีความคลาดเคลื่อนหรือล่าช้าจากสภาวะตลาดจริง<br><br>
+```
+  <strong>2. ความถูกต้องและความครบถ้วนของข้อมูล</strong><br>
+  ข้อมูลที่แสดงในแดชบอร์ดนี้ได้รับมาจากแหล่งข้อมูลที่เชื่อว่ามีความน่าเชื่อถือ อย่างไรก็ตาม ธนาคารกรุงไทย จำกัด (มหาชน) <strong>ไม่รับประกันความถูกต้อง ความครบถ้วน ความทันสมัย หรือความเหมาะสม</strong>ของข้อมูลดังกล่าวแต่อย่างใด ข้อมูลอาจมีความคลาดเคลื่อนหรือล่าช้าจากสภาวะตลาดจริง<br><br>
 
-      <strong>3. การตรวจสอบข้อมูลจากแหล่งข้อมูลทางการ</strong><br>
-      <strong>นักลงทุนต้องตรวจสอบและยืนยันข้อมูลทั้งหมดจากแหล่งข้อมูลทางการ</strong>ก่อนนำไปใช้ประกอบการตัดสินใจลงทุนเสมอ ได้แก่
-      <br>• <strong>ตลาดหลักทรัพย์แห่งประเทศไทย (SET)</strong> — www.set.or.th
-      <br>• <strong>สำนักงานคณะกรรมการกำกับหลักทรัพย์และตลาดหลักทรัพย์ (ก.ล.ต.)</strong> — www.sec.or.th
-      <br>• <strong>Settrade</strong> — www.settrade.com
-      <br>• <strong>ผู้ออก DR และเอกสารชี้ชวน (Prospectus)</strong> ที่เกี่ยวข้อง
-      <br>• <strong>ผู้ให้บริการข้อมูลราคา</strong> เช่น Bloomberg, Refinitiv หรือแหล่งข้อมูลราคาที่ได้รับการรับรอง<br><br>
+  <strong>3. การตรวจสอบข้อมูลจากแหล่งข้อมูลทางการ</strong><br>
+  <strong>นักลงทุนต้องตรวจสอบและยืนยันข้อมูลทั้งหมดจากแหล่งข้อมูลทางการ</strong>ก่อนนำไปใช้ประกอบการตัดสินใจลงทุนเสมอ ได้แก่
+  <br>• <strong>ตลาดหลักทรัพย์แห่งประเทศไทย (SET)</strong> — www.set.or.th
+  <br>• <strong>สำนักงานคณะกรรมการกำกับหลักทรัพย์และตลาดหลักทรัพย์ (ก.ล.ต.)</strong> — www.sec.or.th
+  <br>• <strong>Settrade</strong> — www.settrade.com
+  <br>• <strong>ผู้ออก DR และเอกสารชี้ชวน (Prospectus)</strong> ที่เกี่ยวข้อง
+  <br>• <strong>ผู้ให้บริการข้อมูลราคา</strong> เช่น Bloomberg, Refinitiv หรือแหล่งข้อมูลราคาที่ได้รับการรับรอง<br><br>
 
-      <strong>4. ผลการดำเนินงานในอดีต</strong><br>
-      ผลตอบแทนที่แสดงในแดชบอร์ดนี้อ้างอิง ณ วันที่ <strong>16 เมษายน 2569</strong> และอาจไม่สะท้อนถึงการเปลี่ยนแปลงของตลาดในภายหลัง <strong>ผลการดำเนินงานในอดีตไม่ใช่การรับประกันผลการดำเนินงานในอนาคต</strong> มูลค่าการลงทุนอาจเพิ่มขึ้นหรือลดลง และนักลงทุนอาจได้รับเงินคืนน้อยกว่าเงินลงทุนเริ่มต้น<br><br>
+  <strong>4. ผลการดำเนินงานในอดีต</strong><br>
+  ผลตอบแทนที่แสดงในแดชบอร์ดนี้อ้างอิง ณ วันที่ <strong>16 เมษายน 2569</strong> และอาจไม่สะท้อนถึงการเปลี่ยนแปลงของตลาดในภายหลัง <strong>ผลการดำเนินงานในอดีตไม่ใช่การรับประกันผลการดำเนินงานในอนาคต</strong> มูลค่าการลงทุนอาจเพิ่มขึ้นหรือลดลง และนักลงทุนอาจได้รับเงินคืนน้อยกว่าเงินลงทุนเริ่มต้น<br><br>
 
-      <strong>5. ความเสี่ยงของ Depositary Receipt (DR)</strong><br>
-      การลงทุนใน DR มีความเสี่ยงหลายประการ ได้แก่
-      <br>• <strong>ความเสี่ยงด้านตลาด</strong> — ราคาหลักทรัพย์อาจผันผวนตามสภาวะตลาด
-      <br>• <strong>ความเสี่ยงด้านอัตราแลกเปลี่ยน</strong> — ราคา DR ได้รับผลกระทบจากความผันผวนของอัตราแลกเปลี่ยนสกุลเงินต่างประเทศ
-      <br>• <strong>ความเสี่ยงด้านสภาพคล่อง</strong> — DR บางรายการอาจมีสภาพคล่องในการซื้อขายต่ำ
-      <br>• <strong>ความเสี่ยงด้านประเทศ</strong> — ปัจจัยทางการเมือง เศรษฐกิจ และกฎระเบียบของประเทศที่หลักทรัพย์อ้างอิงจดทะเบียนอยู่
-      <br>• <strong>ความเสี่ยงด้านการติดตามราคา (Tracking Risk)</strong> — ราคา DR อาจแตกต่างจากราคาหลักทรัพย์อ้างอิงเนื่องจาก FX ค่าธรรมเนียม และสภาพคล่อง<br><br>
+  <strong>5. ความเสี่ยงของ Depositary Receipt (DR)</strong><br>
+  การลงทุนใน DR มีความเสี่ยงหลายประการ ได้แก่
+  <br>• <strong>ความเสี่ยงด้านตลาด</strong> — ราคาหลักทรัพย์อาจผันผวนตามสภาวะตลาด
+  <br>• <strong>ความเสี่ยงด้านอัตราแลกเปลี่ยน</strong> — ราคา DR ได้รับผลกระทบจากความผันผวนของอัตราแลกเปลี่ยนสกุลเงินต่างประเทศ
+  <br>• <strong>ความเสี่ยงด้านสภาพคล่อง</strong> — DR บางรายการอาจมีสภาพคล่องในการซื้อขายต่ำ
+  <br>• <strong>ความเสี่ยงด้านประเทศ</strong> — ปัจจัยทางการเมือง เศรษฐกิจ และกฎระเบียบของประเทศที่หลักทรัพย์อ้างอิงจดทะเบียนอยู่
+  <br>• <strong>ความเสี่ยงด้านการติดตามราคา (Tracking Risk)</strong> — ราคา DR อาจแตกต่างจากราคาหลักทรัพย์อ้างอิงเนื่องจาก FX ค่าธรรมเนียม และสภาพคล่อง<br><br>
 
-      <strong>6. ข้อมูลราคาหลักทรัพย์อ้างอิง (UL Price Return)</strong><br>
-      ข้อมูลในแท็บ "UL Price Return" แสดงผลตอบแทนของหลักทรัพย์อ้างอิงโดยไม่รวมผลกระทบจากอัตราแลกเปลี่ยน ซึ่ง<strong>ไม่ใช่ราคาซื้อขายจริงของ DR บนกระดานซื้อขายของ SET</strong> ข้อมูลดังกล่าวจัดทำขึ้นเพื่อการเปรียบเทียบเท่านั้น และนักลงทุนไม่ควรใช้เป็นข้อมูลหลักในการตัดสินใจลงทุน<br><br>
+  <strong>6. ข้อมูลราคาหลักทรัพย์อ้างอิง (UL Price Return)</strong><br>
+  ข้อมูลในแท็บ "UL Price Return" แสดงผลตอบแทนของหลักทรัพย์อ้างอิงโดยไม่รวมผลกระทบจากอัตราแลกเปลี่ยน ซึ่ง<strong>ไม่ใช่ราคาซื้อขายจริงของ DR บนกระดานซื้อขายของ SET</strong> ข้อมูลดังกล่าวจัดทำขึ้นเพื่อการเปรียบเทียบเท่านั้น และนักลงทุนไม่ควรใช้เป็นข้อมูลหลักในการตัดสินใจลงทุน<br><br>
 
-      <strong>7. พอร์ตโฟลิโอสมมติ (Virtual Portfolio)</strong><br>
-      พอร์ตโฟลิโอที่สร้างขึ้นในเครื่องมือนี้เป็น<strong>พอร์ตโฟลิโอสมมติเพื่อการศึกษาเท่านั้น</strong> ไม่ใช่การลงทุนจริง ผลตอบแทนที่คำนวณเป็นการประมาณการโดยอิงจากข้อมูลย้อนหลัง และไม่ได้คำนึงถึงค่าธรรมเนียม ภาษี ต้นทุนการทำธุรกรรม หรือข้อจำกัดอื่น ๆ ในการลงทุนจริง<br><br>
+  <strong>7. พอร์ตโฟลิโอสมมติ (Virtual Portfolio)</strong><br>
+  พอร์ตโฟลิโอที่สร้างขึ้นในเครื่องมือนี้เป็น<strong>พอร์ตโฟลิโอสมมติเพื่อการศึกษาเท่านั้น</strong> ไม่ใช่การลงทุนจริง ผลตอบแทนที่คำนวณเป็นการประมาณการโดยอิงจากข้อมูลย้อนหลัง และไม่ได้คำนึงถึงค่าธรรมเนียม ภาษี ต้นทุนการทำธุรกรรม หรือข้อจำกัดอื่น ๆ ในการลงทุนจริง<br><br>
 
-      <strong>8. ข้อจำกัดความรับผิดชอบ</strong><br>
-      ธนาคารกรุงไทย จำกัด (มหาชน) บริษัทในเครือ กรรมการ ผู้บริหาร และพนักงาน<strong>ไม่รับผิดชอบต่อความเสียหาย การสูญเสีย หรือค่าใช้จ่ายใด ๆ</strong> ที่เกิดขึ้นโดยตรงหรือโดยอ้อมจากการใช้ข้อมูลในแดชบอร์ดนี้ การตัดสินใจลงทุนใด ๆ เป็นความรับผิดชอบของนักลงทุนแต่ผู้เดียว<br><br>
+  <strong>8. ข้อจำกัดความรับผิดชอบ</strong><br>
+  ธนาคารกรุงไทย จำกัด (มหาชน) บริษัทในเครือ กรรมการ ผู้บริหาร และพนักงาน<strong>ไม่รับผิดชอบต่อความเสียหาย การสูญเสีย หรือค่าใช้จ่ายใด ๆ</strong> ที่เกิดขึ้นโดยตรงหรือโดยอ้อมจากการใช้ข้อมูลในแดชบอร์ดนี้ การตัดสินใจลงทุนใด ๆ เป็นความรับผิดชอบของนักลงทุนแต่ผู้เดียว<br><br>
 
-      <strong>9. คำแนะนำสำหรับนักลงทุน</strong><br>
-      ก่อนการลงทุนใด ๆ นักลงทุนควร (1) ศึกษาเอกสารชี้ชวนและข้อมูลผลิตภัณฑ์อย่างละเอียด (2) ประเมินความเสี่ยงที่ยอมรับได้และวัตถุประสงค์การลงทุนของตนเอง (3) ปรึกษาผู้แนะนำการลงทุนที่ได้รับใบอนุญาตจาก ก.ล.ต. และ (4) ตรวจสอบข้อมูลจากแหล่งทางการทุกครั้งก่อนตัดสินใจ
-    </div>
+  <strong>9. คำแนะนำสำหรับนักลงทุน</strong><br>
+  ก่อนการลงทุนใด ๆ นักลงทุนควร (1) ศึกษาเอกสารชี้ชวนและข้อมูลผลิตภัณฑ์อย่างละเอียด (2) ประเมินความเสี่ยงที่ยอมรับได้และวัตถุประสงค์การลงทุนของตนเอง (3) ปรึกษาผู้แนะนำการลงทุนที่ได้รับใบอนุญาตจาก ก.ล.ต. และ (4) ตรวจสอบข้อมูลจากแหล่งทางการทุกครั้งก่อนตัดสินใจ
+</div>
+```
+
   </div>
+</div>
+
+<!-- STICKY FILTER SIDEBAR -->
+
+<div class="sticky-sidebar" id="stickySidebar">
+  <div class="sb-section">💡 Invest by Idea</div>
+  <div id="sbIdeaList"></div>
+  <div class="sb-divider"></div>
+  <div class="sb-section">📡 Trending</div>
+  <div id="sbTrendList"></div>
+  <div class="sb-divider"></div>
+  <button class="sb-clear" onclick="clearAll()">✕ Clear all</button>
 </div>
 
 <div class="modal-overlay" id="ulModal">
@@ -1123,6 +1170,39 @@ function track(event,value=""){
   }catch(e){}
 }
 
+function updateSidebar(){
+  const sidebar=document.getElementById("stickySidebar");
+  if(!sidebar)return;
+
+  // Idea list
+  const ideaList=document.getElementById("sbIdeaList");
+  ideaList.innerHTML="";
+  Object.keys(THEME_META).forEach(t=>{
+    const meta=THEME_META[t];
+    const rows=getRAW().filter(r=>r[3]===t);
+    const vals=rows.map(r=>getV(r)).filter(v=>v!=null&&!isNaN(v));
+    const avg=vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:0;
+    const btn=document.createElement("button");
+    btn.className="sb-idea"+(fIdeaTheme===t?" active":"");
+    btn.innerHTML=`<span class="sb-idea-icon">${meta.icon}</span><span class="sb-idea-name">${t}</span><span class="sb-idea-perf ${avg>=0?'pos':'neg'}">${fmtP(avg,1)}</span>`;
+    btn.onclick=()=>{fIdeaTheme=fIdeaTheme===t?"":t;track("idea_click",t);render();};
+    ideaList.appendChild(btn);
+  });
+
+  // Trend list
+  const trendList=document.getElementById("sbTrendList");
+  trendList.innerHTML="";
+  TREND_DEFS.forEach(td=>{
+    const cnt=getTrendCount(td.id);
+    if(cnt===0)return;
+    const btn=document.createElement("button");
+    btn.className="sb-trend"+(fTrend===td.id?" active":"");
+    btn.innerHTML=`<span class="sb-trend-icon">${td.icon}</span><span class="sb-trend-name">${td.name}</span><span class="sb-trend-count">${cnt}</span>`;
+    btn.onclick=()=>{fTrend=fTrend===td.id?"":td.id;track("trend_click",td.name);render();};
+    trendList.appendChild(btn);
+  });
+}
+
 function render(){
   const data=filtered();
   updateMetrics(data);
@@ -1134,6 +1214,7 @@ function render(){
   updateTable(data);
   updateStatusBar();
   updateHeroMovers();
+  updateSidebar();
 }
 
 function checkDisclaimerScroll(){
@@ -1178,15 +1259,27 @@ document.addEventListener("DOMContentLoaded",function(){
   populate();updateColCustomizer();render();
   track("page_load","dr80_dashboard");
   document.getElementById("disclaimerModal").style.display="flex";
+
+  // Sticky sidebar — show when user scrolls past idea/trend section
+  const sentinel=document.getElementById("sidebarSentinel");
+  const sidebar=document.getElementById("stickySidebar");
+  if(sentinel&&sidebar){
+    new IntersectionObserver(([entry])=>{
+      sidebar.classList.toggle("visible",!entry.isIntersecting);
+    },{threshold:0}).observe(sentinel);
+  }
 });
 
 </script>
+
 <!-- AI INSIGHT FAB -->
+
 <button onclick="openInsight()" style="position:fixed;bottom:90px;right:28px;z-index:500;display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#7C3AED,#5B21B6);color:white;border:none;border-radius:30px;padding:12px 20px;font-family:'Sarabun',sans-serif;font-size:calc(13px * var(--fs));font-weight:700;cursor:pointer;box-shadow:0 4px 20px rgba(124,58,237,0.35);transition:all 0.2s;white-space:nowrap">
   <span style="font-size:16px">🔬</span> AI Supply Chain
 </button>
 
 <!-- AI INSIGHT MODAL -->
+
 <div id="insightModal" style="display:none;position:fixed;inset:0;z-index:800;background:rgba(0,15,50,0.7);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px">
   <div style="position:relative;width:100%;max-width:820px;height:88vh;background:white;border-radius:16px;display:flex;flex-direction:column;box-shadow:0 32px 80px rgba(0,0,0,0.35);overflow:hidden">
     <!-- Header -->
@@ -1239,6 +1332,7 @@ const INSIGHT_HTML = `<!DOCTYPE html>
   .section-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #999; margin: 16px 0 6px; }
   .footer { margin-top: 20px; font-size: 11px; color: #aaa; text-align: right; padding-bottom: 12px; line-height: 1.8; }
 </style>
+
 </head>
 <body>
 
@@ -1416,53 +1510,58 @@ const INSIGHT_HTML = `<!DOCTYPE html>
 </html>`;
 
 function openInsight(){
-  const m = document.getElementById("insightModal");
-  m.style.display = "flex";
-  const frame = document.getElementById("insightFrame");
-  if(!frame.srcdoc || frame.srcdoc === "") frame.srcdoc = INSIGHT_HTML;
+const m = document.getElementById(“insightModal”);
+m.style.display = “flex”;
+const frame = document.getElementById(“insightFrame”);
+if(!frame.srcdoc || frame.srcdoc === “”) frame.srcdoc = INSIGHT_HTML;
 }
 function closeInsight(){
-  document.getElementById("insightModal").style.display = "none";
+document.getElementById(“insightModal”).style.display = “none”;
 }
-document.getElementById("insightModal").addEventListener("click", e=>{
-  if(e.target === e.currentTarget) closeInsight();
+document.getElementById(“insightModal”).addEventListener(“click”, e=>{
+if(e.target === e.currentTarget) closeInsight();
 });
 </script>
 <button class="pfab" onclick="openPortfolio()">
-  <span style="font-size:18px">📊</span>
-  Build Portfolio
-  <span class="pfab-badge" id="pfabBadge">0</span>
+<span style="font-size:18px">📊</span>
+Build Portfolio
+<span class="pfab-badge" id="pfabBadge">0</span>
 </button>
 
 <!-- PORTFOLIO MODAL (centered, full screen) -->
+
 <div id="pfModal" style="display:none;position:fixed;inset:0;z-index:900;background:rgba(0,20,60,0.6);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px">
   <div style="position:relative;width:100%;max-width:1160px;height:88vh;background:#F5F7FA;border-radius:16px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,0.35)">
 
-    <!-- Header -->
-    <div style="background:#003F88;color:white;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
-      <div>
-        <div style="font-size:17px;font-weight:700">📊 Portfolio Builder</div>
-        <div style="font-size:12px;color:rgba(255,255,255,0.55);margin-top:2px">สร้างพอร์ตโฟลิโอจาก DR80 Universe</div>
-      </div>
-      <div style="display:flex;align-items:center;gap:10px">
-        <button onclick="exportPortfolioImage()" style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);color:white;padding:7px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Sarabun',sans-serif">📷 Export</button>
-        <button onclick="closePortfolio()" style="background:none;border:none;color:rgba(255,255,255,0.6);font-size:26px;cursor:pointer;line-height:1;padding:0 4px">×</button>
-      </div>
-    </div>
+```
+<!-- Header -->
+<div style="background:#003F88;color:white;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+  <div>
+    <div style="font-size:17px;font-weight:700">📊 Portfolio Builder</div>
+    <div style="font-size:12px;color:rgba(255,255,255,0.55);margin-top:2px">สร้างพอร์ตโฟลิโอจาก DR80 Universe</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <button onclick="exportPortfolioImage()" style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);color:white;padding:7px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Sarabun',sans-serif">📷 Export</button>
+    <button onclick="closePortfolio()" style="background:none;border:none;color:rgba(255,255,255,0.6);font-size:26px;cursor:pointer;line-height:1;padding:0 4px">×</button>
+  </div>
+</div>
 
-    <!-- Tabs -->
-    <div style="background:#002055;display:flex;padding:0 24px;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,0.08)">
-      <button class="pftab active" id="pftab-build" onclick="switchPFTab('build')">Build</button>
-      <button class="pftab" id="pftab-summary" onclick="switchPFTab('summary')">Summary & Risk</button>
-      <button class="pftab" id="pftab-saved" onclick="switchPFTab('saved')">Saved Portfolios</button>
-    </div>
+<!-- Tabs -->
+<div style="background:#002055;display:flex;padding:0 24px;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,0.08)">
+  <button class="pftab active" id="pftab-build" onclick="switchPFTab('build')">Build</button>
+  <button class="pftab" id="pftab-summary" onclick="switchPFTab('summary')">Summary & Risk</button>
+  <button class="pftab" id="pftab-saved" onclick="switchPFTab('saved')">Saved Portfolios</button>
+</div>
 
-    <!-- Body -->
-    <div id="pfBody" style="flex:1;overflow:hidden;display:flex;flex-direction:column"></div>
+<!-- Body -->
+<div id="pfBody" style="flex:1;overflow:hidden;display:flex;flex-direction:column"></div>
+```
+
   </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
 <script>
 // ── PORTFOLIO STATE ──
 let portfolios = JSON.parse(localStorage.getItem("dr80_portfolios")||"[]");
@@ -1929,7 +2028,9 @@ function exportPortfolioImage(){
 
 document.getElementById("pfabBadge").textContent=portfolios.length;
 </script>
+
 <!-- DISCLAIMER MODAL — shows on every page load, must click agree -->
+
 <div id="disclaimerModal" style="display:flex;position:fixed;inset:0;z-index:2000;background:rgba(0,15,50,0.85);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:20px;pointer-events:all">
   <div style="background:white;border-radius:16px;width:100%;max-width:720px;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 32px 80px rgba(0,0,0,0.4);overflow:hidden">
     <!-- Header -->
@@ -1945,38 +2046,41 @@ document.getElementById("pfabBadge").textContent=portfolios.length;
     <!-- Scrollable content -->
     <div id="disclaimerScroll" onscroll="checkDisclaimerScroll()" style="flex:1;overflow-y:auto;padding:24px 28px;font-size:13px;color:#4A6080;line-height:1.9">
 
-      <p style="margin-bottom:14px"><strong style="color:#1A2B42">1. วัตถุประสงค์ของเครื่องมือ</strong><br>
-      แดชบอร์ดนี้จัดทำขึ้นเพื่อ<strong>วัตถุประสงค์ด้านข้อมูลและการศึกษาเท่านั้น</strong> มิได้ถือเป็นคำแนะนำการลงทุน คำแนะนำทางการเงิน หรือข้อเสนอในการซื้อ ขาย หรือถือครองหลักทรัพย์หรือตราสารทางการเงินใด ๆ ทั้งสิ้น</p>
+```
+  <p style="margin-bottom:14px"><strong style="color:#1A2B42">1. วัตถุประสงค์ของเครื่องมือ</strong><br>
+  แดชบอร์ดนี้จัดทำขึ้นเพื่อ<strong>วัตถุประสงค์ด้านข้อมูลและการศึกษาเท่านั้น</strong> มิได้ถือเป็นคำแนะนำการลงทุน คำแนะนำทางการเงิน หรือข้อเสนอในการซื้อ ขาย หรือถือครองหลักทรัพย์หรือตราสารทางการเงินใด ๆ ทั้งสิ้น</p>
 
-      <p style="margin-bottom:14px"><strong style="color:#1A2B42">2. ความถูกต้องของข้อมูล — ต้องตรวจสอบกับแหล่งข้อมูลทางการ</strong><br>
-      ข้อมูลที่แสดงอาจมีความคลาดเคลื่อนหรือล้าสมัย <strong>นักลงทุนต้องตรวจสอบข้อมูลกับแหล่งข้อมูลทางการทุกครั้ง</strong> ได้แก่ ตลาดหลักทรัพย์แห่งประเทศไทย (SET) · สำนักงาน ก.ล.ต. · Settrade · Bloomberg · Refinitiv และหนังสือชี้ชวนของผู้ออก DR</p>
+  <p style="margin-bottom:14px"><strong style="color:#1A2B42">2. ความถูกต้องของข้อมูล — ต้องตรวจสอบกับแหล่งข้อมูลทางการ</strong><br>
+  ข้อมูลที่แสดงอาจมีความคลาดเคลื่อนหรือล้าสมัย <strong>นักลงทุนต้องตรวจสอบข้อมูลกับแหล่งข้อมูลทางการทุกครั้ง</strong> ได้แก่ ตลาดหลักทรัพย์แห่งประเทศไทย (SET) · สำนักงาน ก.ล.ต. · Settrade · Bloomberg · Refinitiv และหนังสือชี้ชวนของผู้ออก DR</p>
 
-      <p style="margin-bottom:14px"><strong style="color:#1A2B42">3. ผลการดำเนินงานในอดีตไม่รับประกันอนาคต</strong><br>
-      ผลตอบแทนที่แสดงอ้างอิง ณ วันที่ <strong>16 เมษายน 2569</strong> มูลค่าของการลงทุนอาจเพิ่มขึ้นหรือลดลงได้ และนักลงทุนอาจได้รับเงินคืนน้อยกว่าเงินลงทุนเริ่มต้น</p>
+  <p style="margin-bottom:14px"><strong style="color:#1A2B42">3. ผลการดำเนินงานในอดีตไม่รับประกันอนาคต</strong><br>
+  ผลตอบแทนที่แสดงอ้างอิง ณ วันที่ <strong>16 เมษายน 2569</strong> มูลค่าของการลงทุนอาจเพิ่มขึ้นหรือลดลงได้ และนักลงทุนอาจได้รับเงินคืนน้อยกว่าเงินลงทุนเริ่มต้น</p>
 
-      <p style="margin-bottom:14px"><strong style="color:#1A2B42">4. ความเสี่ยงของ Depositary Receipt (DR)</strong><br>
-      การลงทุนใน DR มีความเสี่ยงหลายประการ ได้แก่ <strong>ความเสี่ยงด้านตลาด</strong> · <strong>ความเสี่ยงด้านอัตราแลกเปลี่ยน</strong> · <strong>ความเสี่ยงด้านสภาพคล่อง</strong> · <strong>ความเสี่ยงด้านประเทศ</strong> และ <strong>ความเสี่ยงด้าน Tracking Error</strong></p>
+  <p style="margin-bottom:14px"><strong style="color:#1A2B42">4. ความเสี่ยงของ Depositary Receipt (DR)</strong><br>
+  การลงทุนใน DR มีความเสี่ยงหลายประการ ได้แก่ <strong>ความเสี่ยงด้านตลาด</strong> · <strong>ความเสี่ยงด้านอัตราแลกเปลี่ยน</strong> · <strong>ความเสี่ยงด้านสภาพคล่อง</strong> · <strong>ความเสี่ยงด้านประเทศ</strong> และ <strong>ความเสี่ยงด้าน Tracking Error</strong></p>
 
-      <p style="margin-bottom:14px"><strong style="color:#1A2B42">5. ข้อมูล UL Price Return</strong><br>
-      ข้อมูลในแท็บ "UL Price Return" แสดงราคาหลักทรัพย์อ้างอิงโดยไม่รวม FX ซึ่ง<strong>ไม่ใช่ราคาซื้อขายจริงของ DR บน SET</strong> ใช้เพื่อการเปรียบเทียบเท่านั้น</p>
+  <p style="margin-bottom:14px"><strong style="color:#1A2B42">5. ข้อมูล UL Price Return</strong><br>
+  ข้อมูลในแท็บ "UL Price Return" แสดงราคาหลักทรัพย์อ้างอิงโดยไม่รวม FX ซึ่ง<strong>ไม่ใช่ราคาซื้อขายจริงของ DR บน SET</strong> ใช้เพื่อการเปรียบเทียบเท่านั้น</p>
 
-      <p style="margin-bottom:14px"><strong style="color:#1A2B42">6. หลักทรัพย์ที่มีสถานะ "Upcoming"</strong><br>
-      หมายความว่าหลักทรัพย์ดังกล่าว<strong>ยังไม่ได้รับการจดทะเบียนซื้อขายบน SET ในรูปแบบ DR</strong> ณ วันที่ข้อมูลอ้างอิง</p>
+  <p style="margin-bottom:14px"><strong style="color:#1A2B42">6. หลักทรัพย์ที่มีสถานะ "Upcoming"</strong><br>
+  หมายความว่าหลักทรัพย์ดังกล่าว<strong>ยังไม่ได้รับการจดทะเบียนซื้อขายบน SET ในรูปแบบ DR</strong> ณ วันที่ข้อมูลอ้างอิง</p>
 
-      <p style="margin-bottom:14px"><strong style="color:#1A2B42">7. พอร์ตโฟลิโอสมมติ (Virtual Portfolio)</strong><br>
-      เป็นเพียงการจำลองเชิงทฤษฎีอิงจากข้อมูลย้อนหลัง ไม่ได้คำนึงถึงค่าธรรมเนียม ภาษี หรือต้นทุนการทำธุรกรรมจริง</p>
+  <p style="margin-bottom:14px"><strong style="color:#1A2B42">7. พอร์ตโฟลิโอสมมติ (Virtual Portfolio)</strong><br>
+  เป็นเพียงการจำลองเชิงทฤษฎีอิงจากข้อมูลย้อนหลัง ไม่ได้คำนึงถึงค่าธรรมเนียม ภาษี หรือต้นทุนการทำธุรกรรมจริง</p>
 
-      <p style="margin-bottom:0"><strong style="color:#1A2B42">8. ข้อจำกัดความรับผิดชอบ</strong><br>
-      ธนาคารกรุงไทย จำกัด (มหาชน) บริษัทในเครือ กรรมการ ผู้บริหาร และพนักงาน<strong>ไม่รับผิดชอบต่อความเสียหายใด ๆ</strong> ที่เกิดจากการใช้ข้อมูลในแดชบอร์ดนี้ การตัดสินใจลงทุนใด ๆ เป็นความรับผิดชอบของนักลงทุนแต่ผู้เดียว ก่อนลงทุนควรปรึกษาผู้แนะนำการลงทุนที่ได้รับใบอนุญาตจาก ก.ล.ต.</p>
+  <p style="margin-bottom:0"><strong style="color:#1A2B42">8. ข้อจำกัดความรับผิดชอบ</strong><br>
+  ธนาคารกรุงไทย จำกัด (มหาชน) บริษัทในเครือ กรรมการ ผู้บริหาร และพนักงาน<strong>ไม่รับผิดชอบต่อความเสียหายใด ๆ</strong> ที่เกิดจากการใช้ข้อมูลในแดชบอร์ดนี้ การตัดสินใจลงทุนใด ๆ เป็นความรับผิดชอบของนักลงทุนแต่ผู้เดียว ก่อนลงทุนควรปรึกษาผู้แนะนำการลงทุนที่ได้รับใบอนุญาตจาก ก.ล.ต.</p>
 
-    </div>
-    <!-- Footer — agree button, no skip -->
-    <div style="padding:18px 28px;border-top:2px solid #E2E8F0;background:#F5F7FA;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:16px">
-      <div style="flex:1;font-size:12px;color:#8FA3BE">ข้อมูลอ้างอิง ณ วันที่ <strong>16 เมษายน 2569</strong> · ธนาคารกรุงไทย จำกัด (มหาชน)<br><span id="scrollHint" style="color:#D97706;font-weight:600">↓ เลื่อนอ่านจนครบก่อนกดยืนยัน</span></div>
-      <button id="agreeBtn" onclick="agreeDisclaimer()" disabled style="background:#8FA3BE;color:white;border:none;border-radius:10px;padding:12px 32px;font-family:'Sarabun',sans-serif;font-size:14px;font-weight:700;cursor:not-allowed;white-space:nowrap;box-shadow:none;position:relative;z-index:2001;pointer-events:all;transition:all 0.3s">
-        รับทราบและยอมรับ — เข้าใช้งาน
-      </button>
-    </div>
+</div>
+<!-- Footer — agree button, no skip -->
+<div style="padding:18px 28px;border-top:2px solid #E2E8F0;background:#F5F7FA;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:16px">
+  <div style="flex:1;font-size:12px;color:#8FA3BE">ข้อมูลอ้างอิง ณ วันที่ <strong>16 เมษายน 2569</strong> · ธนาคารกรุงไทย จำกัด (มหาชน)<br><span id="scrollHint" style="color:#D97706;font-weight:600">↓ เลื่อนอ่านจนครบก่อนกดยืนยัน</span></div>
+  <button id="agreeBtn" onclick="agreeDisclaimer()" disabled style="background:#8FA3BE;color:white;border:none;border-radius:10px;padding:12px 32px;font-family:'Sarabun',sans-serif;font-size:14px;font-weight:700;cursor:not-allowed;white-space:nowrap;box-shadow:none;position:relative;z-index:2001;pointer-events:all;transition:all 0.3s">
+    รับทราบและยอมรับ — เข้าใช้งาน
+  </button>
+</div>
+```
+
   </div>
 </div>
 
