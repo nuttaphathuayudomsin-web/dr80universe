@@ -9,16 +9,65 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
 :root{
-  --navy:#003F88;--navy2:#004FA8;--navy-dark:#002055;
-  --sky:#00AEEF;--sky2:#29C5F6;--sky-light:#E0F4FC;--sky-pale:#F0F9FE;
-  --green:#007A4D;--green-bg:#E0F5EC;--red:#C0392B;--red-bg:#FDECEA;
-  --amber:#D97706;--amber-bg:#FEF3C7;
-  --text:#1A2B42;--text2:#4A6080;--text3:#8FA3BE;
-  --border:#E2E8F0;--border2:#F1F5F9;
-  --gray50:#F5F7FA;--gray100:#EEF2F7;--gray200:#D9E2EE;--gray600:#4A6080;
-  --shadow:0 2px 8px rgba(0,63,136,0.07);--shadow-md:0 4px 20px rgba(0,63,136,0.10);
-  --r:12px;--r-sm:8px;
-  --fs:1; /* font scale factor, modified by slider */
+  /* ───── KRUNGTHAI PRIMARY ─────
+     Sky Blue is the signature brand color
+     ("modernity, freedom, friendliness") */
+  --ktb-sky:       #00A9E0;   /* primary brand sky blue */
+  --ktb-sky-dark:  #0092C4;   /* hover / pressed */
+  --ktb-sky-deep:  #007BAA;   /* deeper for contrast on white */
+  --ktb-cyan:      #29C5F6;   /* bright accent */
+
+  /* Navy is SECONDARY — used only for text & deep anchors */
+  --ktb-navy:      #1B3A6B;
+  --ktb-navy-2:    #24477F;
+  --ktb-ink:       #0F2544;
+
+  /* Surfaces: soft, airy — this is the big shift */
+  --ktb-surface:   #FFFFFF;
+  --ktb-surface-2: #F4FAFE;   /* pale sky wash for app bg */
+  --ktb-surface-3: #E6F4FB;   /* sky-tinted panels */
+  --ktb-line:      #D8E7F2;
+  --ktb-line-2:    #ECF3F9;
+
+  /* Semantic */
+  --ktb-green:     #009E60;
+  --ktb-green-bg:  #E2F5EC;
+  --ktb-red:       #D64545;
+  --ktb-red-bg:    #FDEDED;
+  --ktb-amber:     #E08A00;
+  --ktb-amber-bg:  #FFF4DC;
+
+  /* Map the site's existing tokens onto the brand palette */
+  --navy: var(--ktb-sky);          /* ← the big change: primary is now Sky */
+  --navy2: var(--ktb-sky-dark);
+  --navy-dark: var(--ktb-navy);    /* header bar keeps a darker anchor */
+  --sky: var(--ktb-sky);
+  --sky2: var(--ktb-cyan);
+  --sky-light: var(--ktb-surface-3);
+  --sky-pale: var(--ktb-surface-2);
+
+  --green: var(--ktb-green);
+  --green-bg: var(--ktb-green-bg);
+  --red: var(--ktb-red);
+  --red-bg: var(--ktb-red-bg);
+  --amber: var(--ktb-amber);
+  --amber-bg: var(--ktb-amber-bg);
+
+  --text:  var(--ktb-ink);
+  --text2: #4A6684;
+  --text3: #8AA1BD;
+
+  --border:  var(--ktb-line);
+  --border2: var(--ktb-line-2);
+  --gray50:  var(--ktb-surface-2);
+  --gray100: #EBF2F8;
+  --gray200: #CDDCEA;
+  --gray600: #4A6684;
+
+  --shadow: 0 2px 8px rgba(0,169,224,0.08);
+  --shadow-md: 0 4px 20px rgba(0,169,224,0.14);
+  --r:12px; --r-sm:8px;
+  --fs:1;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Sarabun',sans-serif;background:var(--gray50);color:var(--text);font-size:calc(15px * var(--fs));line-height:1.6}
