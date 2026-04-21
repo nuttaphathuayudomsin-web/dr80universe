@@ -1,683 +1,2067 @@
 <!DOCTYPE html>
-
-
-
 <html lang="th">
-
 <head>
-
 <meta charset="UTF-8">
-
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>DR80 — KTB Depositary Receipt Explorer</title>
-
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
-
 <style>
-
 :root{
-
   --navy:#003F88;--navy2:#004FA8;--navy-dark:#002055;
-
   --sky:#00AEEF;--sky2:#29C5F6;--sky-light:#E0F4FC;--sky-pale:#F0F9FE;
-
   --green:#007A4D;--green-bg:#E0F5EC;--red:#C0392B;--red-bg:#FDECEA;
-
   --amber:#D97706;--amber-bg:#FEF3C7;
-
   --text:#1A2B42;--text2:#4A6080;--text3:#8FA3BE;
-
   --border:#E2E8F0;--border2:#F1F5F9;
-
   --gray50:#F5F7FA;--gray100:#EEF2F7;--gray200:#D9E2EE;--gray600:#4A6080;
-
   --shadow:0 2px 8px rgba(0,63,136,0.07);--shadow-md:0 4px 20px rgba(0,63,136,0.10);
-
   --r:12px;--r-sm:8px;
-
   --fs:1; /* font scale factor, modified by slider */
-
 }
-
 *{box-sizing:border-box;margin:0;padding:0}
-
 body{font-family:'Sarabun',sans-serif;background:var(--gray50);color:var(--text);font-size:calc(15px * var(--fs));line-height:1.6}
-
 /* HEADER */
-
 .header{background:var(--navy);padding:0 28px;position:sticky;top:0;z-index:300;box-shadow:0 2px 16px rgba(0,0,0,0.2)}
-
 .header-inner{display:flex;align-items:center;justify-content:space-between;height:62px}
-
 .logo{display:flex;align-items:center;gap:12px}
-
 .logo-icon{width:38px;height:38px;background:var(--sky);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
-
 .logo-texts{display:flex;flex-direction:column;line-height:1.15}
-
 .logo-sub{font-size:calc(11px * var(--fs));color:rgba(255,255,255,0.5);letter-spacing:0.14em;text-transform:uppercase}
-
 .logo-main{font-size:calc(16px * var(--fs));font-weight:700;color:white}
-
 .logo-main span{color:var(--sky2);font-weight:300}
-
 .header-right{display:flex;align-items:center;gap:10px}
-
 .date-chip{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.18);border-radius:20px;padding:4px 12px;font-size:calc(11px * var(--fs));color:rgba(255,255,255,0.6);font-family:'IBM Plex Mono',monospace;white-space:nowrap}
-
 .date-chip strong{color:var(--sky2)}
-
 .live-badge{display:flex;align-items:center;gap:5px;font-size:calc(11px * var(--fs));color:rgba(255,255,255,0.4);font-family:'IBM Plex Mono',monospace}
-
 .live-dot{width:7px;height:7px;border-radius:50%;background:#22C55E;animation:blink 2s infinite;flex-shrink:0}
-
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
-
 /* FONT SIZER */
-
 .font-sizer{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:20px;padding:3px 10px}
-
 .fs-btn{background:none;border:none;color:rgba(255,255,255,0.7);font-size:16px;cursor:pointer;width:22px;height:22px;display:flex;align-items:center;justify-content:center;border-radius:50%;transition:background 0.12s;line-height:1}
-
 .fs-btn:hover{background:rgba(255,255,255,0.15);color:white}
-
 .fs-label{font-size:calc(11px * var(--fs));color:rgba(255,255,255,0.55);font-family:'IBM Plex Mono',monospace;min-width:32px;text-align:center}
-
 /* PAGE TABS */
-
 .page-tabs{background:var(--navy-dark);padding:0 28px;position:sticky;top:62px;z-index:290;border-bottom:1px solid rgba(255,255,255,0.08)}
-
 .page-tabs-inner{display:flex}
-
 .ptab{font-size:calc(14px * var(--fs));font-weight:500;color:rgba(255,255,255,0.45);padding:11px 24px;cursor:pointer;border:none;border-bottom:2px solid transparent;background:none;font-family:'Sarabun',sans-serif;margin-bottom:-1px;transition:all 0.15s;display:flex;align-items:center;gap:8px}
-
 .ptab:hover{color:rgba(255,255,255,0.75)}
-
 .ptab.active{color:var(--sky2);border-bottom-color:var(--sky2);font-weight:600}
-
 .ptab-badge{font-size:calc(10px * var(--fs));font-family:'IBM Plex Mono',monospace;background:rgba(0,174,239,0.15);color:var(--sky2);padding:1px 7px;border-radius:3px}
-
 .ptab.ul-tab{color:rgba(255,255,255,0.3)}
-
 .ptab.ul-tab .ptab-badge{background:rgba(255,200,50,0.1);color:rgba(255,200,100,0.7)}
-
 /* FILTER STATUS */
-
 .filter-status{background:rgba(0,28,72,0.98);border-bottom:1px solid rgba(255,255,255,0.07);padding:0 28px;position:sticky;top:103px;z-index:280}
-
 .filter-status-inner{display:flex;align-items:center;gap:8px;height:40px;overflow-x:auto}
-
 .filter-status-inner::-webkit-scrollbar{height:0}
-
 .fs-label2{font-size:calc(12px * var(--fs));color:rgba(255,255,255,0.35);font-family:'IBM Plex Mono',monospace;white-space:nowrap;margin-right:2px;flex-shrink:0}
-
 .fs-tag{display:inline-flex;align-items:center;gap:5px;border-radius:20px;padding:3px 11px;font-size:calc(12px * var(--fs));font-family:'IBM Plex Mono',monospace;white-space:nowrap;border:1px solid;flex-shrink:0}
-
 .fs-tag.period{background:rgba(0,174,239,0.12);border-color:rgba(0,174,239,0.3);color:var(--sky2)}
-
 .fs-tag.idea{background:rgba(155,127,255,0.12);border-color:rgba(155,127,255,0.25);color:#C4B5FD}
-
 .fs-tag.trend{background:rgba(245,166,35,0.12);border-color:rgba(245,166,35,0.25);color:#FCD34D}
-
 .fs-tag.sector{background:rgba(0,122,77,0.15);border-color:rgba(0,200,130,0.25);color:#6EE7B7}
-
 .fs-tag.search{background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.15);color:rgba(255,255,255,0.7)}
-
 .fs-x{cursor:pointer;opacity:0.55;font-size:12px;margin-left:1px}.fs-x:hover{opacity:1}
-
 .fs-clear{margin-left:auto;font-size:calc(12px * var(--fs));font-family:'IBM Plex Mono',monospace;color:rgba(255,255,255,0.3);cursor:pointer;padding:3px 9px;border-radius:4px;border:1px solid rgba(255,255,255,0.1);background:none;flex-shrink:0}
-
 .fs-clear:hover{color:white;border-color:rgba(255,255,255,0.35)}
-
 /* HERO */
-
 .hero{position:relative;background:linear-gradient(118deg,var(--navy-dark) 0%,var(--navy) 52%,#005BAA 100%);color:white;padding:30px 28px 26px;border-bottom:3px solid var(--sky);overflow:hidden}
-
 .hero-blob{position:absolute;border-radius:50%;pointer-events:none}
-
 .hb1{width:450px;height:450px;background:rgba(0,174,239,0.07);right:-100px;top:-160px}
-
 .hb2{width:280px;height:280px;background:rgba(41,197,246,0.05);right:150px;bottom:-130px}
-
 .hero-inner{position:relative;max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 520px;gap:24px;align-items:center}
-
 .hero-eyebrow{font-size:calc(11px * var(--fs));color:var(--sky2);letter-spacing:0.16em;text-transform:uppercase;margin-bottom:6px;font-family:'IBM Plex Mono',monospace}
-
 .hero-title{font-size:calc(28px * var(--fs));font-weight:700;line-height:1.25;margin-bottom:8px}
-
 .hero-title span{color:var(--sky2)}
-
 .hero-desc{font-size:calc(14px * var(--fs));color:rgba(255,255,255,0.65);line-height:1.7;margin-bottom:12px}
-
 .hero-date-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(0,174,239,0.12);border:1px solid rgba(0,174,239,0.3);border-radius:6px;padding:6px 14px}
-
 .hero-date-badge .lbl{font-family:'IBM Plex Mono',monospace;font-size:calc(12px * var(--fs));color:rgba(255,255,255,0.55)}
-
 .hero-date-badge strong{font-family:'IBM Plex Mono',monospace;font-size:calc(12px * var(--fs));color:var(--sky2)}
-
 /* TOP MOVERS */
-
 .hero-movers{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:var(--r);padding:18px 22px}
-
 .hm-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-
 .hm-hdr-title{font-size:calc(12px * var(--fs));font-family:'IBM Plex Mono',monospace;color:rgba(255,255,255,0.6);letter-spacing:0.08em;text-transform:uppercase}
-
 .hm-period-badge{font-size:calc(11px * var(--fs));background:rgba(0,174,239,0.2);color:var(--sky2);padding:2px 8px;border-radius:3px;font-family:'IBM Plex Mono',monospace}
-
 .hm-cols{display:flex;flex-direction:column;gap:0}
-
 .hm-col-lbl{font-size:calc(11px * var(--fs));font-weight:700;letter-spacing:0.07em;text-transform:uppercase;margin:8px 0 4px}
-
 .hm-col-lbl.g{color:rgba(110,231,183,0.8)}.hm-col-lbl.r{color:rgba(252,165,165,0.8);border-top:1px solid rgba(255,255,255,0.1);padding-top:10px}
-
 .hm-row{display:flex;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05)}
-
 .hm-row:last-child{border-bottom:none}
-
 .hm-num{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:calc(10px * var(--fs));font-weight:700;flex-shrink:0;margin-right:8px}
-
 .hm-num.g{background:rgba(0,122,77,0.3);color:#6EE7B7}.hm-num.r{background:rgba(192,57,43,0.3);color:#FCA5A5}
-
 .hm-info{flex:1;min-width:0}
-
 .hm-name{font-size:calc(12px * var(--fs));font-weight:600;color:rgba(255,255,255,0.85);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px}
-
 .hm-ticker-sm{font-family:'IBM Plex Mono',monospace;font-size:calc(10px * var(--fs));color:rgba(255,255,255,0.35)}
-
 .hm-pct{font-family:'IBM Plex Mono',monospace;font-size:calc(13px * var(--fs));font-weight:600;flex-shrink:0;margin-left:6px}
-
 .hm-pct.pos{color:#4ADE80}.hm-pct.neg{color:#F87171}
-
 /* CONTENT */
-
 .content{max-width:1200px;margin:0 auto;padding:20px 28px}
-
 /* PERIOD */
-
 .period-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px}
-
 .period-label{font-size:calc(14px * var(--fs));color:var(--text2);font-weight:500}
-
 .period-group{display:flex;background:white;border:1px solid var(--border);border-radius:var(--r-sm);overflow:hidden;box-shadow:var(--shadow)}
-
 .pbtn{font-family:'IBM Plex Mono',monospace;font-size:calc(12px * var(--fs));font-weight:500;padding:9px 20px;background:none;border:none;border-right:1px solid var(--border);color:var(--text3);cursor:pointer;transition:all 0.13s;letter-spacing:0.05em}
-
 .pbtn:last-child{border-right:none}.pbtn:hover{background:var(--sky-pale);color:var(--navy)}.pbtn.active{background:var(--navy);color:white}
-
 /* METRICS */
-
 .metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-bottom:20px}
-
 .mc{background:white;border-radius:var(--r);padding:18px 20px;box-shadow:var(--shadow);position:relative;overflow:hidden;transition:box-shadow 0.15s,transform 0.15s}
-
 .mc:hover{box-shadow:var(--shadow-md);transform:translateY(-1px)}
-
 .mc-bar{position:absolute;top:0;left:0;right:0;height:4px;border-radius:var(--r) var(--r) 0 0}
-
 .mc-bar.sky{background:linear-gradient(90deg,var(--sky),var(--sky2))}.mc-bar.green{background:var(--green)}.mc-bar.red{background:var(--red)}.mc-bar.navy{background:var(--navy)}
-
 .mc-icon{font-size:calc(20px * var(--fs));margin-bottom:8px;display:block}
-
 .mc-label{font-size:calc(11px * var(--fs));color:var(--text3);font-weight:600;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px}
-
 .mc-val{font-family:'IBM Plex Mono',monospace;font-size:calc(26px * var(--fs));font-weight:500;color:var(--text);line-height:1}
-
 .mc-val.pos{color:var(--green)}.mc-val.neg{color:var(--red)}.mc-sub{font-size:calc(12px * var(--fs));color:var(--text3);margin-top:5px}
-
 /* SECTION HDR */
-
 .section-hdr{display:flex;align-items:center;gap:10px;margin-bottom:14px}
-
 .section-title{font-size:calc(17px * var(--fs));font-weight:700;color:var(--navy)}
-
 .section-pill{font-size:calc(12px * var(--fs));font-family:'IBM Plex Mono',monospace;background:var(--sky-light);color:var(--navy2);padding:3px 10px;border-radius:20px}
-
 /* IDEA + TRENDING */
-
 .idea-trend-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
-
 .idea-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-
 .idea-card{background:white;border:2px solid var(--border);border-radius:var(--r);padding:18px 14px 14px;cursor:pointer;transition:all 0.15s;text-align:center;position:relative;overflow:hidden;box-shadow:var(--shadow)}
-
 .idea-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--sky-light);transition:background 0.15s;border-radius:var(--r) var(--r) 0 0}
-
 .idea-card:hover{border-color:var(--sky);transform:translateY(-2px);box-shadow:var(--shadow-md)}
-
 .idea-card:hover::before{background:linear-gradient(90deg,var(--sky),var(--sky2))}
-
 .idea-card.active{border-color:var(--navy);background:var(--navy)}
-
 .idea-card.active::before{background:var(--sky)}
-
 .idea-card.active .idea-name{color:white}.idea-card.active .idea-count{color:rgba(255,255,255,0.5)}
-
 .idea-card.active .idea-perf.pos{color:#4FFFB0}.idea-card.active .idea-perf.neg{color:#FF9090}
-
 .idea-icon{font-size:calc(26px * var(--fs));margin-bottom:8px;display:block}
-
 .idea-name{font-size:calc(13px * var(--fs));font-weight:600;color:var(--navy);margin-bottom:3px;line-height:1.3}
-
 .idea-count{font-size:calc(11px * var(--fs));color:var(--text3)}
-
 .idea-perf{font-family:'IBM Plex Mono',monospace;font-size:calc(13px * var(--fs));font-weight:600;margin-top:5px}
-
 .idea-perf.pos{color:var(--green)}.idea-perf.neg{color:var(--red)}
-
 /* TRENDING */
-
 .trend-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
-
 .trend-btn{background:white;border:2px solid var(--border);border-radius:var(--r-sm);padding:16px 14px;cursor:pointer;transition:all 0.15s;text-align:left;box-shadow:var(--shadow)}
-
 .trend-btn:hover{border-color:var(--amber);box-shadow:var(--shadow-md)}
-
 .trend-btn.active{border-color:var(--amber);background:#FFFBEB}
-
 .trend-icon{font-size:calc(22px * var(--fs));margin-bottom:6px;display:block}
-
 .trend-name{font-size:calc(14px * var(--fs));font-weight:700;color:var(--text);margin-bottom:2px}
-
 .trend-desc{font-size:calc(12px * var(--fs));color:var(--text3)}
-
 .trend-count{font-family:'IBM Plex Mono',monospace;font-size:calc(14px * var(--fs));color:var(--amber);font-weight:700;margin-top:4px}
-
 .trend-note{background:var(--amber-bg);border:1px solid #FCD34D;border-radius:var(--r-sm);padding:10px 13px;font-size:calc(12px * var(--fs));color:#78350F}
-
 /* CHARTS ROW */
-
 .charts-row{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px;margin-bottom:20px;align-items:start}
-
 .chart-card{background:white;border-radius:var(--r);padding:20px;box-shadow:var(--shadow)}
-
 .chart-card.heatmap-card{display:flex;flex-direction:column;max-height:520px}
-
 .heatmap-scroll{flex:1;overflow-y:auto;overflow-x:hidden}
-
 .heatmap-scroll::-webkit-scrollbar{width:4px}
-
 .heatmap-scroll::-webkit-scrollbar-track{background:var(--gray50);border-radius:2px}
-
 .heatmap-scroll::-webkit-scrollbar-thumb{background:var(--gray200);border-radius:2px}
-
 .heatmap-scroll::-webkit-scrollbar-thumb:hover{background:var(--gray400)}
-
 .chart-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
-
 .chart-title{font-size:calc(12px * var(--fs));font-weight:700;color:var(--text2);letter-spacing:0.08em;text-transform:uppercase}
-
 .chart-sub{font-size:calc(11px * var(--fs));color:var(--text3)}
-
 .chart-idea-tag{font-size:calc(11px * var(--fs));font-family:'IBM Plex Mono',monospace;background:var(--sky-light);color:var(--navy2);padding:2px 8px;border-radius:3px}
-
 /* HEATMAP — bigger cells */
-
 .hm-theme-group{margin-bottom:14px}
-
 .hm-theme-label{font-size:calc(12px * var(--fs));font-weight:700;color:var(--text2);letter-spacing:0.07em;text-transform:uppercase;margin-bottom:6px;display:flex;align-items:center;gap:6px}
-
 .hm-theme-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
-
 .hm-sectors{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
-
 .hm-cell{border-radius:8px;padding:12px 10px;cursor:pointer;transition:all 0.13s;border:2px solid transparent;min-height:60px;display:flex;flex-direction:column;justify-content:space-between}
-
 .hm-cell:hover{transform:scale(1.04);opacity:0.85}
-
 .hm-cell.selected{border-color:var(--navy);box-shadow:0 0 0 3px rgba(0,63,136,0.2)}
-
 .hm-cell-name{font-size:calc(12px * var(--fs));font-weight:700;line-height:1.3;margin-bottom:4px}
-
 .hm-cell-val{font-family:'IBM Plex Mono',monospace;font-size:calc(13px * var(--fs));font-weight:700}
-
 .hm-reset{font-size:calc(12px * var(--fs));font-family:'IBM Plex Mono',monospace;background:var(--red-bg);color:var(--red);border:1px solid var(--red);border-radius:4px;padding:2px 9px;cursor:pointer;display:none}
-
 .hm-reset.show{display:inline-block}
-
 /* DONUT EXPOSURE */
-
 .donut-wrap{display:flex;flex-direction:column;gap:6px}
-
 .donut-section{margin-bottom:6px}
-
 .donut-sub{font-size:calc(11px * var(--fs));font-weight:700;color:var(--text3);letter-spacing:0.07em;text-transform:uppercase;margin-bottom:8px}
-
 .donut-chart-wrap{position:relative;height:130px}
-
 .donut-legend{display:flex;flex-direction:column;gap:4px;margin-top:6px}
-
 .donut-row{display:flex;align-items:center;justify-content:space-between;font-size:calc(11px * var(--fs))}
-
 .donut-left{display:flex;align-items:center;gap:6px}
-
 .donut-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
-
 .donut-name{color:var(--text2)}
-
 .donut-pct{font-family:'IBM Plex Mono',monospace;color:var(--text);font-weight:600}
-
 .exp-divider{border-top:1px solid var(--border2);margin:10px 0}
-
 /* DISTRIBUTION */
-
 .dist-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
-
 .dist-stat{background:var(--gray50);border-radius:8px;padding:10px;text-align:center;border:1px solid var(--border2)}
-
 .dist-stat-lbl{font-size:calc(10px * var(--fs));color:var(--text3);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:3px}
-
 .dist-stat-val{font-family:'IBM Plex Mono',monospace;font-size:calc(15px * var(--fs));font-weight:700}
-
 .dist-stat-val.pos{color:var(--green)}.dist-stat-val.neg{color:var(--red)}
-
 /* COLUMN CUSTOMIZER */
-
 .col-cust-bar{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
-
 .col-cust-label{font-size:calc(13px * var(--fs));color:var(--text2);font-weight:600}
-
 .col-cust-btn{background:white;border:1.5px solid var(--border);border-radius:6px;padding:5px 12px;font-size:calc(12px * var(--fs));color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:6px;transition:all 0.13s;box-shadow:var(--shadow)}
-
 .col-cust-btn:hover{border-color:var(--sky)}
-
 .col-cust-btn.active{border-color:var(--navy);background:var(--sky-light);color:var(--navy)}
-
 .col-cust-btn input[type=checkbox]{accent-color:var(--navy)}
-
 /* TABLE */
-
 .table-card{background:white;border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow)}
-
 .table-top{display:flex;align-items:center;justify-content:space-between;padding:13px 18px;border-bottom:1px solid var(--border2)}
-
 .table-lbl{font-size:calc(12px * var(--fs));font-weight:700;color:var(--text2);letter-spacing:0.08em;text-transform:uppercase}
-
 .row-count{font-family:'IBM Plex Mono',monospace;font-size:calc(12px * var(--fs));color:var(--text3)}
-
 .tbl-scroll-bar{padding:6px 0 0 0;display:flex;align-items:center;gap:8px}
-
 .tbl-scroll-label{font-size:calc(11px * var(--fs));color:var(--text3);white-space:nowrap}
-
 .tbl-scroll-input{flex:1;accent-color:var(--navy);height:4px;cursor:pointer}
-
 .tbl-wrap{overflow-x:auto}
-
 .tbl-wrap::-webkit-scrollbar{height:4px}
-
 .tbl-wrap::-webkit-scrollbar-track{background:var(--gray50)}
-
 .tbl-wrap::-webkit-scrollbar-thumb{background:var(--gray200);border-radius:2px}
-
 /* Freeze pane — first 3 columns sticky */
-
 table{border-collapse:separate;border-spacing:0}
-
 .col-freeze-0{position:sticky;left:0;z-index:3;background:white}
-
 .col-freeze-1{position:sticky;left:36px;z-index:3;background:white}
-
 thead .col-freeze-0,thead .col-freeze-1{background:var(--gray50);z-index:4}
-
 tbody tr:hover .col-freeze-0,tbody tr:hover .col-freeze-1{background:var(--sky-pale)}
-
 .col-freeze-1::after{content:'';position:absolute;right:0;top:0;bottom:0;width:2px;background:var(--border)}
-
 table{width:100%;border-collapse:collapse;min-width:900px}
-
 thead th{text-align:left;padding:11px 13px;font-size:calc(11px * var(--fs));font-weight:700;color:var(--text3);letter-spacing:0.09em;text-transform:uppercase;border-bottom:2px solid var(--border);background:var(--gray50);white-space:nowrap;cursor:pointer;user-select:none;transition:color 0.12s}
-
 thead th:hover{color:var(--navy)}
-
 thead th.sorted{color:var(--navy)}
-
 tbody tr{border-bottom:1px solid var(--border2);border-left:3px solid transparent;transition:all 0.1s}
-
 tbody tr:last-child{border-bottom:none}
-
 tbody tr:hover{background:var(--sky-pale);border-left-color:var(--sky)}
-
 tbody td{padding:11px 13px;white-space:nowrap}
-
 .td-name{font-size:calc(14px * var(--fs));font-weight:600;color:var(--navy);max-width:220px;overflow:hidden;text-overflow:ellipsis;display:block}
-
 .td-ticker-sm{font-family:'IBM Plex Mono',monospace;font-size:calc(11px * var(--fs));color:var(--text3)}
-
 .td-num{font-family:'IBM Plex Mono',monospace;font-size:calc(12px * var(--fs));font-weight:500;text-align:right}
-
 .td-num.pos{color:var(--green)}.td-num.neg{color:var(--red)}.td-num.neu{color:var(--text3)}
-
 .badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:calc(11px * var(--fs));font-weight:700;white-space:nowrap}
-
 .b-perf{font-family:'IBM Plex Mono',monospace;font-size:calc(10px * var(--fs));padding:3px 7px;border-radius:4px;font-weight:600}
-
 .b-top{background:#DCFCE7;color:#166534}.b-bot{background:#FEE2E2;color:#991B1B}.b-mid{background:var(--gray100);color:var(--gray600)}
-
 .b-ai{background:#DBEAFE;color:#1E40AF}.b-nxt{background:#E0F4FC;color:#0369A1}
-
 .b-tmt{background:#E0F2FE;color:#0C4A6E}.b-idx{background:var(--gray100);color:var(--gray600)}
-
 .b-geo{background:#FEE2E2;color:#991B1B}.b-spc{background:#FEF3C7;color:#92400E}
-
 .b-upcoming{background:#FEF3C7;color:#92400E;border:1px solid #FCD34D}
-
 .chk{width:15px;height:15px;accent-color:var(--navy);cursor:pointer}
-
 .sort-arrow{margin-left:2px;font-size:10px}
-
 .settrade-link{display:inline-flex;align-items:center;gap:3px;background:var(--sky-light);color:var(--navy2);border:1px solid rgba(0,174,239,0.25);border-radius:5px;padding:3px 9px;font-size:calc(11px * var(--fs));font-weight:600;cursor:pointer;white-space:nowrap;text-decoration:none;transition:all 0.12s}
-
 .settrade-link:hover{background:var(--sky);color:white;border-color:var(--sky)}
-
 /* FILTER BAR */
-
 .filter-bar{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:12px}
-
 .search-wrap{position:relative;flex:1;min-width:160px;max-width:260px}
-
 .search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:15px;pointer-events:none}
-
 input[type=text]{width:100%;background:white;border:1.5px solid var(--border);color:var(--text);font-family:'Sarabun',sans-serif;font-size:calc(13px * var(--fs));padding:9px 12px 9px 34px;border-radius:var(--r-sm);outline:none;box-shadow:var(--shadow);transition:border-color 0.15s}
-
 input[type=text]:focus{border-color:var(--sky)}
-
 input[type=text]::placeholder{color:var(--text3)}
-
 select{background:white;border:1.5px solid var(--border);color:var(--text2);font-family:'Sarabun',sans-serif;font-size:calc(13px * var(--fs));padding:9px 28px 9px 11px;border-radius:var(--r-sm);outline:none;cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%238FA3BE' stroke-width='1.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;box-shadow:var(--shadow);transition:border-color 0.15s}
-
 select:focus{border-color:var(--sky)}
-
 .compare-btn{margin-left:auto;background:var(--navy);color:white;border:none;font-family:'Sarabun',sans-serif;font-size:calc(13px * var(--fs));font-weight:600;padding:9px 20px;border-radius:var(--r-sm);cursor:pointer;box-shadow:0 2px 8px rgba(0,63,136,0.2);white-space:nowrap;transition:all 0.15s}
-
 .compare-btn:hover{background:var(--navy2)}.compare-btn:disabled{background:var(--gray200);color:var(--text3);cursor:not-allowed;box-shadow:none}
-
 /* UL BANNER */
-
 .ul-banner{background:linear-gradient(90deg,#FEF3C7,#FFFBEB);border-bottom:2px solid #FCD34D;padding:10px 28px;display:none}
-
 .ul-banner.show{display:block}
-
 .ul-banner-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;gap:10px;font-size:calc(13px * var(--fs));color:#78350F}
-
 /* DISCLAIMER */
-
 .disclaimer{background:#FFFBEB;border:1px solid #FCD34D;border-radius:var(--r);padding:20px 24px;margin-top:22px}
-
 .disc-hdr{display:flex;align-items:center;gap:8px;margin-bottom:10px}
-
 .disc-title{font-size:calc(13px * var(--fs));font-weight:700;color:#92400E;letter-spacing:0.05em}
-
 .disc-text{font-size:calc(13px * var(--fs));color:#78350F;line-height:1.85}
-
 /* MODALS */
-
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,20,60,0.6);z-index:1000;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
-
 .modal-overlay.open{display:flex}
-
 .modal{background:white;border-radius:var(--r);padding:28px;width:min(520px,93vw);box-shadow:0 24px 64px rgba(0,0,0,0.25)}
-
 .modal-hdr{display:flex;align-items:center;gap:10px;margin-bottom:16px}
-
 .modal-icon{font-size:calc(24px * var(--fs))}
-
 .modal-title{font-size:calc(18px * var(--fs));font-weight:700;color:var(--navy)}
-
 .modal-body{font-size:calc(14px * var(--fs));color:var(--text2);line-height:1.85;margin-bottom:20px}
-
 .modal-body strong{color:var(--text)}
-
 .modal-footer{display:flex;align-items:center;gap:10px}
-
 .modal-confirm{background:var(--navy);color:white;border:none;font-family:'Sarabun',sans-serif;font-size:calc(14px * var(--fs));font-weight:600;padding:11px 26px;border-radius:var(--r-sm);cursor:pointer;transition:all 0.15s}
-
 .modal-confirm:hover{background:var(--navy2)}
-
 .modal-skip{font-size:calc(13px * var(--fs));color:var(--text3);cursor:pointer;display:flex;align-items:center;gap:6px;margin-left:auto}
-
 .modal-skip input{accent-color:var(--navy)}
-
 .cmp-modal{width:min(780px,95vw) !important;max-height:90vh;overflow-y:auto}
-
 ::-webkit-scrollbar{width:6px;height:6px}
-
 ::-webkit-scrollbar-track{background:var(--gray50)}
-
 ::-webkit-scrollbar-thumb{background:var(--gray200);border-radius:4px}
-
 ::-webkit-scrollbar-thumb:hover{background:var(--gray400)}
-
 /* ── STICKY FILTER SIDEBAR ── */
-
 .sticky-sidebar{position:fixed;left:0;top:50%;transform:translateY(-50%);z-index:400;display:flex;flex-direction:column;gap:6px;padding:10px 8px;background:white;border-radius:0 var(--r) var(--r) 0;box-shadow:4px 0 20px rgba(0,63,136,0.12);border:1px solid var(--border);border-left:none;max-height:80vh;overflow-y:auto;transition:transform 0.3s ease,opacity 0.3s ease;opacity:0;pointer-events:none;transform:translateY(-50%) translateX(-100%)}
-
 .sticky-sidebar.visible{opacity:1;pointer-events:all;transform:translateY(-50%) translateX(0)}
-
 .sticky-sidebar::-webkit-scrollbar{width:3px}
-
 .sticky-sidebar::-webkit-scrollbar-thumb{background:var(--gray200);border-radius:2px}
-
 .sb-section{font-size:9px;font-weight:700;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;padding:2px 4px;margin-top:4px}
-
 .sb-section:first-child{margin-top:0}
-
 .sb-idea{display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:var(--r-sm);cursor:pointer;transition:all 0.13s;border:1.5px solid var(--border);background:white;width:100%;text-align:left;font-family:'Sarabun',sans-serif}
-
 .sb-idea:hover{border-color:var(--sky);background:var(--sky-pale)}
-
 .sb-idea.active{border-color:var(--navy);background:var(--navy)}
-
 .sb-idea.active .sb-idea-name{color:white}
-
 .sb-idea.active .sb-idea-perf{color:#4FFFB0}
-
 .sb-idea.active .sb-idea-perf.neg{color:#FF9090}
-
 .sb-idea-icon{font-size:14px;flex-shrink:0}
-
 .sb-idea-name{font-size:11px;font-weight:600;color:var(--navy);line-height:1.2}
-
 .sb-idea-perf{font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;margin-left:auto;flex-shrink:0}
-
 .sb-idea-perf.pos{color:var(--green)}.sb-idea-perf.neg{color:var(--red)}
-
 .sb-trend{display:flex;align-items:center;gap:5px;padding:5px 8px;border-radius:var(--r-sm);cursor:pointer;transition:all 0.13s;border:1.5px solid var(--border);background:white;width:100%;text-align:left;font-family:'Sarabun',sans-serif}
-
 .sb-trend:hover{border-color:var(--amber)}
-
 .sb-trend.active{border-color:var(--amber);background:#FFFBEB}
-
 .sb-trend-icon{font-size:12px;flex-shrink:0}
-
 .sb-trend-name{font-size:10px;font-weight:600;color:var(--text);flex:1}
-
 .sb-trend-count{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--amber);font-weight:700;flex-shrink:0}
-
 .sb-divider{border-top:1px solid var(--border2);margin:4px 0}
-
 .sb-clear{font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--text3);background:none;border:1px solid var(--border);border-radius:4px;padding:3px 6px;cursor:pointer;width:100%;text-align:center;font-weight:600}
-
 .sb-clear:hover{color:var(--red);border-color:var(--red)}
-
 @media(max-width:800px){.sticky-sidebar{display:none}}
-
 .pfab{position:fixed;bottom:28px;right:28px;z-index:500;display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,var(--navy),var(--navy2));color:white;border:none;border-radius:30px;padding:14px 22px;font-family:'Sarabun',sans-serif;font-size:calc(14px * var(--fs));font-weight:700;cursor:pointer;box-shadow:0 4px 20px rgba(0,63,136,0.35);transition:all 0.2s;white-space:nowrap}
-
 .pfab:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,63,136,0.45)}
-
 .pfab-icon{font-size:18px}
-
 .pfab-badge{background:var(--sky);color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
-
 .pftab{font-size:13px;font-weight:500;color:rgba(255,255,255,0.45);padding:11px 20px;cursor:pointer;border:none;border-bottom:2px solid transparent;background:none;font-family:'Sarabun',sans-serif;margin-bottom:-1px;transition:all 0.15s}
-
 .pftab:hover{color:rgba(255,255,255,0.75)}
-
 .pftab.active{color:#29C5F6;border-bottom-color:#29C5F6;font-weight:600}
 
-
-
 .pf-panel{position:fixed;inset:0;z-index:600;display:none;align-items:center;justify-content:center;padding:20px}
-
 .pf-panel.open{display:flex}
-
 .pf-backdrop{position:absolute;inset:0;background:rgba(0,20,60,0.55);backdrop-filter:blur(3px)}
-
-.pf-drawer{position:relative;width:100%;max-width:1200px;height:90vh;background:var(–gray50);display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,0.3);overflow:hidden;border-radius:var(–r)}
-
-.pf-header{background:var(–navy);color:white;padding:18px 24px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-
+.pf-drawer{position:relative;width:100%;max-width:1200px;height:90vh;background:var(--gray50);display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,0.3);overflow:hidden;border-radius:var(--r)}
+.pf-header{background:var(--navy);color:white;padding:18px 24px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .pf-header-left{display:flex;align-items:center;gap:12px}
-
-.pf-title{font-size:calc(17px * var(–fs));font-weight:700}
-
-.pf-subtitle{font-size:calc(12px * var(–fs));color:rgba(255,255,255,0.55);margin-top:2px}
-
+.pf-title{font-size:calc(17px * var(--fs));font-weight:700}
+.pf-subtitle{font-size:calc(12px * var(--fs));color:rgba(255,255,255,0.55);margin-top:2px}
 .pf-close{background:none;border:none;color:rgba(255,255,255,0.6);font-size:24px;cursor:pointer;line-height:1;padding:0 4px}
-
 .pf-close:hover{color:white}
-
-.pf-tabs{display:flex;background:var(–navy-dark);padding:0 24px;flex-shrink:0}
-
-.pf-tab{font-size:calc(13px * var(–fs));font-weight:500;color:rgba(255,255,255,0.45);padding:10px 18px;cursor:pointer;border:none;border-bottom:2px solid transparent;background:none;font-family:‘Sarabun’,sans-serif;margin-bottom:-1px;transition:all 0.15s}
-
-.pf-tab.active{color:var(–sky2);border-bottom-color:var(–sky2);font-weight:600}
-
+.pf-tabs{display:flex;background:var(--navy-dark);padding:0 24px;flex-shrink:0}
+.pf-tab{font-size:calc(13px * var(--fs));font-weight:500;color:rgba(255,255,255,0.45);padding:10px 18px;cursor:pointer;border:none;border-bottom:2px solid transparent;background:none;font-family:'Sarabun',sans-serif;margin-bottom:-1px;transition:all 0.15s}
+.pf-tab.active{color:var(--sky2);border-bottom-color:var(--sky2);font-weight:600}
 .pf-body{flex:1;overflow-y:auto;padding:20px 24px;display:flex;flex-direction:column;gap:16px}
-
 .pf-body.split-mode{padding:0;overflow:hidden}
 
-
-
 /* Portfolio list */
-
 .pf-list-row{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
-
-.pf-portfolio-card{background:white;border:1.5px solid var(–border);border-radius:var(–r);padding:12px 16px;cursor:pointer;transition:all 0.13s;display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:var(–shadow)}
-
-.pf-portfolio-card:hover{border-color:var(–sky);box-shadow:var(–shadow-md)}
-
-.pf-portfolio-card.active{border-color:var(–navy);background:var(–sky-pale)}
-
-.pf-pname{font-size:calc(13px * var(–fs));font-weight:600;color:var(–navy)}
-
-.pf-pmeta{font-size:calc(11px * var(–fs));color:var(–text3)}
-
-.pf-pdel{background:none;border:none;color:var(–text3);cursor:pointer;font-size:16px;padding:0;line-height:1}
-
-.pf-pdel:hover{color:var(–red)}
-
-.pf-new-btn{background:var(–navy);color:white;border:none;border-radius:var(–r-sm);padding:9px 18px;font-family:‘Sarabun’,sans-serif;font-size:calc(13px * var(–fs));font-weight:600;cursor:pointer;white-space:nowrap;transition:all 0.13s}
-
-.pf-new-btn:hover{background:var(–navy2)}
-
-
+.pf-portfolio-card{background:white;border:1.5px solid var(--border);border-radius:var(--r);padding:12px 16px;cursor:pointer;transition:all 0.13s;display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:var(--shadow)}
+.pf-portfolio-card:hover{border-color:var(--sky);box-shadow:var(--shadow-md)}
+.pf-portfolio-card.active{border-color:var(--navy);background:var(--sky-pale)}
+.pf-pname{font-size:calc(13px * var(--fs));font-weight:600;color:var(--navy)}
+.pf-pmeta{font-size:calc(11px * var(--fs));color:var(--text3)}
+.pf-pdel{background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:0;line-height:1}
+.pf-pdel:hover{color:var(--red)}
+.pf-new-btn{background:var(--navy);color:white;border:none;border-radius:var(--r-sm);padding:9px 18px;font-family:'Sarabun',sans-serif;font-size:calc(13px * var(--fs));font-weight:600;cursor:pointer;white-space:nowrap;transition:all 0.13s}
+.pf-new-btn:hover{background:var(--navy2)}
 
 /* Split build layout */
-
 .pf-split{display:grid;grid-template-columns:1fr 420px;gap:0;flex:1;overflow:hidden}
+.pf-left{display:flex;flex-direction:column;border-right:1px solid var(--border);overflow:hidden}
+.pf-right{display:flex;flex-direction:column;overflow:hidden;background:white}
+.pf-left-hdr{padding:14px 18px;border-bottom:1px solid var(--border);flex-shrink:0;background:white}
+.pf-right-hdr{padding:14px 18px;border-bottom:2px solid var(--border);flex-shrink:0;background:var(--gray50);display:flex;align-items:center;justify-content:space-between}
+.pf-right-title{font-size:calc(13px * var(--fs));font-weight:700;color:var(--navy);letter-spacing:0.05em;text-transform:uppercase}
+.pf-universe-list{flex:1;overflow-y:auto}
+.pf-universe-item{display:grid;grid-template-columns:32px 1fr auto;align-items:center;gap:10px;padding:10px 18px;border-bottom:1px solid var(--border2);cursor:pointer;transition:background 0.1s}
+.pf-universe-item:hover{background:var(--sky-pale)}
+.pf-universe-item.selected{background:var(--sky-light)}
+.pf-ui-chk{width:16px;height:16px;accent-color:var(--navy);cursor:pointer;flex-shrink:0}
+.pf-ui-name{font-size:calc(13px * var(--fs));font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pf-ui-sub{font-family:'IBM Plex Mono',monospace;font-size:calc(10px * var(--fs));color:var(--text3)}
+.pf-ui-ret{font-family:'IBM Plex Mono',monospace;font-size:calc(12px * var(--fs));font-weight:600;flex-shrink:0}
+.pf-tray{flex:1;overflow-y:auto;padding:0}
+.pf-tray-item{padding:12px 16px;border-bottom:1px solid var(--border2);display:flex;flex-direction:column;gap:8px;transition:background 0.1s}
+.pf-tray-item:hover{background:var(--sky-pale)}
+.pf-tray-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.pf-tray-name{font-size:calc(13px * var(--fs));font-weight:600;color:var(--text);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pf-tray-ret{font-family:'IBM Plex Mono',monospace;font-size:calc(12px * var(--fs));font-weight:600;flex-shrink:0}
+.pf-tray-controls{display:flex;align-items:center;gap:8px}
+.pf-tray-ticker{font-family:'IBM Plex Mono',monospace;font-size:calc(10px * var(--fs));color:var(--text3)}
+.pf-tray-footer{padding:12px 16px;border-top:2px solid var(--border);flex-shrink:0;background:var(--gray50)}
+.pf-tray-total{display:flex;align-items:center;justify-content:space-between;font-size:calc(13px * var(--fs));font-weight:700;margin-bottom:8px}
+.pf-theme-filter{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.pf-theme-chip{font-size:calc(11px * var(--fs));padding:3px 10px;border-radius:20px;border:1px solid var(--border);background:white;cursor:pointer;color:var(--text2);transition:all 0.12s;font-family:'Sarabun',sans-serif}
+.pf-theme-chip:hover{border-color:var(--sky);color:var(--navy)}
+.pf-theme-chip.active{background:var(--navy);border-color:var(--navy);color:white}
+.pf-search-input{flex:1;background:white;border:1.5px solid var(--border);color:var(--text);font-family:'Sarabun',sans-serif;font-size:calc(13px * var(--fs));padding:9px 12px;border-radius:var(--r-sm);outline:none;box-shadow:var(--shadow)}
+.pf-search-input:focus{border-color:var(--sky)}
+.pf-dropdown{background:white;border:1.5px solid var(--border);border-radius:var(--r-sm);max-height:200px;overflow-y:auto;box-shadow:var(--shadow-md);display:none;position:absolute;z-index:10;width:100%;top:100%;left:0}
+.pf-dropdown.show{display:block}
+.pf-dd-item{padding:9px 12px;cursor:pointer;font-size:calc(13px * var(--fs));border-bottom:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between}
+.pf-dd-item:hover{background:var(--sky-pale)}
+.pf-dd-name{font-weight:600;color:var(--text)}
+.pf-dd-ticker{font-family:'IBM Plex Mono',monospace;font-size:calc(10px * var(--fs));color:var(--text3)}
 
-.pf-left{display:flex;flex-direction:column;borde
+/* Holdings table */
+.pf-holdings{background:white;border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;margin-bottom:4px}
+.pf-h-head{display:grid;grid-template-columns:1fr 80px 100px 80px 24px;gap:8px;padding:9px 14px;background:var(--gray50);border-bottom:2px solid var(--border);font-size:calc(10px * var(--fs));font-weight:700;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase}
+.pf-h-row{display:grid;grid-template-columns:1fr 80px 100px 80px 24px;gap:8px;padding:10px 14px;border-bottom:1px solid var(--border2);align-items:center;transition:background 0.1s}
+.pf-h-row:hover{background:var(--sky-pale)}
+.pf-h-row:last-child{border-bottom:none}
+.pf-h-name{font-size:calc(13px * var(--fs));font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pf-h-ticker{font-family:'IBM Plex Mono',monospace;font-size:calc(10px * var(--fs));color:var(--text3)}
+.pf-weight-input{width:100%;border:1.5px solid var(--border);border-radius:6px;padding:5px 8px;font-family:'IBM Plex Mono',monospace;font-size:calc(13px * var(--fs));text-align:right;outline:none;transition:border-color 0.13s;background:white;color:var(--text)}
+.pf-weight-input:focus{border-color:var(--sky)}
+.pf-weight-slider{width:100%;accent-color:var(--navy);height:4px;cursor:pointer}
+.pf-del-btn{background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;line-height:1}
+.pf-del-btn:hover{color:var(--red)}
+.pf-weight-total{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;font-size:calc(13px * var(--fs));font-weight:600;border-top:2px solid var(--border)}
+.pf-weight-ok{color:var(--green)}.pf-weight-warn{color:var(--red)}
+
+/* Summary cards */
+.pf-summary-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.pf-scard{background:white;border-radius:var(--r-sm);padding:14px;box-shadow:var(--shadow);text-align:center}
+.pf-scard-lbl{font-size:calc(10px * var(--fs));color:var(--text3);letter-spacing:0.07em;text-transform:uppercase;margin-bottom:5px}
+.pf-scard-val{font-family:'IBM Plex Mono',monospace;font-size:calc(18px * var(--fs));font-weight:700}
+.pf-scard-val.pos{color:var(--green)}.pf-scard-val.neg{color:var(--red)}
+
+/* Risk badge */
+.risk-badge{display:inline-flex;align-items:center;gap:8px;border-radius:var(--r-sm);padding:10px 18px;font-size:calc(14px * var(--fs));font-weight:700}
+.risk-aggressive{background:#FEE2E2;color:#991B1B;border:2px solid #FCA5A5}
+.risk-balanced{background:#FEF3C7;color:#92400E;border:2px solid #FCD34D}
+.risk-conservative{background:#DCFCE7;color:#166534;border:2px solid #86EFAC}
+
+/* Charts row in portfolio */
+.pf-charts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.pf-chart-card{background:white;border-radius:var(--r);padding:16px;box-shadow:var(--shadow)}
+.pf-chart-title{font-size:calc(11px * var(--fs));font-weight:700;color:var(--text2);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:12px}
+
+/* Benchmark */
+.pf-bench-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.pf-bench-lbl{font-size:calc(13px * var(--fs));color:var(--text2);font-weight:500;width:140px;flex-shrink:0}
+.pf-bench-bar-track{flex:1;height:8px;background:var(--gray100);border-radius:4px;overflow:hidden;position:relative}
+.pf-bench-bar-fill{height:100%;border-radius:4px;transition:width 0.3s}
+.pf-bench-val{font-family:'IBM Plex Mono',monospace;font-size:calc(12px * var(--fs));font-weight:600;width:65px;text-align:right;flex-shrink:0}
+
+/* Export btn */
+.pf-export-btn{background:white;border:1.5px solid var(--border);border-radius:var(--r-sm);padding:8px 16px;font-family:'Sarabun',sans-serif;font-size:calc(13px * var(--fs));font-weight:600;color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:6px;box-shadow:var(--shadow);transition:all 0.13s}
+.pf-export-btn:hover{border-color:var(--sky);color:var(--navy)}
+
+@media(max-width:800px){.metrics{grid-template-columns:repeat(2,1fr)}.idea-trend-grid{grid-template-columns:1fr}.charts-row{grid-template-columns:1fr}.content{padding:14px 16px}.hero{padding:22px 16px}.header{padding:0 16px}.page-tabs{padding:0 16px}.filter-status{padding:0 16px}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="logo">
+      <div class="logo-icon">🦅</div>
+      <div class="logo-texts">
+        <div class="logo-sub">Krungthai Bank</div>
+        <div class="logo-main">DR80 <span>Universe</span></div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="font-sizer">
+        <button class="fs-btn" onclick="setFontScale(fontScale-0.1)" title="Smaller">−</button>
+        <span class="fs-label" id="fsLabel">100%</span>
+        <button class="fs-btn" onclick="setFontScale(fontScale+0.1)" title="Larger">+</button>
+      </div>
+      <div class="date-chip">ข้อมูล ณ <strong>16 เมษายน 2569</strong></div>
+      <div class="live-badge"><span class="live-dot"></span>Live</div>
+    </div>
+  </div>
+</div>
+
+<div class="page-tabs">
+  <div class="page-tabs-inner">
+    <button class="ptab active" id="tabDR" onclick="switchTab('dr')">DR Price Return <span class="ptab-badge">incl. FX</span></button>
+    <button class="ptab ul-tab" id="tabUL" onclick="switchTab('ul')">UL Price Return <span class="ptab-badge">excl. FX · for reference</span></button>
+  </div>
+</div>
+
+<div class="filter-status"><div class="filter-status-inner" id="filterBar"></div></div>
+
+<div class="ul-banner" id="ulBanner">
+  <div class="ul-banner-inner">
+    <span style="font-size:18px">ℹ️</span>
+    <span>ข้อมูลนี้แสดงราคา Underlying <strong>ก่อนผลกระทบ FX</strong> — ใช้เพื่อการเปรียบเทียบเท่านั้น</span>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="hero-blob hb1"></div><div class="hero-blob hb2"></div>
+  <div class="hero-inner">
+    <div>
+      <div class="hero-eyebrow" style="display:none"></div>
+      <div class="hero-title">ค้นหา<span>ไอเดียการลงทุน</span>ของคุณ</div>
+      <div class="hero-desc">สำรวจ Depositary Receipt จากตลาดทั่วโลก กรองตามธีมหรือกลุ่มอุตสาหกรรม เพื่อค้นหา DR ที่เหมาะกับพอร์ตของคุณ</div>
+      <div class="hero-date-badge"><span>📅</span><span class="lbl">ผลตอบแทนอ้างอิง ณ วันที่</span><strong>16 เมษายน 2569</strong></div>
+    </div>
+    <div class="hero-movers">
+      <div class="hm-hdr">
+        <div class="hm-hdr-title">🔥 Top Movers</div>
+        <div class="hm-period-badge" id="moverPeriodBadge">YTD · Full Universe</div>
+      </div>
+      <div class="hm-cols">
+        <div><div class="hm-col-lbl g">▲ Top 3 Gainers</div><div id="heroGainers"></div></div>
+        <div><div class="hm-col-lbl r">▼ Top 3 Losers</div><div id="heroLosers"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="content">
+  <div class="period-row">
+    <div class="period-label">แสดงผลตอบแทนสำหรับช่วงเวลา:</div>
+    <div class="period-group" id="periodBtns">
+      <button class="pbtn active" data-p="ytd">YTD</button>
+      <button class="pbtn" data-p="1m">1M</button>
+      <button class="pbtn" data-p="3m">3M</button>
+      <button class="pbtn" data-p="6m">6M</button>
+      <button class="pbtn" data-p="1y">1Y</button>
+    </div>
+  </div>
+
+  <div class="metrics">
+    <div class="mc"><div class="mc-bar sky"></div><span class="mc-icon">📊</span><div class="mc-label">Total DRs</div><div class="mc-val" id="mTotal">—</div><div class="mc-sub">in current view</div></div>
+    <div class="mc"><div class="mc-bar green"></div><span class="mc-icon">📈</span><div class="mc-label">Gainers</div><div class="mc-val pos" id="mGain">—</div><div class="mc-sub" id="mGainPct">—</div></div>
+    <div class="mc"><div class="mc-bar red"></div><span class="mc-icon">📉</span><div class="mc-label">Losers</div><div class="mc-val neg" id="mLose">—</div><div class="mc-sub" id="mLosePct">—</div></div>
+    <div class="mc"><div class="mc-bar navy"></div><span class="mc-icon">〰️</span><div class="mc-label">Median Return</div><div class="mc-val" id="mMed">—</div><div class="mc-sub" id="mPeriodLbl">YTD</div></div>
+    <div class="mc"><div class="mc-bar sky"></div><span class="mc-icon">🌐</span><div class="mc-label">Themes</div><div class="mc-val" id="mThemes">—</div><div class="mc-sub">active</div></div>
+  </div>
+
+  <div class="idea-trend-grid">
+    <div>
+      <div class="section-hdr"><div class="section-title">Invest by Idea</div><div class="section-pill">คลิกเพื่อกรอง</div></div>
+      <div class="idea-grid" id="ideaGrid"></div>
+    </div>
+    <div id="trendingCol">
+      <div class="section-hdr">
+        <div class="section-title">Trending Filters</div>
+        <div class="section-pill">Technical filters</div>
+      </div>
+      <div class="trend-grid" id="trendGrid"></div>
+      <div class="trend-note">📌 52W High &gt;90% · 52W Low &lt;20% · RSI Overbought &gt;70 · RSI Oversold &lt;30. Technical data from DR tab. Buttons hidden if 0 DRs match.</div>
+    </div>
+  </div>
+
+  <!-- Sentinel: sidebar appears when user scrolls past this -->
+  <div id="sidebarSentinel"></div>
+
+  <div class="charts-row">
+    <div class="chart-card heatmap-card">
+      <div class="chart-hdr" style="flex-shrink:0">
+        <div class="chart-title">Sector Heat Map</div>
+        <div style="display:flex;align-items:center;gap:7px">
+          <button class="hm-reset" id="hmReset" onclick="resetSector()">✕ Reset</button>
+          <div class="chart-sub">grouped by theme · คลิกเพื่อกรอง</div>
+        </div>
+      </div>
+      <div class="heatmap-scroll"><div id="heatmapEl"></div></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-hdr"><div class="chart-title">Exposure</div><div class="chart-idea-tag" id="expIdeaTag">All</div></div>
+      <div class="donut-sub">Country</div>
+      <div class="donut-chart-wrap"><canvas id="countryDonut"></canvas></div>
+      <div class="donut-legend" id="countryLegend"></div>
+      <div class="exp-divider"></div>
+      <div class="donut-sub">Sector</div>
+      <div class="donut-chart-wrap"><canvas id="sectorDonut"></canvas></div>
+      <div class="donut-legend" id="sectorLegend"></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-hdr"><div class="chart-title">Return Distribution</div><div class="chart-idea-tag" id="distIdeaTag">All</div></div>
+      <div class="dist-stats">
+        <div class="dist-stat"><div class="dist-stat-lbl">Avg</div><div class="dist-stat-val" id="dAvg">—</div></div>
+        <div class="dist-stat"><div class="dist-stat-lbl">Max</div><div class="dist-stat-val pos" id="dMax">—</div></div>
+        <div class="dist-stat"><div class="dist-stat-lbl">Min</div><div class="dist-stat-val neg" id="dMin">—</div></div>
+      </div>
+      <div style="position:relative;height:170px"><canvas id="distChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="section-hdr">
+    <div class="section-title" id="tableTitle">All DR80 Securities</div>
+    <div class="section-pill" id="tableCount">— results</div>
+  </div>
+
+  <div class="filter-bar">
+    <div class="search-wrap"><span class="search-icon">⌕</span><input type="text" id="search" placeholder="Search name or ticker..."></div>
+    <select id="themeFilter"><option value="">All themes</option></select>
+    <select id="sectorFilter"><option value="">All sectors</option></select>
+    <select id="countryFilter"><option value="">All countries</option></select>
+    <button class="compare-btn" id="compareBtn" onclick="openCompare()" disabled>Compare (<span id="cmpCount">0</span>)</button>
+  </div>
+
+  <div class="col-cust-bar" id="colCustBar"></div>
+
+  <div class="table-card">
+    <div class="table-top">
+      <div class="table-lbl" id="tableLbl">DR80 Securities</div>
+      <div class="row-count" id="rowCount">— rows</div>
+    </div>
+    <div style="padding:6px 18px 4px;border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:10px">
+      <span style="font-size:11px;color:var(--text3);white-space:nowrap">← Scroll →</span>
+      <input type="range" id="tblScrollBar" min="0" max="1000" value="0" style="flex:1;accent-color:var(--navy);height:4px;cursor:pointer">
+    </div>
+    <div class="tbl-wrap" id="tblWrap">
+      <table>
+        <thead id="tblHead"></thead>
+        <tbody id="tblBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="disclaimer">
+    <div class="disc-hdr"><span style="font-size:18px">⚠️</span><span class="disc-title">คำเตือนและข้อจำกัดความรับผิดชอบ (Disclaimer)</span></div>
+    <div class="disc-text">
+      <strong>1. วัตถุประสงค์ของเครื่องมือ</strong><br>
+      แดชบอร์ดนี้จัดทำขึ้นเพื่อ<strong>วัตถุประสงค์ด้านข้อมูลและการศึกษาเท่านั้น</strong> และไม่ถือเป็นคำแนะนำการลงทุน การชักชวน การเสนอขาย หรือคำแนะนำทางการเงินหรือกฎหมายใด ๆ ทั้งสิ้น การนำเสนอข้อมูลในที่นี้ไม่ได้มีวัตถุประสงค์เพื่อทดแทนคำแนะนำจากผู้เชี่ยวชาญทางการเงินที่ได้รับใบอนุญาต<br><br>
+
+      <strong>2. ความถูกต้องและความครบถ้วนของข้อมูล</strong><br>
+      ข้อมูลที่แสดงในแดชบอร์ดนี้ได้รับมาจากแหล่งข้อมูลที่เชื่อว่ามีความน่าเชื่อถือ อย่างไรก็ตาม ธนาคารกรุงไทย จำกัด (มหาชน) <strong>ไม่รับประกันความถูกต้อง ความครบถ้วน ความทันสมัย หรือความเหมาะสม</strong>ของข้อมูลดังกล่าวแต่อย่างใด ข้อมูลอาจมีความคลาดเคลื่อนหรือล่าช้าจากสภาวะตลาดจริง<br><br>
+
+      <strong>3. การตรวจสอบข้อมูลจากแหล่งข้อมูลทางการ</strong><br>
+      <strong>นักลงทุนต้องตรวจสอบและยืนยันข้อมูลทั้งหมดจากแหล่งข้อมูลทางการ</strong>ก่อนนำไปใช้ประกอบการตัดสินใจลงทุนเสมอ ได้แก่
+      <br>• <strong>ตลาดหลักทรัพย์แห่งประเทศไทย (SET)</strong> — www.set.or.th
+      <br>• <strong>สำนักงานคณะกรรมการกำกับหลักทรัพย์และตลาดหลักทรัพย์ (ก.ล.ต.)</strong> — www.sec.or.th
+      <br>• <strong>Settrade</strong> — www.settrade.com
+      <br>• <strong>ผู้ออก DR และเอกสารชี้ชวน (Prospectus)</strong> ที่เกี่ยวข้อง
+      <br>• <strong>ผู้ให้บริการข้อมูลราคา</strong> เช่น Bloomberg, Refinitiv หรือแหล่งข้อมูลราคาที่ได้รับการรับรอง<br><br>
+
+      <strong>4. ผลการดำเนินงานในอดีต</strong><br>
+      ผลตอบแทนที่แสดงในแดชบอร์ดนี้อ้างอิง ณ วันที่ <strong>16 เมษายน 2569</strong> และอาจไม่สะท้อนถึงการเปลี่ยนแปลงของตลาดในภายหลัง <strong>ผลการดำเนินงานในอดีตไม่ใช่การรับประกันผลการดำเนินงานในอนาคต</strong> มูลค่าการลงทุนอาจเพิ่มขึ้นหรือลดลง และนักลงทุนอาจได้รับเงินคืนน้อยกว่าเงินลงทุนเริ่มต้น<br><br>
+
+      <strong>5. ความเสี่ยงของ Depositary Receipt (DR)</strong><br>
+      การลงทุนใน DR มีความเสี่ยงหลายประการ ได้แก่
+      <br>• <strong>ความเสี่ยงด้านตลาด</strong> — ราคาหลักทรัพย์อาจผันผวนตามสภาวะตลาด
+      <br>• <strong>ความเสี่ยงด้านอัตราแลกเปลี่ยน</strong> — ราคา DR ได้รับผลกระทบจากความผันผวนของอัตราแลกเปลี่ยนสกุลเงินต่างประเทศ
+      <br>• <strong>ความเสี่ยงด้านสภาพคล่อง</strong> — DR บางรายการอาจมีสภาพคล่องในการซื้อขายต่ำ
+      <br>• <strong>ความเสี่ยงด้านประเทศ</strong> — ปัจจัยทางการเมือง เศรษฐกิจ และกฎระเบียบของประเทศที่หลักทรัพย์อ้างอิงจดทะเบียนอยู่
+      <br>• <strong>ความเสี่ยงด้านการติดตามราคา (Tracking Risk)</strong> — ราคา DR อาจแตกต่างจากราคาหลักทรัพย์อ้างอิงเนื่องจาก FX ค่าธรรมเนียม และสภาพคล่อง<br><br>
+
+      <strong>6. ข้อมูลราคาหลักทรัพย์อ้างอิง (UL Price Return)</strong><br>
+      ข้อมูลในแท็บ "UL Price Return" แสดงผลตอบแทนของหลักทรัพย์อ้างอิงโดยไม่รวมผลกระทบจากอัตราแลกเปลี่ยน ซึ่ง<strong>ไม่ใช่ราคาซื้อขายจริงของ DR บนกระดานซื้อขายของ SET</strong> ข้อมูลดังกล่าวจัดทำขึ้นเพื่อการเปรียบเทียบเท่านั้น และนักลงทุนไม่ควรใช้เป็นข้อมูลหลักในการตัดสินใจลงทุน<br><br>
+
+      <strong>7. พอร์ตโฟลิโอสมมติ (Virtual Portfolio)</strong><br>
+      พอร์ตโฟลิโอที่สร้างขึ้นในเครื่องมือนี้เป็น<strong>พอร์ตโฟลิโอสมมติเพื่อการศึกษาเท่านั้น</strong> ไม่ใช่การลงทุนจริง ผลตอบแทนที่คำนวณเป็นการประมาณการโดยอิงจากข้อมูลย้อนหลัง และไม่ได้คำนึงถึงค่าธรรมเนียม ภาษี ต้นทุนการทำธุรกรรม หรือข้อจำกัดอื่น ๆ ในการลงทุนจริง<br><br>
+
+      <strong>8. ข้อจำกัดความรับผิดชอบ</strong><br>
+      ธนาคารกรุงไทย จำกัด (มหาชน) บริษัทในเครือ กรรมการ ผู้บริหาร และพนักงาน<strong>ไม่รับผิดชอบต่อความเสียหาย การสูญเสีย หรือค่าใช้จ่ายใด ๆ</strong> ที่เกิดขึ้นโดยตรงหรือโดยอ้อมจากการใช้ข้อมูลในแดชบอร์ดนี้ การตัดสินใจลงทุนใด ๆ เป็นความรับผิดชอบของนักลงทุนแต่ผู้เดียว<br><br>
+
+      <strong>9. คำแนะนำสำหรับนักลงทุน</strong><br>
+      ก่อนการลงทุนใด ๆ นักลงทุนควร (1) ศึกษาเอกสารชี้ชวนและข้อมูลผลิตภัณฑ์อย่างละเอียด (2) ประเมินความเสี่ยงที่ยอมรับได้และวัตถุประสงค์การลงทุนของตนเอง (3) ปรึกษาผู้แนะนำการลงทุนที่ได้รับใบอนุญาตจาก ก.ล.ต. และ (4) ตรวจสอบข้อมูลจากแหล่งทางการทุกครั้งก่อนตัดสินใจ
+    </div>
+  </div>
+</div>
+
+<!-- STICKY FILTER SIDEBAR -->
+<div class="sticky-sidebar" id="stickySidebar">
+  <div class="sb-section">💡 Invest by Idea</div>
+  <div id="sbIdeaList"></div>
+  <div class="sb-divider"></div>
+  <div class="sb-section">📡 Trending</div>
+  <div id="sbTrendList"></div>
+  <div class="sb-divider"></div>
+  <button class="sb-clear" onclick="clearAll()">✕ Clear all</button>
+</div>
+
+<div class="modal-overlay" id="ulModal">
+  <div class="modal">
+    <div class="modal-hdr"><span class="modal-icon">⚠️</span><div class="modal-title">ข้อมูล Underlying Price (ไม่รวม FX)</div></div>
+    <div class="modal-body">
+      ข้อมูลที่แสดงในแท็บนี้เป็นราคาของ<strong>หลักทรัพย์อ้างอิง (Underlying)</strong> โดยไม่รวมผลกระทบจากอัตราแลกเปลี่ยน (FX)<br><br>
+      อาจมี<strong>ความแตกต่าง</strong>จากราคา DR ที่ซื้อขายบน SET เนื่องจาก FX ค่าธรรมเนียม และสภาพคล่อง<br><br>
+      <strong>กรุณาใช้เพื่อการเปรียบเทียบเท่านั้น</strong> ไม่ควรใช้เป็นข้อมูลหลักในการตัดสินใจลงทุน
+    </div>
+    <div class="modal-footer">
+      <button class="modal-confirm" onclick="confirmUL()">รับทราบ — ดูข้อมูล</button>
+      <label class="modal-skip"><input type="checkbox" id="skipULModal"> ไม่ต้องแสดงอีก</label>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="compareModal">
+  <div class="modal cmp-modal">
+    <div class="modal-hdr" style="justify-content:space-between">
+      <div class="modal-title">Compare Selected DRs</div>
+      <button onclick="closeCompare()" style="background:none;border:none;font-size:24px;cursor:pointer;color:var(--text3)">×</button>
+    </div>
+    <div id="compareContent"></div>
+  </div>
+</div>
+
+<script>
+
+const DR_RAW = [["SNDK US Equity", "SANDISK CORP", "US", "AI Supercycle", "Non-volatile storage - NAND", 223.979073, 26.731379, 115.589188, 518.091079, 2684.014986, 0.924062, 418076873260.71466, 65.725437, null, "Data center buildout", "13 May 2026", ""], ["6809 HK Equity", "MONTAGE TECHNOLOGY CO LTD-H", "CN - A", "AI Supercycle", "Layer 1 - Fabless/Chips desginer", 104.509314, 15.356204, 104.509314, 104.509314, 104.509314, 0.951262, 1482986671.921344, 64.925366, 0.202243, "Chips buildout", "13 May 2026", ""], ["GEELY80 TB Equity", "GEELY AUTOMOBILE HOLDINGS-DR", "CN - H", "Nextgen tech", "Automotive", 41.258747, 34.666672, 46.376817, 24.691363, 30.322586, 0.776923, 2190055.843421, 75.477536, null, "", "10 Sep 2025", ""], ["GEV US Equity", "GE VERNOVA INC", "US", "AI Supercycle", "Energy components", 45.084247, 19.163131, 44.658499, 63.774086, 200.43881, 0.978697, 69084659291.1304, 67.970857, 0.202825, "Renewable energy", "13 May 2026", ""], ["PETROC80 TB Equity", "PETROCHINA CO LTD-DR", "CN - H", "AI Supercycle", "Integrated oil & gas", 28.915669, -3.167416, 28.915669, 16.304354, 16.304354, 0.8875, 504695.890263, 47.604196, 2.76831, "Traditional energy", "11 Nov 2025", ""], ["UNIQLO80 TB Equity", "FAST RETAILING CO LTD-DR", "JP", "Nextgen tech", "Consumer products", 33.333332, 16.923075, 22.580644, 35.714284, 42.056073, 0.993464, 749153.682237, 75.580248, 0.720395, "", "", ""], ["MRVL80 TB Equity", "MARVELL TECHNOLOGY INC-DR", "US", "AI Supercycle", "Layer 1 - Fabless/Chips desginer", 45.945952, 48.965523, 45.945952, 45.945952, 45.945952, 0.995392, 1416221.129868, 80.749555, 0.180645, "Chips buildout", "11 Mar 2026", ""], ["CATL80 TB Equity", "CONTEMPORARY AMPEREX TECH-DR", "CN - A", "AI Supercycle", "Lithium", 41.463415, 5.454545, 47.959184, 28.888889, 65.714286, 0.97479, 5179180.131579, 68.03261, 1.094965, "", "10 Sep 2025", ""], ["WUXIAT80 TB Equity", "WUXI APPTEC CO LTD-DR", "CN - H", "Nextgen tech", "Pharmaceutical sciences", 27.38095, 19.419641, 9.631146, 25.586852, 25.586852, 1.0, 616236.902237, 68.897659, null, "", "11 Nov 2025", ""], ["SPENGY80 TB Equity", "ENERGY SELECT SECTOR SPDR-DR", "US", "Thematic", "Energy", 19.463085, -6.315791, 18.666665, 21.088433, 21.088433, 0.791111, 2288151.421711, 40.582227, 1.851685, "", "11 Nov 2025", ""], ["SBUX80 TB Equity", "STARBUCKS CORP-DR", "US", "Nextgen tech", "Consumer products", 19.847332, -1.874997, 7.53425, 17.164183, 18.045117, 0.945122, 174057.819276, 57.979553, 2.012903, "", "", ""], ["NEE US Equity", "NEXTERA ENERGY INC", "US", "AI Supercycle", "Electricity provider", 12.739404, -1.702219, 9.099605, 7.278072, 39.000609, 0.948391, 24984319311.968533, 45.009643, 2.732135, "Renewable energy", "13 May 2026", ""], ["KO80 TB Equity", "COCA-COLA CO/THE-DR", "US", "Nextgen tech", "Consumer products", 11.926608, -3.174601, 9.909912, 10.909094, 4.273507, 0.945736, 341844.856316, 44.787091, 2.293443, "", "", ""], ["300308 CH Equity", "ZHONGJI INNOLIGHT CO LTD-A", "CN - A", "AI Supercycle", "Photonics", 29.847153, 44.135657, 31.217178, 120.62021, 938.094609, 0.999383, 90412478199.64294, 78.162145, 0.247033, "Data center buildout", "", ""], ["NFLX80 TB Equity", "NETFLIX INC-DR", "US", "Nextgen tech", "Media", 18.750003, 11.038964, 23.021585, -12.7551, -8.556148, 0.702041, 6859163.142105, 76.044666, null, "", "", ""], ["SINGTE80 TB Equity", "SINGAPORE TELECOMMUNICATIONS", "SG", "Nextgen tech", "Communication services", 10.909089, -3.937009, 11.926604, 15.094338, 30.481281, 0.924242, 257601.678289, 36.966341, 3.537705, "", "", ""], ["PEP80 TB Equity", "PEPSICO INC-DR", "US", "Nextgen tech", "Consumer products", 11.111111, -3.846154, 8.695652, 2.040816, 14.942529, 0.925926, 202049.900329, 46.657995, 3.0, "", "", ""], ["NIKKEI80 TB Equity", "NEXT FUNDS NIKKEI 225 EXC-DR", "JP", "Index", "Index", 16.82243, 9.649123, 11.607143, 15.740741, 28.205128, 0.992063, 102582.046382, 66.698245, null, "", "10 Sep 2025", ""], ["SUNNY80 TB Equity", "SUNNY OPTICAL TECHNOLOGY -DR", "CN - H", "AI Supercycle", "Photonics", 12.068961, 11.111107, 12.068961, 12.068961, 12.068961, 1.0, 178404.138945, 63.811261, 1.916154, "Data center buildout", "", ""], ["6680 HK Equity", "JL MAG RARE-EARTH CO LTD -H", "CN - H", "AI Supercycle", "Precious metals mining", 9.024899, 1.7425, -7.073384, -13.355316, 63.962562, 0.717406, 379340482.27226, 52.441247, 2.137945, "Chips buildout", "13 May 2026", ""], ["600111 CH Equity", "CHINA NORTHERN RARE EARTH -A", "CN - A", "AI Supercycle", "Precious metals mining", 5.421557, -0.423388, -3.156864, -7.074319, 103.083879, 0.776939, 19784044385.54931, 47.459404, 0.070865, "Chips buildout", "13 May 2026", ""], ["BYDCOM80 TB Equity", "BYD CO LTD-DR", "CN - H", "Nextgen tech", "Automotive", 17.94872, 4.545456, 12.195124, 2.222224, -70.51282, 0.230392, 11822699.0, 60.440566, 218.378711, "", "", ""], ["GLD US Equity", "SPDR GOLD SHARES", "US", "Geopolitics", "Commodity", 10.590539, -4.33725, 4.55031, 11.101022, 43.253, 0.864155, 184661258678.78763, 51.53949, null, "", "13 May 2026", ""], ["ANET US Equity", "ARISTA NETWORKS INC", "US", "AI Supercycle", "Networking", 15.516467, 14.022904, 18.870831, 5.69824, 114.734938, 0.935674, 28114810252.62882, 67.564222, null, "Data center buildout", "13 May 2026", ""], ["TEL80 TB Equity", "TOKYO ELECTRON LTD-DR", "JP", "AI Supercycle", "Layer 4 - Other fab equipment - Manufacturing test, etch, deposition", 14.110432, 16.250002, 14.110432, 14.110432, 14.110432, 1.0, 149376.649849, 71.01884, 0.725161, "Chips buildout", "11 Mar 2026", ""], ["CAMBRI80 TB Equity", "CAMBRICON TECHNOLOGIES CO-DR", "CN - A", "AI Supercycle", "Layer 1 - Fabless/Chips desginer", 20.388346, 19.230766, 20.388346, 20.388346, 20.388346, 0.991935, 1041012.886316, 73.08146, null, "Chips buildout", "11 Mar 2026", ""], ["NAURA80 TB Equity", "NAURA TECHNOLOGY GROUP CO-DR", "CN - A", "AI Supercycle", "Layer 4 - Other fab equipment - Manufacturing test, etch, deposition", 4.761905, 2.325581, 4.761905, 4.761905, 4.761905, 0.973451, 1351591.281579, 55.412157, null, "Chips buildout", "11 Mar 2026", ""], ["AMD80 TB Equity", "ADVANCED MICRO DEVICES IN-DR", "US", "AI Supercycle", "Layer 1 - Fabless/Chips desginer", 15.277775, 31.746029, 12.925168, 5.732482, 151.515146, 0.959538, 26132661.263158, 75.869499, null, "Chips buildout", "", ""], ["AMZN80 TB Equity", "AMAZON.COM INC- DR", "US", "AI Supercycle", "Hyperscalers", 10.614526, 17.159764, 5.882354, 11.864408, 30.263159, 0.942857, 11861045.315789, 74.650686, null, "", "", ""], ["MICRON80 TB Equity", "MICRON TECHNOLOGY INC - DR", "US", "AI Supercycle", "Layer 6 - HBM", 13.178298, 0.689658, 13.178298, 13.178298, 13.178298, 0.941935, 2237178.089145, 61.058982, 0.132055, "Chips buildout", "11 Mar 2026", ""], ["AVGO80 TB Equity", "BROADCOM INC-DR", "US", "AI Supercycle", "Layer 1 - Fabless/Chips desginer", 14.545454, 19.999999, 15.596329, 7.692307, 98.425195, 0.969231, 7645383.578947, 73.328101, 0.546032, "Chips buildout", "", ""], ["SANOFI80 TB Equity", "SANOFI SA - DR", "US", "Nextgen tech", "Pharmaceutical sciences", 2.666664, 7.692305, 4.054051, -4.938274, -10.465118, 0.836957, 420919.091034, 57.630415, 4.959416, "", "", ""], ["GOOG80 TB Equity", "ALPHABET INC-DRX", "US", "AI Supercycle", "Hyperscalers", 8.299593, 9.631146, 1.90476, 29.854367, 96.691173, 0.963964, 32383689.526316, 69.820423, 0.205607, "", "", ""], ["SPBOND80 TB Equity", "STATE STREET SPDR PORTFOL-DR", "US", "Thematic", "Bonds", 2.469138, 2e-06, 1.219515, -10.270268, -10.270268, 0.897297, 320183.104474, 48.101759, 3.938313, "", "11 Nov 2025", ""], ["SP500US8 TB Equity", "STATE STREET SPDR PORTFOL-DR", "US", "Index", "Index", 3.937012, 3.937012, 3.125004, 1.538466, 1.538466, 1.0, 1155109.813684, 66.31482, 0.963636, "", "11 Nov 2025", ""], ["NONGFU80 TB Equity", "NONGFU SPRING CO LTD-DR", "CN - H", "Nextgen tech", "Consumer products", 0.520831, 5.464478, -7.211541, -16.810347, 24.516126, 0.824786, 546262.388816, 55.131649, 2.401554, "", "", ""], ["LOREAL80 TB Equity", "L'OREAL SA - DR", "EU", "Nextgen tech", "Consumer products", 2e-06, 3.053437, -4.255317, -6.249998, 6.299214, 0.870968, 41501.847351, 49.074751, 1.948148, "", "", ""], ["ZIJIN80 TB Equity", "ZIJIN MINING GROUP CO LTD-DR", "CN - H", "AI Supercycle", "Precious metals mining", 4.72973, 2.649007, -3.125, 13.138686, 13.138686, 0.824468, 2332515.778421, 52.529834, null, "", "11 Nov 2025", ""], ["600519 CH Equity", "KWEICHOW MOUTAI CO LTD-A", "CN - A", "Nextgen tech", "Consumer products", 2.583448, 0.182167, 5.849491, -1.486288, -6.178289, 0.889264, 20906197388.850784, 55.626639, 3.529436, "", "13 May 2026", ""], ["BRKB80 TB Equity", "BERKSHIRE HATHAWAY INC-DR", "US", "Nextgen tech", "Financial", -1.282054, -3.144656, -0.645164, -5.521475, -8.875742, 0.85, 1755863.9, 41.549104, null, "", "", ""], ["SPTECH80 TB Equity", "SS TECHNOLOGY SELECT SECTOR", "US", "Thematic", "Consumer technology", 5.464477, 7.821225, 5.464477, 0.520829, 0.520829, 0.83913, 72802.487368, 68.171834, 0.45513, "", "11 Nov 2025", ""], ["SPCOM80 TB Equity", "COMMUNICATION SERVICES SE-DR", "US", "Thematic", "Communication services", 2.162161, 1.612902, 2.717391, 1.612902, 1.612902, 0.989529, 11630.833209, 58.601987, 1.238095, "", "11 Nov 2025", ""], ["SPHLTH80 TB Equity", "HEALTH CARE SELECT SECTOR-DR", "US", "Thematic", "Healthcare", -2.469141, -2.868857, -3.658541, -0.836825, -0.836825, 0.911538, 312199.372171, 43.577223, 1.643882, "", "11 Nov 2025", ""], ["JD80 TB Equity", "JD.COM INC-DR", "CN - H", "Nextgen tech", "Superapp", 9.170306, 8.225108, 8.695652, -8.256881, -18.032787, 0.809756, 5820507.321053, 68.709465, 3.153012, "", "", ""], ["META80 TB Equity", "META PLATFORMS INC -DR", "US", "AI Supercycle", "Hyperscalers", 4.687503, 4.687503, 8.943092, -8.219176, 9.836068, 0.833333, 11285514.736842, 65.659443, 0.259259, "", "", ""], ["CYPC80 TB Equity", "CHINA YANGTZE POWER CO LT-DR", "CN - A", "AI Supercycle", "Electricity provider", -0.793651, -3.100775, -0.793651, -0.793651, -0.793651, 0.93985, 71998.109979, 44.17387, null, "Renewable energy", "11 Mar 2026", ""], ["AAPL80 TB Equity", "APPLE INC-DRX", "US", "AI Supercycle", "Hyperscalers", 0.591716, 3.658537, 4.294479, 4.294479, 28.787879, 0.924324, 16139067.310526, 62.007715, 0.305029, "", "", ""], ["NVDA80 TB Equity", "NVIDIA CORP-DRX", "US", "AI Supercycle", "Layer 1 - Fabless/Chips desginer", 5.833333, 7.627119, 7.627119, 6.722689, 69.786096, 0.927007, 30140141.368421, 67.71382, 0.01663, "Chips buildout", "", ""], ["MP US Equity", "MP MATERIALS CORP", "US", "AI Supercycle", "Precious metals mining", 8.277242, 0.269542, -13.71412, -29.007634, 115.808557, 0.593713, 8877111981.847824, 59.798865, null, "Chips buildout", "13 May 2026", ""], ["TOYOTA80 TB Equity", "TOYOTA MOTOR CORP-DR", "JP", "Nextgen tech", "Automotive", -0.729924, -0.729924, -8.108106, 7.936511, 15.254241, 0.860759, 211065.542237, 46.883872, 3.275882, "", "", ""], ["BA US Equity", "BOEING CO/THE", "US", "Geopolitics", "Artillery machines", -1.685911, 4.899986, -9.588986, 5.682194, 43.113696, 0.880401, 40862427642.0617, 60.375327, null, "", "13 May 2026", ""], ["FERARI80 TB Equity", "FERRARI NV - DR", "EU", "Nextgen tech", "Automotive", -0.854704, 9.433959, 5.454542, -9.375003, -20.000002, 0.684524, 98377.373322, 58.981294, 1.147826, "", "", ""], ["SPFIN80 TB Equity", "FINANCIAL SELECT SECTOR S-DR", "US", "Thematic", "Financial", -2.906972, 5.031451, -2.339177, -2.906972, -2.906972, 0.943503, 45517.963095, 61.302839, 3.022515, "", "11 Nov 2025", ""], ["300 HK Equity", "MIDEA GROUP CO LTD-H", "CN - H", "Nextgen tech", "Consumer technology", -1.119817, 3.45636, 2.79395, 7.682931, 28.156753, 0.929474, 1392749346.502398, 59.949683, 9.886024, "", "13 May 2026", ""], ["PINGAN80 TB Equity", "PING AN INSURANCE GROUP C-DR", "CN - H", "Nextgen tech", "Financial", -7.971016, -2.307694, -7.299271, 9.482757, 36.559138, 0.870748, 3603753.034211, 47.239189, 4.680078, "", "", "Insurance"], ["PANW80 TB Equity", "PALO ALTO NETWORKS INC-DR", "US", "Nextgen tech", "Cybersecurity", -7.826084, -1.851848, -10.924367, -22.058821, -16.53543, 0.727891, 833388.386349, 50.894081, null, "", "10 Sep 2025", ""], ["ABBV US Equity", "ABBVIE INC", "US", "Nextgen tech", "Pharmaceutical sciences", -9.109939, -5.883947, -2.766503, -8.132411, 21.40028, 0.851354, 47335123276.342834, 43.503618, 3.320219, "", "13 May 2026", ""], ["MA80 TB Equity", "MASTERCARD INC-DR", "US", "Nextgen tech", "Financial", -5.64972, 2.453985, -2.339184, -9.239133, -10.215056, 0.846939, 543598.781316, 56.819044, 0.662651, "", "", ""], ["VISA80 TB Equity", "VISA INC-DR", "US", "Nextgen tech", "Financial", -5.925927, 0.793649, -1.550389, -9.929079, -11.188813, 0.819355, 1583553.770395, 57.261566, 0.674016, "", "", ""], ["LLY80 TB Equity", "ELI LILLY & CO-DR", "US", "Nextgen tech", "Pharmaceutical sciences", -12.499998, -7.547168, -9.259257, 8.088237, 8.088237, 0.803279, 11563441.805263, 41.356749, 0.604082, "", "", ""], ["CRWD80 TB Equity", "CROWDSTRIKE HOLDINGS INC-DR", "US", "Nextgen tech", "Cybersecurity", -6.338027, -7.638888, -8.275861, -16.3522, -2.205881, 0.73224, 4250194.418421, 50.735333, null, "", "10 Sep 2025", ""], ["IFLYTE80 TB Equity", "IFLYTEK CO LTD-DR", "CN - A", "Nextgen tech", "Consumer technology", -8.943089, -8.943089, -8.943089, -8.943089, -8.943089, 0.910569, 13479.298958, 35.764897, null, "", "11 Mar 2026", ""], ["HOOD80 TB Equity", "ROBINHOOD MARKETS INC-DR", "US", "Nextgen tech", "Financial", 15.200005, 18.032792, 15.200005, 15.200005, 15.200005, 1.0, 95640.200855, 68.13506, null, "", "11 Mar 2026", "Superapp"], ["1318 HK Equity", "MAO GEPING COSMETICS CO LT-H", "CN - H", "Nextgen tech", "Consumer products", -10.876133, -9.453653, -14.690573, -31.074766, -25.730111, 0.564701, 558710964.990908, 43.88318, 1.557424, "", "13 May 2026", ""], ["CRM80 TB Equity", "SALESFORCE INC - DR", "US", "Nextgen tech", "SaaS", -7.258065, -8.730159, -7.258065, -7.258065, -7.258065, 0.89313, 17615.531558, 42.061101, 0.949744, "", "11 Mar 2026", ""], ["RKLB US Equity", "ROCKET LAB CORP", "US", "Spacetech", "Rocket launch", -3.145151, 3.211331, -23.57217, 9.850746, 268.460576, 0.739104, 54043357376.75723, 56.383265, null, "", "13 May 2026", ""], ["MEITUA80 TB Equity", "MEITUAN-DR", "CN - H", "Nextgen tech", "Superapp", -13.744073, 12.345682, -9.900988, -12.077292, -36.69565, 0.5888, 2730457.991053, 59.470206, null, "", "", ""], ["SANRIO80 TB Equity", "SANRIO CO LTD-DR", "JP", "Nextgen tech", "Consumer products", -5.309736, -5.309736, -5.309736, -5.309736, -5.309736, 0.930435, 49581.310208, 48.899038, 0.654579, "", "11 Mar 2026", ""], ["BKNG80 TB Equity", "BOOKING HOLDINGS INC-DR", "US", "Nextgen tech", "Superapp", -10.240963, 7.194245, -8.588956, -10.778443, -12.865497, 0.784211, 330673.285921, 60.952634, 0.743624, "", "", ""], ["HERMES80 TB Equity", "HERMES INTERNATIONAL SCA-DR", "EU", "Nextgen tech", "Consumer products", -20.512823, -10.14493, -22.500002, -24.848487, -29.943505, 0.642487, 1174592.327632, 37.528106, 0.974516, "", "", ""], ["MNSO80 TB Equity", "MINISO GROUP HOLDING LTD-DR", "CN - H", "Nextgen tech", "Consumer products", -18.181816, -8.695649, -17.647056, -31.89189, -38.536584, 0.616505, 206619.620724, 34.533636, 2.421496, "", "10 Sep 2025", ""], ["TENCEN80 TB Equity", "TENCENT HOLDINGS LTD-DR", "CN - H", "AI Supercycle", "Hyperscalers", -16.435642, -9.829058, -14.574897, -18.846152, 9.326427, 0.740351, 10901122.547368, 48.889605, 1.027393, "", "", ""], ["BABA80 TB Equity", "ALIBABA GROUP HOLDING LTD-DR", "CN - H", "AI Supercycle", "Hyperscalers", -12.698413, -1.785714, -17.910448, -18.518519, 19.565217, 0.705128, 43730216.894737, 54.53625, 1.400727, "", "", ""], ["SONY80 TB Equity", "SONY GROUP CORP-DR", "JP", "Nextgen tech", "Consumer technology", -16.990289, -1.156067, -11.855668, -27.234041, -12.7551, 0.684, 481808.817533, 50.60452, 0.664912, "", "", ""], ["NETEAS80 TB Equity", "NETEASE INC-DR", "CN - H", "Nextgen tech", "Consumer products", -16.483518, -2.564104, -12.138729, -21.649486, 15.151514, 0.737864, 654714.0, 56.409459, 2.396053, "", "", ""], ["XIAOMI80 TB Equity", "XIAOMI CORP-DR", "CN - H", "Nextgen tech", "Consumer technology", -17.500001, -10.204083, -12.000001, -34.000001, -25.842698, 0.513725, 24698991.421053, 45.085574, null, "", "", ""], ["MSFT80 TB Equity", "MICROSOFT CORP-DRX", "US", "AI Supercycle", "Hyperscalers", -10.067117, 4.687497, -6.944447, -20.238098, -4.964542, 0.728261, 22564939.421053, 63.151331, 0.85791, "", "", ""], ["TSLA80 TB Equity", "TESLA INC-DRX", "US", "AI Supercycle", "Hyperscalers", -9.285716, -0.781251, -7.971016, -9.929079, 38.797812, 0.815287, 25723060.315789, 55.183537, null, "", "", ""], ["POPMAR80 TB Equity", "POP MART INTERNATIONAL GR-DR", "CN - H", "Nextgen tech", "Consumer products", -14.649684, -23.863639, -5.633806, -45.081969, -3.597125, 0.464789, 8742401.457895, 41.940322, 1.692424, "", "", ""], ["BIDU80 TB Equity", "BAIDU INC-DR", "CN - H", "AI Supercycle", "Hyperscalers", -12.280702, -1.960784, -15.254237, 0.806452, 44.508671, 0.769231, 37096214.526316, 57.687735, null, "", "", ""], ["GRAB80 TB Equity", "GRAB HOLDINGS LTD-DR", "US", "Nextgen tech", "Superapp", -19.999999, 6.666668, -7.246375, -34.358973, -24.260354, 0.580645, 718833.433553, 56.916385, null, "", "10 Sep 2025", ""], ["NOVOB80 TB Equity", "NOVO NORDISK A/S-DR", "US", "Nextgen tech", "Pharmaceutical sciences", -20.481925, 7.317077, -28.260867, -29.411762, -38.888886, 0.488889, 5651230.542105, 59.14812, 3.109091, "", "", ""], ["NIKE80 TB Equity", "NIKE INC-DR", "US", "Nextgen tech", "Consumer products", -26.262624, -17.977526, -29.80769, -34.821427, -22.340424, 0.557252, 1368937.344737, 27.412982, 2.964384, "", "", ""], ["COIN US Equity", "COINBASE GLOBAL INC -CLASS A", "US", "Nextgen tech", "Financial", -17.177525, -3.64942, -18.764255, -40.681302, 13.75646, 0.440576, 61492183042.501976, 59.246702, null, "", "13 May 2026", "Superapp"], ["ESTEE80 TB Equity", "ESTEE LAUDER COS INC/THE-DR", "EU", "Nextgen tech", "Consumer products", -26.785715, -13.684211, -32.786886, -22.64151, 30.158729, 0.623077, 7712330.767763, 41.886001, 1.506173, "", "", ""], ["TRIPCO80 TB Equity", "TRIP.COM GROUP LTD-DR", "CN - H", "Nextgen tech", "Superapp", -25.423729, 3.529411, -6.878307, -22.807018, -6.878307, 0.6875, 8220819.436842, 59.304363, 0.548864, "", "", ""], ["KUAISH80 TB Equity", "KUAISHOU TECHNOLOGY-DR", "CN - H", "Nextgen tech", "Media", -35.234901, -22.177421, -38.924052, -39.308178, -36.51316, 0.482412, 10158710.521053, 35.923352, 1.4875, "", "10 Sep 2025", ""], ["9984 JP Equity", "SOFTBANK GROUP CORP", "JP", "AI Supercycle", "Hyperscalers", 1.235103, 29.454142, 16.508728, -21.577843, 177.35233, 0.674779, 41523249527.51387, 69.27614, 0.235445, "", "13 May 2026", ""], ["BA US Equity", "BOEING CO/THE", "US", "Spacetech", "Artillery machines", -1.685911, 4.899986, -9.588986, 5.682194, 43.113696, 0.880401, 40862427642.0617, 60.375327, null, "", "13 May 2026", ""]];
+const UL_RAW = [["SNDK US Equity", "SANDISK CORP", "US", "AI Supercycle", "Non-volatile storage - NAND", 209.391804, 37.596342, 118.760757, 628.397913, 2640.370072, null, null, null, null, "Data center buildout", "", ""], ["6809 HK Equity", "MONTAGE TECHNOLOGY CO LTD-H", "CN - A", "AI Supercycle", "Layer 1 - Fabless/Chips desginer", 89.16643, 9.951059, 89.16643, 89.16643, 89.16643, null, null, null, null, "Chips buildout", "", ""], ["GEV US Equity", "GE VERNOVA INC", "US", "AI Supercycle", "Energy components", 42.450154, 15.350336, 51.307504, 60.11976, 212.314896, null, null, null, null, "Renewable energy", "", ""], ["175 HK Equity", "GEELY AUTOMOBILE HOLDINGS LT", "CN - H", "Nextgen tech", "Automotive", 34.945052, 52.831359, 45.153661, 28.923882, 64.611256, null, null, null, null, "", "", ""], ["MRVL US Equity", "MARVELL TECHNOLOGY INC", "US", "AI Supercycle", "Layer 1 - Fabless/Chips desginer", 34.164896, 28.542337, 44.685728, 40.088775, 126.839418, null, null, null, null, "", "", ""], ["MU US Equity", "MICRON TECHNOLOGY INC", "US", "AI Supercycle", "Layer 6 - HBM", 33.634519, 4.564511, 21.869489, 132.109031, 501.727338, null, null, null, null, "", "", ""], ["9983 JT Equity", "FAST RETAILING CO LTD", "JP", "Nextgen tech", "Consumer products", 30.447709, 16.093385, 16.906926, 44.873786, 60.520654, null, null, null, null, "", "", ""], ["XLE US Equity", "SS ENERGY SELECT SECTOR", "US", "Thematic", "Energy", 25.58598, 3.111511, 23.716012, 34.545881, 48.947779, null, null, null, null, "", "", ""], ["8035 JT Equity", "TOKYO ELECTRON LTD", "JP", "AI Supercycle", "Layer 4 - Other fab equipment - Manufacturing test, etch, deposition", 18.521527, 9.342993, 6.67804, 49.487705, 122.578185, null, null, null, null, "Chips buildout", "", ""], ["NEE US Equity", "NEXTERA ENERGY INC", "US", "AI Supercycle", "Electricity provider", 16.742864, 3.211711, 16.469428, 13.353329, 41.606715, null, null, null, null, "Renewable energy", "", ""], ["SBUX US Equity", "STARBUCKS CORP", "US", "Nextgen tech", "Consumer products", 15.422172, -3.820583, 7.73677, 23.52791, 14.562646, null, null, null, null, "", "", ""], ["300308 CH Equity", "ZHONGJI INNOLIGHT CO LTD-A", "CN - A", "AI Supercycle", "Photonics", 14.673381, 30.71298, 20.783148, 83.333333, 822.699703, null, null, null, null, "Data center buildout", "", ""], ["KO US Equity", "COCA-COLA CO/THE", "US", "Nextgen tech", "Consumer products", 13.107639, 0.385208, 10.893617, 16.616945, 10.48615, null, null, null, null, "", "", ""], ["NFLX US Equity", "NETFLIX INC", "US", "Nextgen tech", "Media", 12.155182, 5.271302, 14.137121, -16.357944, 10.783026, null, null, null, null, "", "", ""], ["2269 HK Equity", "WUXI BIOLOGICS CAYMAN INC", "CN - H", "Nextgen tech", "Pharmaceutical sciences", 11.493543, -0.928458, -3.45929, -4.173273, 88.7617, null, null, null, null, "", "", ""], ["PEP US Equity", "PEPSICO INC", "US", "Nextgen tech", "Consumer products", 10.729101, -2.046274, 11.410583, 4.937367, 9.261829, null, null, null, null, "", "", ""], ["6680 HK Equity", "JL MAG RARE-EARTH CO LTD -H", "CN - H", "AI Supercycle", "Precious metals mining", 10.684648, -3.70036, -3.438913, -15.984251, 65.426358, null, null, null, null, "Chips buildout", "", ""], ["600111 CH Equity", "CHINA NORTHERN RARE EARTH -A", "CN - A", "AI Supercycle", "Precious metals mining", 10.458911, -4.113396, -1.391006, -1.391006, 107.41483, null, null, null, null, "Chips buildout", "", ""], ["1321 JT Equity", "NF NIKKEI 225 ETF", "JP", "Index", "Index", 10.391538, 5.572316, 6.919482, 19.338014, 64.700997, null, null, null, null, "", "", ""], ["GLD US Equity", "SPDR GOLD SHARES", "US", "Geopolitics", "Commodity", 9.950286, -8.360189, 3.713616, 18.636216, 49.789636, null, null, null, null, "", "", ""], ["ANET US Equity", "ARISTA NETWORKS INC", "US", "AI Supercycle", "Networking", 9.318865, 4.60536, 18.335767, -5.223879, 101.032351, null, null, null, null, "", "", ""], ["300750 CH Equity", "CONTEMPORARY AMPEREX TECHN-A", "CN - A", "AI Supercycle", "Lithium", 6.741725, 7.082119, 11.410643, 5.498105, 84.856414, null, null, null, null, "", "", ""], ["ST SP Equity", "SINGAPORE TELECOMMUNICATIONS", "SG", "Nextgen tech", "Communication services", 6.331875, -2.98805, 9.192823, 14.319246, 39.541544, null, null, null, null, "", "", ""], ["AMD US Equity", "ADVANCED MICRO DEVICES", "US", "AI Supercycle", "Layer 1 - Fabless/Chips desginer", 5.893409, 16.439502, 13.939044, 10.116333, 166.786922, null, null, null, null, "Chips buildout", "", ""], ["1211 HK Equity", "BYD CO LTD-H", "CN - H", "Nextgen tech", "Automotive", 4.202533, 6.137186, 7.523513, -4.898335, -10.31377, null, null, null, null, "", "", ""], ["AMZN US Equity", "AMAZON.COM INC", "US", "AI Supercycle", "Hyperscalers", 3.15673, 9.014134, -5.201447, 7.986317, 28.931682, null, null, null, null, "", "", ""], ["AVGO US Equity", "BROADCOM INC", "US", "AI Supercycle", "Layer 1 - Fabless/Chips desginer", 2.097118, 3.599159, 0.766588, 9.327542, 105.983749, null, null, null, null, "Chips buildout", "", ""], ["600519 CH Equity", "KWEICHOW MOUTAI CO LTD-A", "CN - A", "Nextgen tech", "Consumer products", 1.26508, 3.007393, 1.46217, 0.981821, -6.775982, null, null, null, null, "", "", ""], ["GOOGL US Equity", "ALPHABET INC-CL A", "US", "AI Supercycle", "Hyperscalers", 1.059813, 3.729156, -4.028807, 34.628228, 108.408585, null, null, null, null, "", "", ""], ["002371 CH Equity", "NAURA TECHNOLOGY GROUP CO-A", "CN - A", "AI Supercycle", "Layer 4 - Other fab equipment - Manufacturing test, etch, deposition", 0.998925, 4.868709, -4.503338, 9.442795, 43.294168, null, null, null, null, "Chips buildout", "", ""], ["SPAB US Equity", "SS SPDR P AGG BOND ETF", "US", "Thematic", "Bonds", -0.34965, -0.658404, -0.619915, -1.041667, 2.231965, null, null, null, null, "", "", ""], ["SPY US Equity", "SS SPDR S&P 500 ETF TRUST-US", "US", "Index", "Index", -0.477187, 0.403142, -2.19374, 4.117791, 29.610355, null, null, null, null, "", "", ""], ["2899 HK Equity", "ZIJIN MINING GROUP CO LTD-H", "CN - H", "AI Supercycle", "Precious metals mining", -0.703843, -8.162243, -6.619144, 8.972075, 134.526856, null, null, null, null, "Chips buildout", "", ""], ["OR FP Equity", "L'OREAL", "EU", "Nextgen tech", "Consumer products", -1.028242, -0.578433, -8.014781, -2.353578, 4.005187, null, null, null, null, "", "", ""], ["9633 HK Equity", "NONGFU SPRING CO LTD-H", "CN - H", "Nextgen tech", "Consumer products", -1.532724, 4.898502, -1.205318, -12.044402, 35.828574, null, null, null, null, "", "", ""], ["XLK US Equity", "SS TECHNOLOGY SELECT SECTOR", "US", "Thematic", "Technology", -1.545392, 1.652833, -3.215478, 2.065448, 46.185111, null, null, null, null, "", "", ""], ["SAN FP Equity", "SANOFI", "US", "Nextgen tech", "Pharmaceutical sciences", -1.70068, 6.041148, -1.808033, -2.903768, -9.129702, null, null, null, null, "", "", ""], ["386 HK Equity", "CHINA PETROLEUM & CHEMICAL-H", "CN - H", "AI Supercycle", "Integrated oil & gas", -1.914891, -8.893278, -0.216447, 12.165453, 20.997379, null, null, null, null, "Traditional energy", "", ""], ["MP US Equity", "MP MATERIALS CORP", "US", "AI Supercycle", "Precious metals mining", -1.946516, -12.471582, -17.508418, -31.197345, 128.971963, null, null, null, null, "Chips buildout", "", ""], ["XLC US Equity", "SS COMM SELECT SECTOR SPDR", "US", "Thematic", "Communication services", -2.249786, -2.649514, -2.790302, 1.303191, 26.265193, null, null, null, null, "", "", ""], ["BRK/B US Equity", "BERKSHIRE HATHAWAY INC-CL B", "US", "Nextgen tech", "Financial", -2.34477, -1.809201, -2.701183, -0.803465, -5.934353, null, null, null, null, "", "", ""], ["8136 JT Equity", "SANRIO CO LTD", "JP", "Nextgen tech", "Consumer products", -2.386246, -13.510121, -3.285912, -37.916397, -23.014352, null, null, null, null, "", "", ""], ["NVDA US Equity", "NVIDIA CORP", "US", "AI Supercycle", "Layer 1 - Fabless/Chips desginer", -2.615831, -0.465442, -0.556935, 0.40948, 70.967745, null, null, null, null, "Chips buildout", "", ""], ["7203 JT Equity", "TOYOTA MOTOR CORP", "JP", "Nextgen tech", "Automotive", -2.677258, -4.750936, -9.145839, 14.127997, 30.08258, null, null, null, null, "", "", ""], ["9618 HK Equity", "JD.COM INC-CLASS A", "CN - H", "Nextgen tech", "Superapp", -3.040835, 2.857141, -4.533791, -15.326253, -21.242062, null, null, null, null, "", "", ""], ["600900 CH Equity", "CHINA YANGTZE POWER CO LTD-A", "CN - A", "AI Supercycle", "Electricity provider", -3.372432, -2.909758, -3.795618, -4.940495, -9.633183, null, null, null, null, "Renewable energy", "", ""], ["BA US Equity", "BOEING CO/THE", "US", "Geopolitics", "Artillery machines", -3.384994, 1.056209, -8.235687, 4.427466, 41.499486, null, null, null, null, "", "", ""], ["META US Equity", "META PLATFORMS INC-CLASS A", "US", "AI Supercycle", "Hyperscalers", -3.385555, -3.926183, -2.115361, -10.904578, 15.02865, null, null, null, null, "", "", ""], ["AAPL US Equity", "APPLE INC", "US", "AI Supercycle", "Hyperscalers", -3.881776, -0.130353, 0.092219, 6.205406, 36.797605, null, null, null, null, "", "", ""], ["XLV US Equity", "SS HEALTH CARE SELECT SECTOR", "US", "Thematic", "Healthcare", -3.97402, -2.494285, -5.115007, 5.080573, 10.70502, null, null, null, null, "", "", ""], ["300 HK Equity", "MIDEA GROUP CO LTD-H", "CN - H", "Nextgen tech", "Consumer products", -4.199325, -0.465383, -1.098262, 5.16288, 23.537911, null, null, null, null, "", "", ""], ["RACE IM Equity", "FERRARI NV", "EU", "Nextgen tech", "Automotive", -5.042681, -0.049917, -7.069926, -12.739686, -20.394911, null, null, null, null, "", "", ""], ["2318 HK Equity", "PING AN INSURANCE GROUP CO-H", "CN - H", "Nextgen tech", "Financial", -6.137723, -1.182032, -8.467152, 16.326532, 49.642007, null, null, null, null, "", "", "Insurance"], ["XLF US Equity", "SS FINANCIAL SELECT SECTOR", "US", "Thematic", "Financial", -6.553792, 2.536959, -7.162232, -1.591254, 11.805711, null, null, null, null, "", "", ""], ["PANW US Equity", "PALO ALTO NETWORKS INC", "US", "Nextgen tech", "Cybersecurity", -6.901935, 0.851552, -11.589369, -19.928075, -0.760682, null, null, null, null, "", "", ""], ["ABBV US Equity", "ABBVIE INC", "US", "Nextgen tech", "Pharmaceutical sciences", -7.374297, -6.43584, -3.472096, -7.852495, 21.928817, null, null, null, null, "", "", ""], ["2382 HK Equity", "SUNNY OPTICAL TECH", "CN - H", "AI Supercycle", "Photonics", -7.652686, 11.853832, -2.863777, -25.827423, 0.884244, null, null, null, null, "Data center buildout", "", ""], ["MA US Equity", "MASTERCARD INC - A", "US", "Nextgen tech", "Financial", -10.576599, -2.166226, -11.074027, -9.670302, 0.847118, null, null, null, null, "", "", ""], ["V US Equity", "VISA INC-CLASS A SHARES", "US", "Nextgen tech", "Financial", -11.022281, -1.95274, -10.171911, -10.289539, -5.027572, null, null, null, null, "", "", ""], ["1318 HK Equity", "MAO GEPING COSMETICS CO LT-H", "CN - H", "Nextgen tech", "Consumer products", -11.117821, -6.957618, -16.892652, -26.117526, -25.782035, null, null, null, null, "", "", ""], ["002230 CH Equity", "IFLYTEK CO LTD - A", "CN - A", "Nextgen tech", "Consumer products", -11.367011, -11.135938, -19.932884, -14.740037, 8.061597, null, null, null, null, "", "", ""], ["LLY US Equity", "ELI LILLY & CO", "US", "Nextgen tech", "Pharmaceutical sciences", -11.585953, -4.609777, -11.638298, 14.601255, 32.497815, null, null, null, null, "", "", ""], ["RKLB US Equity", "ROCKET LAB CORP", "US", "Spacetech", "Rocket launch", -12.172654, -3.177136, -24.07281, 3.859322, 239.989812, null, null, null, null, "", "", ""], ["CRWD US Equity", "CROWDSTRIKE HOLDINGS INC - A", "US", "Nextgen tech", "Cybersecurity", -12.985583, -9.545529, -15.484273, -20.050238, 7.072514, null, null, null, null, "", "", ""], ["688256 CH Equity", "CAMBRICON TECHNOLOGIES-A", "CN - A", "AI Supercycle", "Layer 1 - Fabless/Chips desginer", -14.310795, 3.834012, -21.12001, -4.490493, 97.561737, null, null, null, null, "Chips buildout", "", ""], ["3690 HK Equity", "MEITUAN-CLASS B", "CN - H", "Nextgen tech", "Superapp", -15.10516, 12.262962, -15.428569, -12.684363, -38.927096, null, null, null, null, "", "", ""], ["9988 HK Equity", "ALIBABA GROUP HOLDING LTD", "CN - H", "AI Supercycle", "Hyperscalers", -15.167784, -5.318351, -18.081658, -23.579201, 20.610688, null, null, null, null, "", "", ""], ["9896 HK Equity", "MINISO GROUP HOLDING LTD", "CN - H", "Nextgen tech", "Consumer products", -15.614975, -4.363638, -20.941885, -28.24011, 1.970919, null, null, null, null, "", "", ""], ["RMS FP Equity", "HERMES INTERNATIONAL", "EU", "Nextgen tech", "Consumer products", -16.753802, -10.087269, -21.032462, -13.931204, -23.448427, null, null, null, null, "", "", ""], ["BKNG US Equity", "BOOKING HOLDINGS INC", "US", "Nextgen tech", "Superapp", -17.061166, 0.988844, -18.112146, -14.519655, -1.771888, null, null, null, null, "", "", ""], ["9984 JP Equity", "SOFTBANK GROUP CORP", "JP", "AI Supercycle", "Hyperscalers", -18.331528, 3.744493, -15.246233, -32.227467, 122.629247, null, null, null, null, "", "", "Financial"], ["6758 JT Equity", "SONY GROUP CORP", "JP", "Nextgen tech", "Consumer technology", -18.582986, -2.409639, -13.402868, -25.554808, -2.521314, null, null, null, null, "", "", ""], ["700 HK Equity", "TENCENT HOLDINGS LTD", "CN - H", "AI Supercycle", "Hyperscalers", -18.94061, -8.762421, -18.94061, -22.486569, 13.534173, null, null, null, null, "", "", ""], ["TSLA US Equity", "TESLA INC", "US", "AI Supercycle", "Hyperscalers", -21.103933, -13.429434, -23.017641, -16.41394, 36.933439, null, null, null, null, "", "", ""], ["MSFT US Equity", "MICROSOFT CORP", "US", "AI Supercycle", "Hyperscalers", -21.116844, -8.056487, -21.817763, -26.986457, -2.171234, null, null, null, null, "", "", ""], ["9999 HK Equity", "NETEASE INC", "CN - H", "Nextgen tech", "Consumer products", -21.678323, -4.680853, -19.713263, -24.515587, 20.592192, null, null, null, null, "", "", ""], ["9992 HK Equity", "POP MART INTERNATIONAL GROUP", "CN - H", "Nextgen tech", "Consumer technology", -21.905747, -26.796115, -23.451775, -41.910631, 4.867874, null, null, null, null, "", "", ""], ["1810 HK Equity", "XIAOMI CORP-CLASS B", "CN - H", "Nextgen tech", "Consumer products", -22.4429, -7.07912, -19.359835, -39.980788, -27.433218, null, null, null, null, "", "", ""], ["9888 HK Equity", "BAIDU INC-CLASS A", "CN - H", "AI Supercycle", "Hyperscalers", -24.130738, -9.685432, -24.602627, -13.343925, 37.146447, null, null, null, null, "", "", ""], ["GRAB US Equity", "GRAB HOLDINGS LTD - CL A", "US", "Nextgen tech", "Superapp", -27.559055, -4.909561, -24.744376, -37.201365, -7.304786, null, null, null, null, "", "", ""], ["NOVOB DC Equity", "NOVO NORDISK A/S-B", "US", "Nextgen tech", "Pharmaceutical sciences", -27.903104, -3.583721, -37.193353, -36.835124, -41.86302, null, null, null, null, "", "", ""], ["COIN US Equity", "COINBASE GLOBAL INC -CLASS A", "US", "Nextgen tech", "Financial", -28.541834, -13.993487, -30.438719, -52.656788, -0.353732, null, null, null, null, "", "", "Superapp"], ["NKE US Equity", "NIKE INC -CL B", "US", "Nextgen tech", "Consumer products", -30.467762, -21.540656, -32.967703, -32.536032, -19.117647, null, null, null, null, "", "", ""], ["9961 HK Equity", "TRIP.COM GROUP LTD", "CN - H", "Nextgen tech", "Superapp", -30.977703, -4.327153, -33.706756, -29.279439, -10.218654, null, null, null, null, "", "", ""], ["1024 HK Equity", "KUAISHOU TECHNOLOGY", "CN - H", "Nextgen tech", "Media", -30.988677, -25.537457, -43.028036, -45.506554, -5.439501, null, null, null, null, "", "", ""], ["EL US Equity", "ESTEE LAUDER COMPANIES-CL A", "EU", "Nextgen tech", "Consumer products", -31.350693, -22.255224, -35.15307, -16.383343, 37.50469, null, null, null, null, "", "", ""], ["2097 HK Equity", "MIXUE GROUP-H", "CN - H", "Nextgen tech", "Consumer products", -31.66175, -12.413359, -35.137657, -33.651551, -32.557011, null, null, null, null, "", "", ""], ["CRM US Equity", "SALESFORCE INC", "US", "Nextgen tech", "SaaS", -32.635439, -12.344159, -34.136469, -29.307349, -33.031515, null, null, null, null, "", "", ""], ["HOOD US Equity", "ROBINHOOD MARKETS INC - A", "US", "Nextgen tech", "Financial", -39.137228, -10.709283, -40.33356, -49.539436, 73.093063, null, null, null, null, "", "", "Superapp"]];
+
+const UL_HAS_TB = new Set(["PANW US Equity", "AMD US Equity", "RACE IM Equity", "8136 JT Equity", "9992 HK Equity", "LLY US Equity", "BKNG US Equity", "7203 JT Equity", "9983 JT Equity", "SPAB US Equity", "386 HK Equity", "AAPL US Equity", "XLC US Equity", "GOOGL US Equity", "SAN FP Equity", "688256 CH Equity", "AMZN US Equity", "OR FP Equity", "600900 CH Equity", "META US Equity", "XLE US Equity", "NOVOB DC Equity", "TSLA US Equity", "700 HK Equity", "9961 HK Equity", "175 HK Equity", "HOOD US Equity", "2899 HK Equity", "9999 HK Equity", "9988 HK Equity", "MU US Equity", "AVGO US Equity", "9633 HK Equity", "BRK/B US Equity", "MRVL US Equity", "RMS FP Equity", "KO US Equity", "3690 HK Equity", "9896 HK Equity", "1024 HK Equity", "1810 HK Equity", "NFLX US Equity", "MA US Equity", "1211 HK Equity", "002230 CH Equity", "SPY US Equity", "9888 HK Equity", "002371 CH Equity", "8035 JT Equity", "300750 CH Equity", "MSFT US Equity", "XLK US Equity", "XLV US Equity", "CRWD US Equity", "2318 HK Equity", "EL US Equity", "6758 JT Equity", "V US Equity", "CRM US Equity", "2382 HK Equity", "NVDA US Equity", "GRAB US Equity", "9618 HK Equity", "XLF US Equity", "NKE US Equity", "ST SP Equity", "SBUX US Equity", "PEP US Equity"]);
+const TB_SET = new Set(["AAPL80","AMD80","AMZN80","AVGO80","BABA80","BIDU80","BKNG80","BRKB80","BYDCOM80","CAMBRI80","CATL80","CRM80","CRWD80","CYPC80","ESTEE80","FERARI80","GEELY80","GOOG80","GRAB80","HERMES80","HOOD80","IFLYTE80","JD80","KO80","KUAISH80","LLY80","LOREAL80","MA80","MEITUA80","META80","MICRON80","MNSO80","MRVL80","MSFT80","NAURA80","NETEAS80","NFLX80","NIKE80","NIKKEI80","NONGFU80","NOVOB80","NVDA80","PANW80","PEP80","PETROC80","PINGAN80","POPMAR80","SANOFI80","SANRIO80","SBUX80","SINGTE80","SONY80","SPBOND80","SPCOM80","SPENGY80","SPFIN80","SPHLTH80","SPTECH80","SUNNY80","TEL80","TENCEN80","TOYOTA80","TRIPCO80","TSLA80","UNIQLO80","VISA80","WUXIAT80","XIAOMI80","ZIJIN80"]);
+// idx: [ticker,name,country,theme,sector,ytd,1m,3m,6m,1y,wk52h,tv,rsi,div,subtheme,inception,sector2]
+const PIDX = {ytd:5,"1m":6,"3m":7,"6m":8,"1y":9};
+const PLAB = {ytd:"YTD","1m":"1 Month","3m":"3 Months","6m":"6 Months","1y":"1 Year"};
+const THEME_META = {
+  "AI Supercycle":{icon:"🤖",cls:"b-ai",color:"#7C3AED"},
+  "Nextgen tech":{icon:"🚀",cls:"b-nxt",color:"#0369A1"},
+  "Thematic":{icon:"📊",cls:"b-tmt",color:"#0C4A6E"},
+  "Index":{icon:"🌐",cls:"b-idx",color:"#4A6080"},
+  "Geopolitics":{icon:"🛡️",cls:"b-geo",color:"#991B1B"},
+  "Spacetech":{icon:"🛸",cls:"b-spc",color:"#92400E"}
+};
+const GOAL_THEMES = {
+  growth:["AI Supercycle","Nextgen tech","Spacetech"],
+  stability:["Thematic","Index"],
+  tech:["AI Supercycle","Nextgen tech"],
+  commodity:["Geopolitics"]
+};
+const GOAL_COUNTRIES = {regional:["CN - A","CN - H","JP","SG","EU","HK"]};
+const TREND_DEFS = [
+  {id:"high52",icon:"📈",name:"Near 52W High",desc:"52W ratio > 90%"},
+  {id:"low52",icon:"📉",name:"Near 52W Low",desc:"52W ratio < 20%"},
+  {id:"rsiOB",icon:"⚡",name:"RSI Overbought",desc:"RSI > 70"},
+  {id:"rsiOS",icon:"🧊",name:"RSI Oversold",desc:"RSI < 30"},
+  {id:"sub_chips",icon:"🔬",name:"Chips Buildout",desc:"Sub-theme filter"},
+  {id:"sub_dc",icon:"🏭",name:"Data Center Buildout",desc:"Sub-theme filter"},
+  {id:"sub_renew",icon:"⚡",name:"Renewable Energy",desc:"Sub-theme filter"},
+  {id:"sub_trad",icon:"🛢️",name:"Traditional Energy",desc:"Sub-theme filter"}
+];
+const CTRY_COLORS = ["#003F88","#00AEEF","#29C5F6","#0284C7","#38BDF8","#7DD3FC","#BAE6FD","#93C5FD"];
+const SEC_COLORS  = ["#003F88","#00AEEF","#29C5F6","#0284C7","#38BDF8","#7DD3FC","#BAE6FD","#93C5FD"];
+const SUBTHEME_MAP = {"sub_chips":"Chips buildout","sub_dc":"Data center buildout","sub_renew":"Renewable energy","sub_trad":"Traditional energy"};
+
+let activeTab="dr",period="ytd",sortCol="ytd",sortDir=-1;
+let fTheme="",fSector="",fCountry="",fSearch="",fIdeaTheme="",fTrend="";
+let compareSet=new Set();
+let distChart=null,countryChart=null,sectorChart=null;
+let ulModalShown=localStorage.getItem("ulModalSkip")==="1";
+let fontScale=1.0;
+
+// Column visibility
+let visibleCols = {ytd:true,"1m":true,"3m":true,"6m":true,"1y":true,rsi:false,wk52h:false,div:false};
+
+function getRAW(){return activeTab==="dr"?DR_RAW:UL_RAW;}
+function getV(r){return r[PIDX[period]];}
+function fmtP(v,d=2){if(v==null||isNaN(v))return"—";return(v>=0?"+":"")+v.toFixed(d)+"%";}
+
+// RSI/52W calculated from actual values — idx: wk52h=10, tv=11, rsi=12, div=13, subtheme=14
+function matchTrend(r,id){
+  const wk52h=r[10],rsiVal=r[12],sub=r[14]||"";
+  if(id==="high52")return wk52h!=null&&wk52h>0.90;
+  if(id==="low52")return wk52h!=null&&wk52h<0.20;
+  if(id==="rsiOB")return rsiVal!=null&&rsiVal>70;
+  if(id==="rsiOS")return rsiVal!=null&&rsiVal<30;
+  if(SUBTHEME_MAP[id])return sub.toLowerCase()===SUBTHEME_MAP[id].toLowerCase();
+  return false;
+}
+function getTrendCount(id){return DR_RAW.filter(r=>matchTrend(r,id)).length;}
+
+function filtered(){
+  const raw=getRAW();
+  return raw.filter(r=>{
+    if(fIdeaTheme&&r[3]!==fIdeaTheme)return false;
+    if(fTheme&&r[3]!==fTheme)return false;
+    if(fSector&&r[4]!==fSector)return false;
+    if(fCountry&&r[2]!==fCountry)return false;
+    if(fSearch){const q=fSearch.toLowerCase();if(!r[1].toLowerCase().includes(q)&&!r[0].toLowerCase().includes(q))return false;}
+    if(fTrend){
+      if(SUBTHEME_MAP[fTrend]){
+        // subtheme filter — check directly from current row's subtheme (idx 14)
+        if((r[14]||"").toLowerCase()!==SUBTHEME_MAP[fTrend].toLowerCase())return false;
+      } else {
+        // technical filter — use DR_RAW match
+        const drRow=activeTab==="dr"?DR_RAW.find(x=>x[0]===r[0]):DR_RAW.find(d=>{
+          const dc=d[1].replace(/-DR$|-DRX$/,"").replace(/ -DR$/,"").trim().toUpperCase();
+          const uc=r[1].trim().toUpperCase();
+          return dc===uc||dc.startsWith(uc)||uc.startsWith(dc);
+        });
+        if(!drRow||!matchTrend(drRow,fTrend))return false;
+      }
+    }
+    return true;
+  });
+}
+
+function relevantSectors(){
+  return[...new Set(getRAW().map(r=>r[4]).filter(Boolean))].sort();
+}
+
+function allSorted(data){
+  const CI={name:1,ticker:0,country:2,theme:3,sector:4,ytd:5,"1m":6,"3m":7,"6m":8,"1y":9,rsi:12,wk52h:10,div:13};
+  const idx=CI[sortCol]??PIDX[period];
+  return[...data].sort((a,b)=>{
+    const av=a[idx],bv=b[idx];
+    if(av==null&&bv==null)return 0;if(av==null)return 1;if(bv==null)return -1;
+    return typeof av==="string"?sortDir*av.localeCompare(bv):sortDir*(av-bv);
+  });
+}
+
+function setFontScale(s){
+  fontScale=Math.max(0.7,Math.min(1.5,s));
+  document.documentElement.style.setProperty("--fs",fontScale.toFixed(2));
+  document.getElementById("fsLabel").textContent=Math.round(fontScale*100)+"%";
+}
+
+function updateHeroMovers(){
+  const seen=new Set(),deduped=[];
+  DR_RAW.forEach(r=>{const v=getV(r);if(v!=null&&!isNaN(v)&&!seen.has(r[0])){seen.add(r[0]);deduped.push(r);}});
+  deduped.sort((a,b)=>getV(b)-getV(a));
+  document.getElementById("moverPeriodBadge").textContent=PLAB[period]+" · Full Universe";
+  const rS=(items,elId,cls)=>{
+    const el=document.getElementById(elId);el.innerHTML="";
+    items.slice(0,3).forEach((r,i)=>{
+      const v=getV(r);
+      el.innerHTML+=`<div class="hm-row"><div class="hm-num ${cls}">${i+1}</div><div class="hm-info"><div class="hm-name" title="${r[1]}">${r[1].replace(/-DR$|-DRX$/,"")}</div><div class="hm-ticker-sm">${r[0].split(" ")[0]}</div></div><div class="hm-pct ${v>=0?"pos":"neg"}">${fmtP(v,1)}</div></div>`;
+    });
+  };
+  rS(deduped,"heroGainers","g");
+  rS([...deduped].reverse(),"heroLosers","r");
+}
+
+function updateMetrics(data){
+  const vals=data.map(r=>getV(r)).filter(v=>v!=null&&!isNaN(v));
+  const g=vals.filter(v=>v>0).length,l=vals.filter(v=>v<=0).length;
+  const s=[...vals].sort((a,b)=>a-b);
+  const m=s.length%2===0?(s[s.length/2-1]+s[s.length/2])/2:s[Math.floor(s.length/2)];
+  document.getElementById("mTotal").textContent=data.length;
+  document.getElementById("mGain").textContent=g;
+  document.getElementById("mGainPct").textContent=(vals.length?(g/vals.length*100).toFixed(0):0)+"% of view";
+  document.getElementById("mLose").textContent=l;
+  document.getElementById("mLosePct").textContent=(vals.length?(l/vals.length*100).toFixed(0):0)+"% of view";
+  const mEl=document.getElementById("mMed");
+  mEl.textContent=isNaN(m)?"—":fmtP(m,1);mEl.className="mc-val "+(m>=0?"pos":"neg");
+  document.getElementById("mPeriodLbl").textContent=PLAB[period];
+  document.getElementById("mThemes").textContent=new Set(data.map(r=>r[3]).filter(Boolean)).size;
+}
+
+function updateIdeas(){
+  const grid=document.getElementById("ideaGrid");grid.innerHTML="";
+  Object.keys(THEME_META).forEach(t=>{
+    const meta=THEME_META[t];
+    const rows=getRAW().filter(r=>r[3]===t);
+    const vals=rows.map(r=>getV(r)).filter(v=>v!=null&&!isNaN(v));
+    const avg=vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:0;
+    const card=document.createElement("div");
+    card.className="idea-card"+(fIdeaTheme===t?" active":"");
+    card.innerHTML=`<span class="idea-icon">${meta.icon}</span><div class="idea-name">${t}</div><div class="idea-count">${rows.length} DRs</div><div class="idea-perf ${avg>=0?"pos":"neg"}">${fmtP(avg,1)} avg</div>`;
+    card.onclick=()=>{fIdeaTheme=fIdeaTheme===t?"":t;track("idea_click",t);render();};
+    grid.appendChild(card);
+  });
+}
+
+function updateTrending(){
+  const col=document.getElementById("trendingCol");
+  const grid=document.getElementById("trendGrid");
+  col.style.opacity="1";col.style.pointerEvents="auto";
+  grid.innerHTML="";
+  TREND_DEFS.forEach(td=>{
+    const cnt=getTrendCount(td.id);
+    if(cnt===0)return; // hide if 0
+    const btn=document.createElement("div");
+    btn.className="trend-btn"+(fTrend===td.id?" active":"");
+    btn.innerHTML=`<div class="trend-icon">${td.icon}</div><div class="trend-name">${td.name}</div><div class="trend-desc">${td.desc}</div><div class="trend-count">${cnt} DRs</div>`;
+    btn.onclick=()=>{fTrend=fTrend===td.id?"":td.id;track("trend_click",td.name);render();};
+    grid.appendChild(btn);
+  });
+}
+
+function updateHeatmap(){
+  const el=document.getElementById("heatmapEl");el.innerHTML="";
+  const raw=getRAW();
+  Object.keys(THEME_META).forEach(theme=>{
+    const meta=THEME_META[theme];
+    const themeRows=raw.filter(r=>r[3]===theme);
+    const sm={};
+    themeRows.forEach(r=>{
+      const sec=r[4];
+      if(!sec||!sec.trim())return; // skip empty sector
+      const v=getV(r);
+      if(v!=null&&!isNaN(v)){if(!sm[sec])sm[sec]=[];sm[sec].push(v);}
+    });
+    if(!Object.keys(sm).length)return;
+    const group=document.createElement("div");group.className="hm-theme-group";
+    group.innerHTML=`<div class="hm-theme-label"><div class="hm-theme-dot" style="background:${meta.color}"></div>${meta.icon} ${theme}</div><div class="hm-sectors" id="hm_${theme.replace(/[^a-zA-Z0-9]/g,"_")}"></div>`;
+    el.appendChild(group);
+    const secGrid=group.querySelector(".hm-sectors");
+    const allVals=Object.values(sm).flat();
+    const mx=Math.max(...allVals.map(Math.abs))||1;
+    Object.entries(sm).sort((a,b)=>{
+      const avgA=a[1].reduce((x,y)=>x+y,0)/a[1].length;
+      const avgB=b[1].reduce((x,y)=>x+y,0)/b[1].length;
+      return avgB-avgA;
+    }).forEach(([sec,vals])=>{
+      if(!sec||!sec.trim())return;
+      const avg=vals.reduce((a,b)=>a+b,0)/vals.length;
+      const norm=Math.abs(avg)/mx;
+      let bg,tc;
+      if(avg>=0){bg=`rgba(0,122,77,${(0.15+norm*0.6).toFixed(2)})`;tc=norm>0.4?"#002A17":"#005A35";}
+      else{bg=`rgba(192,57,43,${(0.15+norm*0.6).toFixed(2)})`;tc=norm>0.4?"#4A0000":"#8B1A1A";}
+      const cell=document.createElement("div");
+      cell.className="hm-cell"+(fSector===sec?" selected":"");
+      cell.style.background=bg;cell.title=sec+" ("+fmtP(avg,1)+")";
+      cell.onclick=()=>{fSector=fSector===sec?"":sec;document.getElementById("sectorFilter").value=fSector;document.getElementById("hmReset").classList.toggle("show",fSector!=="");track("heatmap_sector",sec);render();};
+      cell.innerHTML=`<div class="hm-cell-name" style="color:${tc}">${sec}</div><div class="hm-cell-val" style="color:${tc}">${fmtP(avg,1)}</div>`;
+      secGrid.appendChild(cell);
+    });
+  });
+}
+
+function updateDonut(data,canvasId,legendId,colorsArr,keyFn){
+  const cm={};data.forEach(r=>{const k=keyFn(r);if(k)cm[k]=(cm[k]||0)+1;});
+  const entries=Object.entries(cm).sort((a,b)=>b[1]-a[1]).slice(0,7);
+  const total=entries.reduce((s,[,v])=>s+v,0);
+  const labels=entries.map(([k])=>k);
+  const vals=entries.map(([,v])=>v);
+  const colors=labels.map((_,i)=>colorsArr[i]||colorsArr[colorsArr.length-1]);
+  const existing=Chart.getChart(canvasId);
+  if(existing)existing.destroy();
+  new Chart(document.getElementById(canvasId),{
+    type:"doughnut",
+    data:{labels,datasets:[{data:vals,backgroundColor:colors,borderWidth:2,borderColor:"#fff"}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:"58%",
+      plugins:{legend:{display:false},
+        tooltip:{callbacks:{label:c=>`${c.label}: ${c.parsed} (${(c.parsed/total*100).toFixed(0)}%)`}}}}
+  });
+  const leg=document.getElementById(legendId);leg.innerHTML="";
+  entries.forEach(([k,v],i)=>{
+    leg.innerHTML+=`<div class="donut-row"><div class="donut-left"><div class="donut-dot" style="background:${colors[i]}"></div><div class="donut-name">${k}</div></div><div class="donut-pct">${(v/total*100).toFixed(0)}%</div></div>`;
+  });
+}
+
+function updateExposure(data){
+  document.getElementById("expIdeaTag").textContent=fIdeaTheme||"All";
+  updateDonut(data,"countryDonut","countryLegend",CTRY_COLORS,r=>r[2]);
+  updateDonut(data,"sectorDonut","sectorLegend",SEC_COLORS,r=>r[4]);
+}
+
+function updateDist(data){
+  document.getElementById("distIdeaTag").textContent=fIdeaTheme||"All";
+  const vals=data.map(r=>getV(r)).filter(v=>v!=null&&!isNaN(v));
+  if(!vals.length)return;
+  const avg=vals.reduce((a,b)=>a+b,0)/vals.length;
+  const max=Math.max(...vals),min=Math.min(...vals);
+  const avgEl=document.getElementById("dAvg");avgEl.textContent=fmtP(avg,1);avgEl.className="dist-stat-val "+(avg>=0?"pos":"neg");
+  document.getElementById("dMax").textContent=fmtP(max,1);
+  document.getElementById("dMin").textContent=fmtP(min,1);
+  const bins=[{l:"<-30",c:0},{l:"-20~-30",c:0},{l:"-10~-20",c:0},{l:"0~-10",c:0},{l:"0~10",c:0},{l:"10~20",c:0},{l:"20~30",c:0},{l:">30",c:0}];
+  vals.forEach(v=>{if(v<-30)bins[0].c++;else if(v<-20)bins[1].c++;else if(v<-10)bins[2].c++;else if(v<0)bins[3].c++;else if(v<10)bins[4].c++;else if(v<20)bins[5].c++;else if(v<30)bins[6].c++;else bins[7].c++;});
+  if(distChart)distChart.destroy();
+  distChart=new Chart(document.getElementById("distChart"),{
+    type:"bar",
+    data:{labels:bins.map(b=>b.l),datasets:[{data:bins.map(b=>b.c),backgroundColor:bins.map((_,i)=>i<4?"rgba(192,57,43,0.72)":"rgba(0,122,77,0.72)"),borderRadius:3,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:10},color:"#8FA3BE"},grid:{display:false}},y:{ticks:{font:{size:11},color:"#8FA3BE",stepSize:1},grid:{color:"rgba(0,0,0,0.05)"}}}}
+  });
+}
+
+function updateColCustomizer(){
+  const bar=document.getElementById("colCustBar");
+  bar.innerHTML="<span style='font-size:13px;color:var(--text2);font-weight:600;margin-right:4px'>Columns:</span>";
+  const allCols=[
+    {id:"ytd",label:"YTD %"},{id:"1m",label:"1M %"},{id:"3m",label:"3M %"},
+    {id:"6m",label:"6M %"},{id:"1y",label:"1Y %"},
+    {id:"wk52h",label:"52W High %"},
+    {id:"div",label:"Div Yield %"},
+    {id:"rsi",label:"RSI",ulOnly:true}
+  ];
+  allCols.forEach(col=>{
+    if(col.drOnly&&activeTab!=="dr")return;
+    if(col.ulOnly&&activeTab!=="ul")return;
+    const btn=document.createElement("label");
+    btn.className="col-cust-btn"+(visibleCols[col.id]?" active":"");
+    btn.style.cursor="pointer";
+    btn.innerHTML=`<input type="checkbox" ${visibleCols[col.id]?"checked":""} style="accent-color:var(--navy)"> ${col.label}`;
+    btn.querySelector("input").onchange=(e)=>{
+      visibleCols[col.id]=e.target.checked;
+      btn.classList.toggle("active",e.target.checked);
+      updateTable(filtered());
+    };
+    bar.appendChild(btn);
+  });
+}
+
+function updateTable(data){
+  const rows=allSorted(data);
+  document.getElementById("tableCount").textContent=rows.length+" results";
+  document.getElementById("rowCount").textContent=rows.length+" rows";
+  document.getElementById("tableLbl").textContent=activeTab==="dr"?"DR80 Securities":"UL Price — For Reference Only";
+  // Update thead
+  const colDefs=[
+    {id:"chk",label:"",w:"36px",nosort:true,freeze:"col-freeze-0"},
+    {id:"name",label:"Name",col:"name",freeze:"col-freeze-1"},
+    {id:"ticker",label:"Ticker",col:"ticker"},
+    {id:"country",label:"Country",col:"country"},
+    {id:"theme",label:"Theme",col:"theme"},
+    {id:"sector",label:"Sector",col:"sector"},
+    {id:"signal",label:"Signal",nosort:true,right:true},
+    {id:"research",label:"Research",nosort:true,right:true},
+    {id:"ytd",label:"YTD %",col:"ytd",right:true,vis:"ytd"},
+    {id:"1m",label:"1M %",col:"1m",right:true,vis:"1m"},
+    {id:"3m",label:"3M %",col:"3m",right:true,vis:"3m"},
+    {id:"6m",label:"6M %",col:"6m",right:true,vis:"6m"},
+    {id:"1y",label:"1Y %",col:"1y",right:true,vis:"1y"},
+    {id:"wk52h",label:"52W High",col:"wk52h",right:true,vis:"wk52h"},
+    {id:"div",label:"Div Yield %",col:"div",right:true,vis:"div"},
+    {id:"rsi",label:"RSI",col:"rsi",right:true,vis:"rsi",ulOnly:true}
+  ];
+  const thead=document.getElementById("tblHead");thead.innerHTML="";
+  const tr=document.createElement("tr");
+  colDefs.forEach(c=>{
+    if(c.drOnly&&activeTab!=="dr")return;
+    if(c.ulOnly&&activeTab!=="ul")return;
+    if(c.vis&&!visibleCols[c.vis])return;
+    const th=document.createElement("th");
+    if(c.w)th.style.width=c.w;
+    if(c.right)th.style.textAlign="right";
+    if(c.freeze)th.classList.add(c.freeze);
+    if(c.col){
+      th.dataset.col=c.col;
+      th.innerHTML=`${c.label}<span class="sort-arrow" id="sa-${c.col}">${sortCol===c.col?(sortDir===1?" ↑":" ↓"):""}</span>`;
+      if(sortCol===c.col)th.classList.add("sorted");
+      th.addEventListener("click",()=>{if(sortCol===c.col)sortDir*=-1;else{sortCol=c.col;sortDir=-1;}render();});
+    }else{th.textContent=c.label;}
+    tr.appendChild(th);
+  });
+  thead.appendChild(tr);
+
+  const allVals=getRAW().map(r=>getV(r)).filter(v=>v!=null&&!isNaN(v)).sort((a,b)=>a-b);
+  const tb=document.getElementById("tblBody");tb.innerHTML="";
+  rows.forEach(r=>{
+    const [ticker,name,country,theme,sector,ytd,m1,m3,m6,y1,wk52h,tv,rsi,div,subtheme,inception,sector2]=r;
+    const tc=(THEME_META[theme]||{}).cls||"";
+    const v=getV(r);
+    const idx=allVals.findIndex(x=>x===v);
+    const pct=allVals.length?idx/allVals.length:0.5;
+    const sig=pct>=0.8?'<span class="badge b-perf b-top">Top 20%</span>':pct<=0.2?'<span class="badge b-perf b-bot">Bot 20%</span>':'<span class="badge b-perf b-mid">Mid</span>';
+    const tkShort=ticker.split(" ")[0];
+    const isTB=TB_SET.has(tkShort);
+    const resLink=isTB?`<a class="settrade-link" href="https://www.settrade.com/th/equities/dr/quote/${tkShort}/research" target="_blank" onclick="track('research_click','${tkShort}')">📊 Research</a>`:'<span style="color:var(--text3);font-size:11px">—</span>';
+    // Upcoming badge — DR tab: check TB Equity. UL tab: check UL_HAS_TB lookup
+    const hasTB = activeTab==="dr" ? ticker.includes("TB Equity") : UL_HAS_TB.has(ticker);
+    const upcomingBadge=!hasTB?'<span class="badge b-upcoming" style="margin-left:5px;font-size:10px">Upcoming</span>':"";
+    const chk=compareSet.has(ticker)?"checked":"";
+    const cleanName=name.replace(/-DR$|-DRX$/,"");
+    // Sector display — show sector2 if present
+    const sectorHtml=sector2
+      ?`<div style="font-size:12px;color:var(--text2)">${sector}</div><div style="font-size:10px;color:var(--text3);margin-top:2px;background:var(--gray100);border-radius:3px;padding:1px 5px;display:inline-block">${sector2}</div>`
+      :`<div style="font-size:12px;color:var(--text2)">${sector||"—"}</div>`;
+    // Subtheme chip
+    const subthemeHtml=subtheme?`<div style="font-size:10px;color:#7C3AED;margin-top:2px;font-family:'IBM Plex Mono',monospace">${subtheme}</div>`:"";
+    // For UL tab, get RSI/wk52h/div from DR_RAW match by name
+    const drData = activeTab==="ul" ? DR_RAW.find(d=>{
+      const dc=d[1].replace(/-DR$|-DRX$/,"").replace(/ -DR$/,"").trim().toUpperCase();
+      const uc=name.trim().toUpperCase();
+      if(dc===uc||dc.startsWith(uc)||uc.startsWith(dc))return true;
+      const dw=new Set(dc.split()),uw=new Set(uc.split());
+      return [...dw].filter(w=>uw.has(w)).length>=3&&uw.size>=3;
+    }) : r;
+    const ulRsi = drData?drData[12]:null;
+    const ulWk52h = drData?drData[10]:null;
+    const ulDiv = drData?drData[13]:null;
+    const trEl=document.createElement("tr");
+    let cells=`<td class="col-freeze-0"><input type="checkbox" class="chk" ${chk} onchange="handleChk('${ticker.replace(/'/g,"\'")}',this.checked)"></td>`;
+    cells+=`<td class="col-freeze-1"><div class="td-name" title="${cleanName}">${cleanName}</div>${upcomingBadge}${subthemeHtml}<div class="td-ticker-sm">${ticker}</div></td>`;
+    cells+=`<td><div style="font-family:'IBM Plex Mono',monospace;font-size:11px">${tkShort}</div></td>`;
+    cells+=`<td style="font-size:13px;color:var(--text2)">${country}</td>`;
+    cells+=`<td><span class="badge ${tc}">${theme}</span></td>`;
+    cells+=`<td>${sectorHtml}</td>`;
+    cells+=`<td style="text-align:right">${sig}</td>`;
+    cells+=`<td style="text-align:right">${resLink}</td>`;
+    if(visibleCols["ytd"])cells+=`<td class="td-num ${ytd>0?"pos":ytd<0?"neg":"neu"}">${fmtP(ytd)}</td>`;
+    if(visibleCols["1m"])cells+=`<td class="td-num ${m1>0?"pos":m1<0?"neg":"neu"}">${fmtP(m1)}</td>`;
+    if(visibleCols["3m"])cells+=`<td class="td-num ${m3>0?"pos":m3<0?"neg":"neu"}">${fmtP(m3)}</td>`;
+    if(visibleCols["6m"])cells+=`<td class="td-num ${m6>0?"pos":m6<0?"neg":"neu"}">${fmtP(m6)}</td>`;
+    if(visibleCols["1y"])cells+=`<td class="td-num ${y1>0?"pos":y1<0?"neg":"neu"}">${fmtP(y1)}</td>`;
+    // wk52h and div: DR tab uses own data, UL tab uses drData match
+    const dispWk52h = activeTab==="dr" ? wk52h : ulWk52h;
+    const dispDiv   = activeTab==="dr" ? div    : ulDiv;
+    if(visibleCols["wk52h"])cells+=`<td class="td-num">${dispWk52h!=null?(dispWk52h*100).toFixed(1)+"%":"—"}</td>`;
+    if(visibleCols["div"])cells+=`<td class="td-num">${dispDiv!=null?dispDiv.toFixed(2)+"%":"—"}</td>`;
+    if(activeTab==="ul"&&visibleCols["rsi"])cells+=`<td class="td-num ${ulRsi!=null?(ulRsi>70?"neg":ulRsi<30?"pos":"neu"):"neu"}">${ulRsi!=null?ulRsi.toFixed(1):"—"}</td>`;
+    trEl.innerHTML=cells;
+    tb.appendChild(trEl);
+  });
+
+  // Update scroll bar
+  const tblWrap=document.getElementById("tblWrap");
+  const scrollBar=document.getElementById("tblScrollBar");
+  scrollBar.max=Math.max(0,tblWrap.scrollWidth-tblWrap.clientWidth);
+  scrollBar.value=tblWrap.scrollLeft;
+}
+
+function handleChk(ticker,on){
+  if(on){if(compareSet.size>=4){alert("สามารถเลือกได้สูงสุด 4 รายการ");return;}compareSet.add(ticker);}
+  else compareSet.delete(ticker);
+  document.getElementById("cmpCount").textContent=compareSet.size;
+  document.getElementById("compareBtn").disabled=compareSet.size<2;
+}
+
+function updateStatusBar(){
+  const inner=document.getElementById("filterBar");
+  const tags=[];
+  tags.push(`<div class="fs-tag period">⏱ ${PLAB[period]}</div>`);
+  if(fIdeaTheme)tags.push(`<div class="fs-tag idea">💡 ${fIdeaTheme} <span class="fs-x" onclick="fIdeaTheme='';render()">✕</span></div>`);
+  if(fTrend&&activeTab==="dr"){const td=TREND_DEFS.find(t=>t.id===fTrend);tags.push(`<div class="fs-tag trend">📡 ${td?.name||fTrend} <span class="fs-x" onclick="fTrend='';render()">✕</span></div>`);}
+  if(fSector)tags.push(`<div class="fs-tag sector">▦ ${fSector} <span class="fs-x" onclick="resetSector()">✕</span></div>`);
+  if(fTheme)tags.push(`<div class="fs-tag search">🏷 ${fTheme} <span class="fs-x" onclick="fTheme='';document.getElementById('themeFilter').value='';render()">✕</span></div>`);
+  if(fCountry)tags.push(`<div class="fs-tag search">🌍 ${fCountry} <span class="fs-x" onclick="fCountry='';document.getElementById('countryFilter').value='';render()">✕</span></div>`);
+  if(fSearch)tags.push(`<div class="fs-tag search">🔍 "${fSearch}" <span class="fs-x" onclick="fSearch='';document.getElementById('search').value='';render()">✕</span></div>`);
+  const hasFilters=fIdeaTheme||fTrend||fSector||fTheme||fCountry||fSearch;
+  inner.innerHTML=`<div class="fs-label2">Viewing:</div>${tags.join("")}${hasFilters?'<button class="fs-clear" onclick="clearAll()">Clear all</button>':""}`;
+}
+
+function resetSector(){fSector="";document.getElementById("sectorFilter").value="";document.getElementById("hmReset").classList.remove("show");render();}
+
+function clearAll(){
+  fIdeaTheme="";fTrend="";fSector="";fTheme="";fCountry="";fSearch="";
+  document.getElementById("search").value="";
+  document.getElementById("themeFilter").value="";
+  document.getElementById("countryFilter").value="";
+  document.getElementById("hmReset").classList.remove("show");
+  render();
+}
+
+function populate(){
+  const raw=getRAW();
+  const tSel=document.getElementById("themeFilter");
+  const cSel=document.getElementById("countryFilter");
+  const sSel=document.getElementById("sectorFilter");
+  tSel.innerHTML="<option value=''>All themes</option>";
+  [...new Set(raw.map(r=>r[3]).filter(Boolean))].sort().forEach(v=>{const o=document.createElement("option");o.value=v;o.textContent=v;tSel.appendChild(o);});
+  cSel.innerHTML="<option value=''>All countries</option>";
+  [...new Set(raw.map(r=>r[2]).filter(Boolean))].sort().forEach(v=>{const o=document.createElement("option");o.value=v;o.textContent=v;cSel.appendChild(o);});
+  sSel.innerHTML="<option value=''>All sectors</option>";
+  [...new Set(raw.map(r=>r[4]).filter(Boolean))].sort().forEach(v=>{const o=document.createElement("option");o.value=v;o.textContent=v;sSel.appendChild(o);});
+}
+
+function openCompare(){
+  track("compare_open","");
+  const selected=getRAW().filter(r=>compareSet.has(r[0]));
+  if(selected.length<2)return;
+  const periods=["ytd","1m","3m","6m","1y"],pLabels=["YTD","1M","3M","6M","1Y"];
+  const colors=["#003F88","#00AEEF","#007A4D","#D97706"];
+  let html=`<div style="position:relative;height:260px;margin-bottom:18px"><canvas id="ccc"></canvas></div><table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr><th style="text-align:left;padding:9px;border-bottom:2px solid #E2E8F0;color:#4A6080">Security</th>`;
+  pLabels.forEach(p=>html+=`<th style="text-align:right;padding:9px;border-bottom:2px solid #E2E8F0;font-family:'IBM Plex Mono',monospace;color:#4A6080">${p}</th>`);
+  html+=`</tr></thead><tbody>`;
+  selected.forEach((r,i)=>{
+    html+=`<tr><td style="padding:9px;border-bottom:1px solid #F1F5F9"><span style="display:inline-block;width:12px;height:12px;background:${colors[i]};border-radius:2px;margin-right:8px;vertical-align:middle"></span><strong>${r[1].replace(/-DR$|-DRX$/,"")}</strong></td>`;
+    periods.forEach(p=>{const v=r[PIDX[p]];html+=`<td style="text-align:right;padding:9px;border-bottom:1px solid #F1F5F9;font-family:'IBM Plex Mono',monospace;color:${v!=null&&v>=0?"#007A4D":"#C0392B"}">${fmtP(v)}</td>`;});
+    html+=`</tr>`;
+  });
+  html+=`</tbody></table>`;
+  document.getElementById("compareContent").innerHTML=html;
+  document.getElementById("compareModal").classList.add("open");
+  const datasets=selected.map((r,i)=>({label:r[1].replace(/-DR$|-DRX$/,""),data:periods.map(p=>r[PIDX[p]]),borderColor:colors[i],backgroundColor:colors[i]+"22",tension:0.35,fill:true,borderWidth:2.5,pointRadius:5,pointBackgroundColor:colors[i]}));
+  new Chart(document.getElementById("ccc"),{type:"line",data:{labels:pLabels,datasets},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:"top",labels:{font:{family:"Sarabun",size:13},boxWidth:14}}},scales:{y:{ticks:{callback:v=>(v>=0?"+":"")+v.toFixed(0)+"%",font:{family:"IBM Plex Mono",size:11},color:"#8FA3BE"},grid:{color:"rgba(0,0,0,0.05)"}},x:{grid:{display:false},ticks:{font:{family:"IBM Plex Mono",size:11},color:"#8FA3BE"}}}}});
+}
+function closeCompare(){document.getElementById("compareModal").classList.remove("open");}
+
+function switchTab(tab){
+  if(tab==="ul"&&!ulModalShown){document.getElementById("ulModal").classList.add("open");return;}
+  activateTab(tab);
+}
+function confirmUL(){
+  if(document.getElementById("skipULModal").checked){localStorage.setItem("ulModalSkip","1");ulModalShown=true;}
+  document.getElementById("ulModal").classList.remove("open");
+  activateTab("ul");
+}
+function activateTab(tab){
+  track("tab_switch",tab);
+  activeTab=tab;
+  document.getElementById("tabDR").classList.toggle("active",tab==="dr");
+  document.getElementById("tabUL").classList.toggle("active",tab==="ul");
+  document.getElementById("ulBanner").classList.toggle("show",tab==="ul");
+  fTrend="";fIdeaTheme="";fSector="";fTheme="";fCountry="";fSearch="";
+  document.getElementById("search").value="";
+  document.getElementById("hmReset").classList.remove("show");
+  populate();updateColCustomizer();render();
+}
+
+// ── ANALYTICS ──
+const GA_URL="https://script.google.com/macros/s/AKfycbx5k8-JnBstkRFUToO3FkHbtD8yw2zxxkJxSvcTOje6qqYS-iEm5WcZ-sdJizZ03qjWQQ/exec";
+const SESSION_ID=Math.random().toString(36).slice(2,10);
+function track(event,value=""){
+  try{
+    fetch(GA_URL,{
+      method:"POST",
+      mode:"no-cors",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({event,value,tab:activeTab,period,session:SESSION_ID})
+    });
+  }catch(e){}
+}
+
+function updateSidebar(){
+  const sidebar=document.getElementById("stickySidebar");
+  if(!sidebar)return;
+
+  // Idea list
+  const ideaList=document.getElementById("sbIdeaList");
+  ideaList.innerHTML="";
+  Object.keys(THEME_META).forEach(t=>{
+    const meta=THEME_META[t];
+    const rows=getRAW().filter(r=>r[3]===t);
+    const vals=rows.map(r=>getV(r)).filter(v=>v!=null&&!isNaN(v));
+    const avg=vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:0;
+    const btn=document.createElement("button");
+    btn.className="sb-idea"+(fIdeaTheme===t?" active":"");
+    btn.innerHTML=`<span class="sb-idea-icon">${meta.icon}</span><span class="sb-idea-name">${t}</span><span class="sb-idea-perf ${avg>=0?'pos':'neg'}">${fmtP(avg,1)}</span>`;
+    btn.onclick=()=>{fIdeaTheme=fIdeaTheme===t?"":t;track("idea_click",t);render();};
+    ideaList.appendChild(btn);
+  });
+
+  // Trend list
+  const trendList=document.getElementById("sbTrendList");
+  trendList.innerHTML="";
+  TREND_DEFS.forEach(td=>{
+    const cnt=getTrendCount(td.id);
+    if(cnt===0)return;
+    const btn=document.createElement("button");
+    btn.className="sb-trend"+(fTrend===td.id?" active":"");
+    btn.innerHTML=`<span class="sb-trend-icon">${td.icon}</span><span class="sb-trend-name">${td.name}</span><span class="sb-trend-count">${cnt}</span>`;
+    btn.onclick=()=>{fTrend=fTrend===td.id?"":td.id;track("trend_click",td.name);render();};
+    trendList.appendChild(btn);
+  });
+}
+
+function render(){
+  const data=filtered();
+  updateMetrics(data);
+  updateIdeas();
+  updateTrending();
+  updateHeatmap();
+  updateExposure(data);
+  updateDist(data);
+  updateTable(data);
+  updateStatusBar();
+  updateHeroMovers();
+  updateSidebar();
+}
+
+function checkDisclaimerScroll(){
+  const el=document.getElementById("disclaimerScroll");
+  const btn=document.getElementById("agreeBtn");
+  const hint=document.getElementById("scrollHint");
+  if(!el||!btn)return;
+  const atBottom=el.scrollTop+el.clientHeight>=el.scrollHeight-10;
+  if(atBottom){
+    btn.disabled=false;
+    btn.style.background="#003F88";
+    btn.style.cursor="pointer";
+    btn.style.boxShadow="0 4px 14px rgba(0,63,136,0.4)";
+    if(hint)hint.style.display="none";
+  }
+}
+
+function agreeDisclaimer(){
+  document.getElementById("disclaimerModal").style.display="none";
+  track("disclaimer_agreed","");
+}
+
+document.addEventListener("DOMContentLoaded",function(){
+  document.getElementById("themeFilter").addEventListener("change",e=>{fTheme=e.target.value;render();});
+  document.getElementById("sectorFilter").addEventListener("change",e=>{fSector=e.target.value;render();});
+  document.getElementById("countryFilter").addEventListener("change",e=>{fCountry=e.target.value;render();});
+  document.getElementById("search").addEventListener("input",e=>{fSearch=e.target.value;if(e.target.value.length>2)track("search",e.target.value);render();});
+  document.getElementById("compareModal").addEventListener("click",e=>{if(e.target===e.currentTarget)closeCompare();});
+  document.getElementById("ulModal").addEventListener("click",e=>{if(e.target===e.currentTarget)document.getElementById("ulModal").classList.remove("open");});
+  document.getElementById("periodBtns").addEventListener("click",e=>{
+    if(!e.target.classList.contains("pbtn"))return;
+    document.querySelectorAll(".pbtn").forEach(b=>b.classList.remove("active"));
+    e.target.classList.add("active");period=e.target.dataset.p;track("period_change",e.target.dataset.p);
+    if(!["name","ticker","country","theme","sector"].includes(sortCol))sortCol=period;
+    render();
+  });
+  // Table scroll bar
+  const tblWrap=document.getElementById("tblWrap");
+  const scrollBar=document.getElementById("tblScrollBar");
+  scrollBar.addEventListener("input",()=>{tblWrap.scrollLeft=parseInt(scrollBar.value);});
+  tblWrap.addEventListener("scroll",()=>{scrollBar.value=tblWrap.scrollLeft;scrollBar.max=Math.max(0,tblWrap.scrollWidth-tblWrap.clientWidth);});
+  populate();updateColCustomizer();render();
+  track("page_load","dr80_dashboard");
+  document.getElementById("disclaimerModal").style.display="flex";
+
+  // Sticky sidebar — show when user scrolls past idea/trend section
+  const sentinel=document.getElementById("sidebarSentinel");
+  const sidebar=document.getElementById("stickySidebar");
+  if(sentinel&&sidebar){
+    new IntersectionObserver(([entry])=>{
+      sidebar.classList.toggle("visible",!entry.isIntersecting);
+    },{threshold:0}).observe(sentinel);
+  }
+});
+
+</script>
+<!-- AI INSIGHT FAB -->
+<button onclick="openInsight()" style="position:fixed;bottom:90px;right:28px;z-index:500;display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#7C3AED,#5B21B6);color:white;border:none;border-radius:30px;padding:12px 20px;font-family:'Sarabun',sans-serif;font-size:calc(13px * var(--fs));font-weight:700;cursor:pointer;box-shadow:0 4px 20px rgba(124,58,237,0.35);transition:all 0.2s;white-space:nowrap">
+  <span style="font-size:16px">🔬</span> AI Supply Chain
+</button>
+
+<!-- AI INSIGHT MODAL -->
+<div id="insightModal" style="display:none;position:fixed;inset:0;z-index:800;background:rgba(0,15,50,0.7);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px">
+  <div style="position:relative;width:100%;max-width:820px;height:88vh;background:white;border-radius:16px;display:flex;flex-direction:column;box-shadow:0 32px 80px rgba(0,0,0,0.35);overflow:hidden">
+    <!-- Header -->
+    <div style="background:linear-gradient(135deg,#7C3AED,#5B21B6);color:white;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+      <div>
+        <div style="font-size:16px;font-weight:700">🔬 AI Semiconductor Supply Chain — Bottleneck Map</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:2px">⚠️ เนื้อหานี้สร้างโดย AI เพื่อการศึกษาเท่านั้น · กรุณาตรวจสอบความถูกต้องจากแหล่งข้อมูลทางการก่อนนำไปใช้ · ไม่ถือเป็นคำแนะนำการลงทุน</div>
+      </div>
+      <button onclick="closeInsight()" style="background:none;border:none;color:rgba(255,255,255,0.6);font-size:26px;cursor:pointer;line-height:1;padding:0 4px">×</button>
+    </div>
+    <!-- Scrollable content -->
+    <div style="flex:1;overflow-y:auto;padding:0">
+      <iframe id="insightFrame" style="width:100%;height:100%;border:none;display:block" srcdoc=""></iframe>
+    </div>
+  </div>
+</div>
+
+<script>
+const INSIGHT_HTML = `<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Sarabun', -apple-system, BlinkMacSystemFont, sans-serif; background: #f5f5f0; color: #1a1a1a; padding: 1.5rem; line-height: 1.7; }
+  .legend { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 18px; padding: 12px 14px; background: #fff; border-radius: 10px; border: 0.5px solid #ddd; }
+  .leg-item { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #555; }
+  .leg-dot { width: 10px; height: 10px; border-radius: 2px; }
+  .step { border: 0.5px solid #ddd; border-radius: 12px; padding: 14px 16px; margin-bottom: 8px; background: #fff; }
+  .step.highlight { border: 1.5px solid #E24B4A; }
+  .step-header { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+  .step-num { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; flex-shrink: 0; }
+  .step-title-block { flex: 1; min-width: 200px; }
+  .step-title { font-size: 14px; font-weight: 600; color: #1a1a1a; }
+  .step-sub { font-size: 12px; color: #777; margin-top: 2px; }
+  .badge { display: inline-flex; align-items: center; font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 4px; white-space: nowrap; margin-top: 2px; }
+  .bn-critical { background: #FCEBEB; color: #791F1F; }
+  .bn-tight { background: #FAEEDA; color: #633806; }
+  .bn-watch { background: #E6F1FB; color: #0C447C; }
+  .bn-ok { background: #EAF3DE; color: #27500A; }
+  .detail { font-size: 13px; color: #555; line-height: 1.75; margin-top: 6px; }
+  .plays { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+  .play-tag { font-size: 11px; padding: 3px 8px; border-radius: 4px; border: 0.5px solid #ddd; color: #666; background: #f7f7f5; }
+  .play-tag.hot { border-color: #F09995; color: #791F1F; background: #FCEBEB; }
+  .play-tag.dr80 { border-color: #003F88; background: #E0F4FC; color: #003F88; font-weight: 700; }
+  .play-tag.dr80::after { content: ' 🇹🇭DR80'; font-size: 10px; opacity: 0.75; }
+  .play-tag.hot.dr80 { border-color: #991B1B; background: #FCEBEB; color: #791F1F; }
+  .arrow { text-align: center; color: #aaa; font-size: 18px; margin: 2px 0; }
+  .section-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #999; margin: 16px 0 6px; }
+  .footer { margin-top: 20px; font-size: 11px; color: #aaa; text-align: right; padding-bottom: 12px; line-height: 1.8; }
+</style>
+</head>
+<body>
+
+<div class="legend">
+  <div class="leg-item"><div class="leg-dot" style="background:#E24B4A;"></div> วิกฤต — ขาดแคลนอย่างรุนแรงในปัจจุบัน</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#EF9F27;"></div> ตึงตัว / กำลังตึงตัวขึ้น</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#378ADD;"></div> ต้องติดตามอย่างใกล้ชิด</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#639922;"></div> เพียงพอ / กำลังขยาย</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#003F88;"></div> 🇹🇭 มีใน DR80 บน SET</div>
+</div>
+
+<div class="section-label">ชั้นที่ 1 — การออกแบบชิปและทรัพย์สินทางปัญญา</div>
+<div class="step">
+  <div class="step-header">
+    <div class="step-num" style="background:#EAF3DE;color:#27500A;">1</div>
+    <div class="step-title-block">
+      <div class="step-title">การออกแบบชิป — บริษัท Fabless</div>
+      <div class="step-sub">Nvidia, AMD, Google TPU, AWS Trainium, Microsoft Maia, Broadcom custom ASICs</div>
+    </div>
+    <span class="badge bn-ok">เพียงพอ</span>
+  </div>
+  <div class="detail">ไม่ใช่จุดคอขวดด้านอุปทาน บุคลากรด้านการออกแบบมีเพียงพอ ข้อจำกัดที่แท้จริงอยู่ที่ขั้นตอนถัดไปทั้งหมด ประเด็นสำคัญ: บริษัท Hyperscaler กำลังเร่งสร้าง ASIC ของตนเองเพื่อลดการพึ่งพา Nvidia ส่งผลให้ความต้องการด้านการบรรจุชิป (Packaging) จาก Intel และ TSMC เพิ่มขึ้นอย่างมาก</div>
+  <div class="plays"><span class="play-tag hot dr80">Nvidia (NVDA)</span><span class="play-tag hot dr80">AMD</span><span class="play-tag hot dr80">Broadcom (AVGO)</span><span class="play-tag hot dr80">Marvell (MRVL)</span></div>
+</div>
+<div class="arrow">↓</div>
+
+<div class="section-label">ชั้นที่ 2 — เครื่องมือ EDA และการอนุญาตใช้สิทธิ์ IP</div>
+<div class="step">
+  <div class="step-header">
+    <div class="step-num" style="background:#E6F1FB;color:#0C447C;">2</div>
+    <div class="step-title-block">
+      <div class="step-title">เครื่องมือ EDA และชุดออกแบบกระบวนการผลิต (PDK)</div>
+      <div class="step-sub">Synopsys, Cadence, Siemens EDA — จำเป็นสำหรับการออกแบบชิปทุกชิ้น</div>
+    </div>
+    <span class="badge bn-watch">ต้องติดตาม</span>
+  </div>
+  <div class="detail">ดูเงียบแต่ทรงพลัง ชิปทุกตัวที่ออกแบบสำหรับกระบวนการ 3nm/2nm ของ TSMC ต้องใช้เครื่องมือ EDA ที่ได้รับอนุมัติและ PDK ที่ได้รับลิขสิทธิ์จาก TSMC เมื่อความซับซ้อนของ Chiplet เพิ่มขึ้น เครื่องมือ EDA ยิ่งมีความสำคัญมากขึ้น การควบรวมกิจการ Synopsys-Ansys (หากได้รับอนุมัติ) จะยิ่งทำให้ผู้เล่นรายนี้มีอำนาจเหนือตลาดมากขึ้น</div>
+  <div class="plays"><span class="play-tag">Synopsys (SNPS)</span><span class="play-tag">Cadence (CDNS)</span></div>
+</div>
+<div class="arrow">↓</div>
+
+<div class="section-label">ชั้นที่ 3 — วัสดุในการผลิตเวเฟอร์</div>
+<div class="step">
+  <div class="step-header">
+    <div class="step-num" style="background:#FAEEDA;color:#633806;">3</div>
+    <div class="step-title-block">
+      <div class="step-title">เวเฟอร์ซิลิคอน, แก๊สพิเศษ, โฟโตรีซิสต์, CMP Slurries</div>
+      <div class="step-sub">Shin-Etsu, SUMCO, JSR, Merck KGaA, Entegris, Cabot Microelectronics</div>
+    </div>
+    <span class="badge bn-tight">ตึงตัว</span>
+  </div>
+  <div class="detail">อุปทานเวเฟอร์ซิลิคอน 300mm ตึงตัว — Shin-Etsu และ SUMCO มีคิวรอหลายปี โฟโตรีซิสต์ EUV (จาก JSR, TOK, Shin-Etsu) เป็นจุดคอขวดระดับผูกขาด มีเพียงไม่กี่บริษัทที่ผลิตได้ Entegris ครองตลาดสารเคมีพิเศษและระบบกรองภายในโรงงาน ถือเป็นส่วนประกอบที่เงียบแต่ขาดไม่ได้</div>
+  <div class="plays"><span class="play-tag hot">Shin-Etsu (TYO:4063)</span><span class="play-tag hot">Entegris (ENTG)</span><span class="play-tag">SUMCO (TYO:3436)</span><span class="play-tag">JSR Corp</span></div>
+</div>
+<div class="arrow">↓</div>
+
+<div class="section-label">ชั้นที่ 4 — เครื่องจักรลิโทกราฟีและอุปกรณ์โรงงานผลิต</div>
+<div class="step">
+  <div class="step-header">
+    <div class="step-num" style="background:#FCEBEB;color:#791F1F;">4</div>
+    <div class="step-title-block">
+      <div class="step-title">เครื่องจักรลิโทกราฟี EUV</div>
+      <div class="step-sub">ASML — ผูกขาดอย่างแท้จริง ไม่มีทางเลือกอื่น</div>
+    </div>
+    <span class="badge bn-critical">วิกฤต</span>
+  </div>
+  <div class="detail">ASML เป็นผู้ผลิตเครื่องจักร EUV เพียงรายเดียวที่สามารถพิมพ์ชิป 3nm/2nm ได้ เครื่องละประมาณ 380 ล้านดอลลาร์ ใช้เวลาสร้าง 18 เดือน ผลิตได้ราว 60 เครื่องต่อปี TSMC, Samsung และ Intel ต่างสั่งซื้อเต็มกำลังการผลิต EUV แบบ High-NA (สำหรับชิปต่ำกว่า 2nm) คือก้าวต่อไป — ยากกว่าและแพงกว่าเดิมมาก ถือเป็นโหนดที่ขาดแทนไม่ได้ที่สุดในห่วงโซ่อุปทานเซมิคอนดักเตอร์โลก</div>
+  <div class="plays"><span class="play-tag hot">ASML (ASML)</span></div>
+</div>
+<div class="step" style="margin-top:6px;">
+  <div class="step-header">
+    <div class="step-num" style="background:#FAEEDA;color:#633806;">4b</div>
+    <div class="step-title-block">
+      <div class="step-title">อุปกรณ์โรงงานอื่น ๆ — การสะสมชั้น, การกัดกร่อน, การตรวจสอบ</div>
+      <div class="step-sub">Applied Materials, Lam Research, KLA, Tokyo Electron, Advantest</div>
+    </div>
+    <span class="badge bn-tight">ตึงตัว</span>
+  </div>
+  <div class="detail">งบลงทุน 52,000 ล้านดอลลาร์ของ TSMC ในปี 2026 ไหลตรงเข้าสู่บริษัทเหล่านี้ Lam ครองตลาดการกัดกร่อน, Applied ครองการสะสมชั้น, KLA ครองการตรวจสอบ (yield คือทุกสิ่ง) Advantest คืออันดับ 1 ในการทดสอบชิป AI — GPU Blackwell/Rubin ทุกตัวต้องผ่านเครื่องทดสอบของพวกเขา ทุกรายมีคิวรอหลายไตรมาส</div>
+  <div class="plays"><span class="play-tag hot">Lam Research (LRCX)</span><span class="play-tag hot">Applied Materials (AMAT)</span><span class="play-tag hot">KLA (KLAC)</span><span class="play-tag hot">Advantest (TYO:6857)</span><span class="play-tag dr80">Tokyo Electron (TYO:8035)</span></div>
+</div>
+<div class="arrow">↓</div>
+
+<div class="section-label">ชั้นที่ 5 — การผลิตเวเฟอร์ขั้นสูงสุด</div>
+<div class="step">
+  <div class="step-header">
+    <div class="step-num" style="background:#FCEBEB;color:#791F1F;">5</div>
+    <div class="step-title-block">
+      <div class="step-title">การผลิตเวเฟอร์ 3nm / 2nm (Logic)</div>
+      <div class="step-sub">TSMC ครองตลาด, Samsung ตามห่างมาก, Intel 18A ยังพัฒนาอยู่</div>
+    </div>
+    <span class="badge bn-critical">วิกฤต</span>
+  </div>
+  <div class="detail">ไลน์ผลิต 3nm และ 2nm ของ TSMC จองเต็มล่วงหน้าหลายปี การผลิต 2nm เชิงพาณิชย์เริ่มต้น Q4 2025 ที่ 90,000-100,000 เวเฟอร์ต่อเดือน เป้าหมาย 2nm ของ Samsung อยู่ที่เพียง 21,000 เวเฟอร์ต่อเดือนภายในปลายปี 2026 โรงงาน Arizona Fab 2 (3nm) เริ่มติดตั้งอุปกรณ์ Q3 2026 การผลิตเชิงพาณิชย์ปี 2027</div>
+  <div class="plays"><span class="play-tag hot">TSMC (TSM)</span><span class="play-tag">Samsung (KRX:005930)</span></div>
+</div>
+<div class="arrow">↓</div>
+
+<div class="section-label">ชั้นที่ 6 — หน่วยความจำ HBM (ประกอบบน GPU ในขั้นตอน Packaging)</div>
+<div class="step">
+  <div class="step-header">
+    <div class="step-num" style="background:#FCEBEB;color:#791F1F;">6</div>
+    <div class="step-title-block">
+      <div class="step-title">High Bandwidth Memory — HBM3E → HBM4</div>
+      <div class="step-sub">SK Hynix (53%), Samsung (35%), Micron (11%) — ตลาดผู้ขายน้อยราย</div>
+    </div>
+    <span class="badge bn-critical">วิกฤต</span>
+  </div>
+  <div class="detail">กำลังการผลิต HBM จองหมดสิ้นตลอดปี 2026 ทั้งสามผู้ผลิต CFO ของ SK Hynix ยืนยัน "อุปทานทั้งหมดปี 2026 จองหมดแล้ว" การผลิต HBM4 เชิงพาณิชย์เริ่มต้น กุมภาพันธ์ 2026 ความท้าทายทางเทคนิค: การทำเวเฟอร์บางถึง 30 ไมครอนทำให้ yield ต่ำมาก Micron ตอบสนองความต้องการลูกค้าได้เพียง 55-60% กำลังการผลิตใหม่จะไม่พร้อมจนถึงปี 2027 GPU Nvidia Rubin แต่ละตัวต้องการ HBM4 จำนวน 8 สแตก — ~384GB ต่อ GPU</div>
+  <div class="plays"><span class="play-tag hot">SK Hynix (KRX:000660)</span><span class="play-tag hot dr80">Micron (MU)</span><span class="play-tag">Samsung Memory</span></div>
+</div>
+<div class="arrow">↓</div>
+
+<div class="section-label">ชั้นที่ 7 — Advanced Packaging ← จุดวิกฤตใหม่ที่สำคัญที่สุด</div>
+<div class="step highlight">
+  <div class="step-header">
+    <div class="step-num" style="background:#FCEBEB;color:#791F1F;">7</div>
+    <div class="step-title-block">
+      <div class="step-title">Advanced Packaging — CoWoS, EMIB, Foveros</div>
+      <div class="step-sub">TSMC CoWoS (ครองตลาด) · Intel EMIB/Foveros · ASE Group · Amkor</div>
+    </div>
+    <span class="badge bn-critical">วิกฤตที่สุดในขณะนี้</span>
+  </div>
+  <div class="detail">Nvidia จองกำลังการผลิต CoWoS ของ TSMC ส่วนใหญ่สำหรับปี 2026-2027 แม้แต่ชิปที่ผลิตในโรงงานสหรัฐฯ ก็ยังต้องส่งกลับไต้หวันเพื่อทำ Packaging CoWoS เติบโตที่ CAGR 80% (ตาม TSMC) แต่ยังตามไม่ทัน EMIB/Foveros ของ Intel คือทางเลือกในสหรัฐฯ เพียงทางเดียวที่น่าเชื่อถือ ASE คาดยอดขาย Packaging เพิ่มขึ้นเป็นสองเท่าในปี 2026 Substrates (Ibiden, Shinko) ก็อยู่ในภาวะขาดแคลนเช่นกัน</div>
+  <div class="plays"><span class="play-tag hot">TSMC (TSM)</span><span class="play-tag hot">Intel (INTC) — มุม Packaging</span><span class="play-tag hot">ASE Group (ASX)</span><span class="play-tag hot">Amkor (AMKR)</span><span class="play-tag hot">Ibiden (TYO:4062)</span><span class="play-tag">Shinko Electric (TYO:6967)</span></div>
+</div>
+<div class="arrow">↓</div>
+
+<div class="section-label">ชั้นที่ 8 — การเชื่อมต่อด้วยแสง (Optical Interconnects)</div>
+<div class="step">
+  <div class="step-header">
+    <div class="step-num" style="background:#FAEEDA;color:#633806;">8</div>
+    <div class="step-title-block">
+      <div class="step-title">Silicon Photonics และ Optical Transceivers</div>
+      <div class="step-sub">Coherent, Lumentum, Tower Semi, GlobalFoundries</div>
+    </div>
+    <span class="badge bn-tight">ตึงตัวอย่างรวดเร็ว</span>
+  </div>
+  <div class="detail">เมื่อชิปประกอบเสร็จแล้ว คลัสเตอร์ต้องเชื่อมต่อ GPU เข้าด้วยกันที่ความเร็วสูงมาก Optical Transceivers (SiPho/SiGe) คือเนื้อเยื่อเชื่อมต่อ Tower Semi และ GF แข่งกันขยายกำลังการผลิต SiPho 5 เท่า Co-packaged Optics (CPO) คือวิวัฒนาการถัดไป Tower + Coherent สาธิตการส่งข้อมูล 400 Gbps/เลนในกระบวนการพร้อมผลิต (มีนาคม 2026) คาดว่าจะเป็นจุดคอขวดภายในปี 2027</div>
+  <div class="plays"><span class="play-tag hot">Coherent (COHR)</span><span class="play-tag hot">Tower Semi (TSEM)</span><span class="play-tag">Lumentum (LITE)</span><span class="play-tag">GlobalFoundries (GFS)</span></div>
+</div>
+<div class="arrow">↓</div>
+
+<div class="section-label">ชั้นที่ 9 — โครงข่ายเครือข่าย (Networking Fabric)</div>
+<div class="step">
+  <div class="step-header">
+    <div class="step-num" style="background:#FAEEDA;color:#633806;">9</div>
+    <div class="step-title-block">
+      <div class="step-title">เครือข่ายคลัสเตอร์ AI — สวิตช์, NIC, InfiniBand</div>
+      <div class="step-sub">Arista, Nvidia (InfiniBand/Spectrum-X), Broadcom, Marvell</div>
+    </div>
+    <span class="badge bn-tight">ตึงตัว</span>
+  </div>
+  <div class="detail">สวิตช์ 800G Ethernet และ InfiniBand ต่างขาดแคลน Arista ครองตลาดเครือข่าย Back-end ของ AI Broadcom ผลิต ASIC Tomahawk/Jericho ป้อน Hyperscaler ส่วนใหญ่ ระยะเวลารอ Transceivers และสวิตช์ 800G เกิน 40 สัปดาห์</div>
+  <div class="plays"><span class="play-tag hot dr80">Arista (ANET)</span><span class="play-tag dr80">Broadcom (AVGO)</span><span class="play-tag dr80">Marvell (MRVL)</span></div>
+</div>
+<div class="arrow">↓</div>
+
+<div class="section-label">ชั้นที่ 10 — ระบบจ่ายไฟฟ้า (Power Delivery)</div>
+<div class="step">
+  <div class="step-header">
+    <div class="step-num" style="background:#FAEEDA;color:#633806;">10</div>
+    <div class="step-title-block">
+      <div class="step-title">Power Management ICs, VRM, GaN Power Stages</div>
+      <div class="step-sub">Monolithic Power, Vicor, ON Semi, Infineon, Tower Semi (BCD)</div>
+    </div>
+    <span class="badge bn-tight">มักถูกมองข้าม</span>
+  </div>
+  <div class="detail">ตู้แร็ก GB200 NVL72 เพียงตู้เดียวดึงไฟฟ้าสูงถึง 120 กิโลวัตต์ IC จัดการพลังงาน (VRM, DrMOS, GaN FET) เริ่มขาดแคลน Tower ทำตลาด Gen3 BCD LDMOS เพื่อรองรับตลาดนี้โดยตรง Monolithic Power Systems (MPWR) เป็น Supplier ตรงของ Nvidia GaN Power Stages คือวิวัฒนาการถัดไปสำหรับความหนาแน่นพลังงานในดาต้าเซ็นเตอร์</div>
+  <div class="plays"><span class="play-tag hot">Monolithic Power (MPWR)</span><span class="play-tag">Vicor (VICR)</span><span class="play-tag">Infineon (IFNNY)</span><span class="play-tag">Tower Semi (TSEM)</span></div>
+</div>
+
+<div class="footer">⚠️ เนื้อหานี้สร้างโดย AI เพื่อวัตถุประสงค์ด้านการศึกษาเท่านั้น · กรุณาตรวจสอบความถูกต้องจากแหล่งข้อมูลทางการก่อนนำไปใช้ · ไม่ถือเป็นคำแนะนำการลงทุน · ผู้จัดทำไม่รับผิดชอบต่อความเสียหายใด ๆ ที่เกิดจากการใช้ข้อมูลนี้</div>
+</body>
+</html>`;
+
+function openInsight(){
+  const m = document.getElementById("insightModal");
+  m.style.display = "flex";
+  const frame = document.getElementById("insightFrame");
+  if(!frame.srcdoc || frame.srcdoc === "") frame.srcdoc = INSIGHT_HTML;
+}
+function closeInsight(){
+  document.getElementById("insightModal").style.display = "none";
+}
+document.getElementById("insightModal").addEventListener("click", e=>{
+  if(e.target === e.currentTarget) closeInsight();
+});
+</script>
+<button class="pfab" onclick="openPortfolio()">
+  <span style="font-size:18px">📊</span>
+  Build Portfolio
+  <span class="pfab-badge" id="pfabBadge">0</span>
+</button>
+
+<!-- PORTFOLIO MODAL (centered, full screen) -->
+<div id="pfModal" style="display:none;position:fixed;inset:0;z-index:900;background:rgba(0,20,60,0.6);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px">
+  <div style="position:relative;width:100%;max-width:1160px;height:88vh;background:#F5F7FA;border-radius:16px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,0.35)">
+
+    <!-- Header -->
+    <div style="background:#003F88;color:white;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+      <div>
+        <div style="font-size:17px;font-weight:700">📊 Portfolio Builder</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.55);margin-top:2px">สร้างพอร์ตโฟลิโอจาก DR80 Universe</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <button onclick="exportPortfolioImage()" style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);color:white;padding:7px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Sarabun',sans-serif">📷 Export</button>
+        <button onclick="closePortfolio()" style="background:none;border:none;color:rgba(255,255,255,0.6);font-size:26px;cursor:pointer;line-height:1;padding:0 4px">×</button>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div style="background:#002055;display:flex;padding:0 24px;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,0.08)">
+      <button class="pftab active" id="pftab-build" onclick="switchPFTab('build')">Build</button>
+      <button class="pftab" id="pftab-summary" onclick="switchPFTab('summary')">Summary & Risk</button>
+      <button class="pftab" id="pftab-saved" onclick="switchPFTab('saved')">Saved Portfolios</button>
+    </div>
+
+    <!-- Body -->
+    <div id="pfBody" style="flex:1;overflow:hidden;display:flex;flex-direction:column"></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+// ── PORTFOLIO STATE ──
+let portfolios = JSON.parse(localStorage.getItem("dr80_portfolios")||"[]");
+let activePFIdx = portfolios.length>0?0:-1;
+let pfTab = "build";
+let pfPickerSearch = "";
+let pfPickerTheme = "";
+
+function getCurrentPF(){return activePFIdx>=0&&activePFIdx<portfolios.length?portfolios[activePFIdx]:null;}
+
+function savePFLocal(){
+  localStorage.setItem("dr80_portfolios",JSON.stringify(portfolios));
+  document.getElementById("pfabBadge").textContent=portfolios.length;
+}
+
+function savePFSheet(action="save"){
+  const pf=getCurrentPF();if(!pf)return;
+  try{fetch(GA_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({type:"portfolio",session:SESSION_ID,name:pf.name,holdings:pf.holdings,action})});}catch(e){}
+  track("portfolio_"+action,pf.name);
+}
+
+function openPortfolio(){
+  const m=document.getElementById("pfModal");
+  m.style.display="flex";
+  if(portfolios.length===0)newPortfolio();
+  else renderPF();
+}
+function closePortfolio(){document.getElementById("pfModal").style.display="none";}
+document.getElementById("pfModal").addEventListener("click",e=>{if(e.target===e.currentTarget)closePortfolio();});
+
+function switchPFTab(tab){
+  pfTab=tab;
+  document.querySelectorAll(".pftab").forEach(t=>t.classList.remove("active"));
+  document.getElementById("pftab-"+tab).classList.add("active");
+  renderPF();
+}
+
+function newPortfolio(){
+  const name="Portfolio "+(portfolios.length+1);
+  portfolios.push({name,holdings:[]});
+  activePFIdx=portfolios.length-1;
+  savePFLocal();pfTab="build";renderPF();
+}
+
+function deletePortfolio(idx){
+  if(!confirm("Delete this portfolio?"))return;
+  portfolios.splice(idx,1);
+  activePFIdx=Math.max(0,Math.min(idx,portfolios.length-1));
+  if(portfolios.length===0)activePFIdx=-1;
+  savePFLocal();renderPF();
+}
+
+function selectPortfolio(idx){activePFIdx=idx;pfTab="build";renderPF();}
+
+function renamePF(){
+  const pf=getCurrentPF();if(!pf)return;
+  const name=prompt("Portfolio name:",pf.name);
+  if(name&&name.trim()){pf.name=name.trim();savePFLocal();savePFSheet();renderPF();}
+}
+
+function toggleHolding(ticker,checked){
+  const pf=getCurrentPF();if(!pf)return;
+  if(checked){
+    if(pf.holdings.find(h=>h.ticker===ticker))return;
+    const r=DR_RAW.find(x=>x[0]===ticker);if(!r)return;
+    const used=pf.holdings.reduce((s,h)=>s+h.weight,0);
+    const rem=Math.max(0,parseFloat((100-used).toFixed(1)));
+    pf.holdings.push({ticker,name:r[1].replace(/-DR$|-DRX$/,""),weight:Math.min(100,rem)});
+  } else {
+    pf.holdings=pf.holdings.filter(h=>h.ticker!==ticker);
+  }
+  savePFLocal();savePFSheet();
+  renderPFTray();
+  // sync checkbox
+  const cb=document.getElementById("pfchk_"+ticker.replace(/[^a-zA-Z0-9]/g,"_"));
+  if(cb)cb.checked=checked;
+}
+
+function updateWeight(ticker,val){
+  const pf=getCurrentPF();if(!pf)return;
+  const h=pf.holdings.find(x=>x.ticker===ticker);
+  if(h){h.weight=Math.max(0,Math.min(100,parseFloat(val)||0));}
+  savePFLocal();
+  renderTrayFooter();
+  const s=document.getElementById("pfsl_"+ticker.replace(/[^a-zA-Z0-9]/g,"_"));
+  if(s)s.value=h?h.weight:0;
+}
+
+function updateSlider(ticker,val){
+  const pf=getCurrentPF();if(!pf)return;
+  const h=pf.holdings.find(x=>x.ticker===ticker);
+  if(h){h.weight=parseFloat(val)||0;}
+  savePFLocal();
+  renderTrayFooter();
+  const inp=document.getElementById("pfinp_"+ticker.replace(/[^a-zA-Z0-9]/g,"_"));
+  if(inp)inp.value=parseFloat(val).toFixed(1);
+}
+
+function renderTrayFooter(){
+  const pf=getCurrentPF();if(!pf)return;
+  const total=pf.holdings.reduce((s,h)=>s+h.weight,0);
+  const isOk=Math.abs(total-100)<0.1;
+  const tw=document.getElementById("pfWeightTotal");
+  if(tw){tw.textContent="Total: "+total.toFixed(1)+"%";tw.style.color=isOk?"var(--green)":"var(--red)";}
+  const fw=document.getElementById("pfFooterWarn");
+  if(fw)fw.innerHTML=!isOk&&pf.holdings.length>0?
+    `<div style="background:#FEF3C7;border:1px solid #FCD34D;border-radius:8px;padding:8px 12px;font-size:12px;color:#78350F;margin-bottom:8px">⚠️ Weights must sum to 100%. ${total<100?"Need +"+(100-total).toFixed(1)+"%":"Over by "+(total-100).toFixed(1)+"%"}</div>`:"";
+  const fq=document.getElementById("pfFooterReturns");
+  if(fq){
+    if(isOk&&pf.holdings.length>0){
+      const rets=calcPFReturns(pf);
+      fq.innerHTML=`<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-bottom:10px">
+        ${["ytd","1m","3m","6m","1y"].map(p=>`
+          <div style="background:white;border:1px solid #E2E8F0;border-radius:6px;padding:7px 4px;text-align:center">
+            <div style="font-size:10px;color:#8FA3BE;text-transform:uppercase;letter-spacing:0.06em">${p.toUpperCase()}</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;color:${rets[p]>=0?"#007A4D":"#C0392B"}">${rets[p]>=0?"+":""}${rets[p].toFixed(1)}%</div>
+          </div>`).join("")}
+      </div>
+      <button onclick="switchPFTab('summary')" style="width:100%;background:#003F88;color:white;border:none;border-radius:8px;padding:9px;font-family:'Sarabun',sans-serif;font-size:13px;font-weight:600;cursor:pointer">View Full Summary & Risk →</button>`;
+    } else {
+      fq.innerHTML=`<div style="font-size:12px;color:#8FA3BE;text-align:center">${pf.holdings.length>0?"Adjust weights to 100% to see returns":"Tick securities on the left to add them"}</div>`;
+    }
+  }
+}
+
+// Only re-render the tray (right side) without rebuilding entire panel
+function renderPFTray(){
+  const pf=getCurrentPF();if(!pf)return;
+  const trayBody=document.getElementById("pfTrayBody");
+  if(!trayBody){renderPF();return;}
+  const trayHdr=document.getElementById("pfTrayHdr");
+  if(trayHdr)trayHdr.textContent=`Holdings (${pf.holdings.length})`;
+  if(pf.holdings.length===0){
+    trayBody.innerHTML=`<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#8FA3BE;font-size:13px;text-align:center;padding:24px;flex-direction:column;gap:10px">
+      <div style="font-size:36px">☑️</div>Tick securities from<br>the left to add them here
+    </div>`;
+  } else {
+    trayBody.innerHTML=pf.holdings.map(h=>{
+      const safeId=h.ticker.replace(/[^a-zA-Z0-9]/g,"_");
+      const r=DR_RAW.find(x=>x[0]===h.ticker);
+      const ytd=r?r[5]:null;
+      return`<div style="padding:10px 14px;border-bottom:1px solid #F1F5F9;display:flex;flex-direction:column;gap:7px">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:600;color:#1A2B42;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${h.name}</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:${ytd!=null&&ytd>=0?"#007A4D":"#C0392B"}">${ytd!=null?(ytd>=0?"+":"")+ytd.toFixed(1)+"%":"—"}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;margin-left:10px">
+            <input id="pfinp_${safeId}" type="number" min="0" max="100" step="0.5" value="${h.weight.toFixed(1)}"
+              style="width:62px;border:1.5px solid #E2E8F0;border-radius:6px;padding:5px 6px;font-family:'IBM Plex Mono',monospace;font-size:13px;text-align:right;outline:none;background:white;color:#1A2B42"
+              oninput="updateWeight('${h.ticker.replace(/'/g,"\\'")}',this.value)">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#4A6080">%</span>
+            <button onclick="toggleHolding('${h.ticker.replace(/'/g,"\\'")}',false)" style="background:none;border:none;color:#8FA3BE;cursor:pointer;font-size:17px;line-height:1;padding:0">✕</button>
+          </div>
+        </div>
+        <input type="range" id="pfsl_${safeId}" min="0" max="100" step="0.5" value="${h.weight}"
+          style="width:100%;accent-color:#003F88;cursor:pointer;height:4px"
+          oninput="updateSlider('${h.ticker.replace(/'/g,"\\'")}',this.value)">
+      </div>`;
+    }).join("");
+  }
+  renderTrayFooter();
+}
+
+function calcPFReturns(pf){
+  const total=pf.holdings.reduce((s,h)=>s+h.weight,0);
+  if(total===0)return{ytd:0,"1m":0,"3m":0,"6m":0,"1y":0};
+  const res={ytd:0,"1m":0,"3m":0,"6m":0,"1y":0};
+  pf.holdings.forEach(h=>{
+    const r=DR_RAW.find(x=>x[0]===h.ticker);if(!r)return;
+    const w=h.weight/total;
+    Object.keys(PIDX).forEach(p=>{const v=r[PIDX[p]];if(v!=null)res[p]+=w*v;});
+  });
+  return res;
+}
+
+function calcRisk(pf){
+  const total=pf.holdings.reduce((s,h)=>s+h.weight,0);if(total===0)return"conservative";
+  let score=0;
+  pf.holdings.forEach(h=>{
+    const r=DR_RAW.find(x=>x[0]===h.ticker);if(!r)return;
+    const w=h.weight/total;
+    if(["AI Supercycle","Spacetech","Geopolitics"].includes(r[3]))score+=w*2;
+    if(["CN - A","CN - H"].includes(r[2]))score+=w*1;
+  });
+  if(score>1.5)return"aggressive";
+  if(score>0.7)return"balanced";
+  return"conservative";
+}
+
+function getRiskLabel(risk){
+  if(risk==="aggressive")return{label:"🔴 Aggressive",bg:"#FEE2E2",color:"#991B1B",border:"#FCA5A5",desc:"พอร์ตมีความเสี่ยงสูง เหมาะสำหรับนักลงทุนที่รับความเสี่ยงได้สูง"};
+  if(risk==="balanced")return{label:"🟡 Balanced",bg:"#FEF3C7",color:"#92400E",border:"#FCD34D",desc:"พอร์ตมีความเสี่ยงปานกลาง เหมาะสำหรับนักลงทุนทั่วไป"};
+  return{label:"🟢 Conservative",bg:"#DCFCE7",color:"#166534",border:"#86EFAC",desc:"พอร์ตมีความเสี่ยงต่ำ เน้นความมั่นคง"};
+}
+
+function getBenchmarks(pf){
+  const rets=calcPFReturns(pf);
+  const defs=[
+    {name:"Your Portfolio",color:"#003F88",vals:rets},
+    {name:"SP500",color:"#00AEEF",ticker:"SP500US8 TB Equity"},
+    {name:"Nikkei 225",color:"#29C5F6",ticker:"NIKKEI80 TB Equity"},
+    {name:"SPDR Energy",color:"#0284C7",ticker:"SPENGY80 TB Equity"},
+  ];
+  defs.forEach(b=>{
+    if(!b.ticker)return;
+    const r=DR_RAW.find(x=>x[0]===b.ticker);
+    b.vals=r?{ytd:r[5],"1m":r[6],"3m":r[7],"6m":r[8],"1y":r[9]}:{ytd:0,"1m":0,"3m":0,"6m":0,"1y":0};
+  });
+  return defs;
+}
+
+function renderPF(){
+  const body=document.getElementById("pfBody");
+  const pf=getCurrentPF();
+
+  // ── SAVED TAB ──
+  if(pfTab==="saved"){
+    body.style.overflowY="auto";body.style.padding="20px 24px";
+    let html=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div style="font-size:16px;font-weight:700;color:#003F88">Saved Portfolios</div>
+      <button onclick="newPortfolio()" style="background:#003F88;color:white;border:none;border-radius:8px;padding:9px 18px;font-family:'Sarabun',sans-serif;font-size:13px;font-weight:600;cursor:pointer">+ New Portfolio</button>
+    </div>`;
+    if(portfolios.length===0){
+      html+=`<div style="text-align:center;padding:48px;color:#8FA3BE;font-size:14px">No portfolios yet. Create one to get started.</div>`;
+    } else {
+      portfolios.forEach((p,i)=>{
+        const rets=calcPFReturns(p);
+        const total=p.holdings.reduce((s,h)=>s+h.weight,0);
+        html+=`<div onclick="selectPortfolio(${i})" style="background:white;border:1.5px solid ${i===activePFIdx?"#003F88":"#E2E8F0"};background:${i===activePFIdx?"#F0F9FE":"white"};border-radius:12px;padding:14px 18px;margin-bottom:10px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(0,63,136,0.07);transition:all 0.13s">
+          <div>
+            <div style="font-size:14px;font-weight:600;color:#003F88">${p.name}</div>
+            <div style="font-size:12px;color:#8FA3BE;margin-top:2px">${p.holdings.length} securities · ${total.toFixed(0)}% allocated</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:16px">
+            <div style="text-align:right">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:16px;font-weight:700;color:${rets.ytd>=0?"#007A4D":"#C0392B"}">${rets.ytd>=0?"+":""}${rets.ytd.toFixed(1)}%</div>
+              <div style="font-size:10px;color:#8FA3BE">YTD weighted</div>
+            </div>
+            <button onclick="event.stopPropagation();deletePortfolio(${i})" style="background:none;border:none;color:#8FA3BE;cursor:pointer;font-size:18px">🗑</button>
+          </div>
+        </div>`;
+      });
+    }
+    body.innerHTML=html;return;
+  }
+
+  if(!pf){
+    body.style.overflowY="auto";body.style.padding="20px 24px";
+    body.innerHTML=`<div style="text-align:center;padding:60px;color:#8FA3BE">
+      <div style="font-size:48px;margin-bottom:16px">📊</div>
+      <button onclick="newPortfolio()" style="background:#003F88;color:white;border:none;border-radius:8px;padding:10px 24px;font-family:'Sarabun',sans-serif;font-size:14px;font-weight:600;cursor:pointer">+ Create Portfolio</button>
+    </div>`;return;
+  }
+
+  // ── BUILD TAB ──
+  if(pfTab==="build"){
+    body.style.overflowY="hidden";body.style.padding="0";
+    const themes=[...new Set(DR_RAW.map(r=>r[3]).filter(Boolean))].sort();
+    const seen=new Set();const deduped=[];
+    DR_RAW.filter(r=>{
+      if(!r[3])return false;
+      if(pfPickerTheme&&r[3]!==pfPickerTheme)return false;
+      if(pfPickerSearch){const q=pfPickerSearch.toLowerCase();return r[1].toLowerCase().includes(q)||r[0].toLowerCase().includes(q);}
+      return true;
+    }).forEach(r=>{if(!seen.has(r[0])){seen.add(r[0]);deduped.push(r);}});
+
+    body.innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 400px;height:100%;overflow:hidden">
+
+      <!-- LEFT: Universe picker -->
+      <div style="display:flex;flex-direction:column;border-right:1px solid #E2E8F0;overflow:hidden">
+        <!-- Picker header -->
+        <div style="padding:14px 18px;border-bottom:1px solid #E2E8F0;background:white;flex-shrink:0">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:15px;font-weight:700;color:#003F88">${pf.name}</span>
+              <button onclick="renamePF()" style="background:none;border:none;color:#8FA3BE;cursor:pointer;font-size:14px" title="Rename">✏️</button>
+            </div>
+            <button onclick="newPortfolio()" style="background:white;color:#003F88;border:1.5px solid #E2E8F0;border-radius:8px;padding:6px 14px;font-family:'Sarabun',sans-serif;font-size:12px;font-weight:600;cursor:pointer">+ New</button>
+          </div>
+          <div style="display:flex;gap:8px">
+            <input style="flex:1;background:#F5F7FA;border:1.5px solid #E2E8F0;color:#1A2B42;font-family:'Sarabun',sans-serif;font-size:13px;padding:8px 12px;border-radius:8px;outline:none"
+              placeholder="🔍 Search name or ticker..." value="${pfPickerSearch}"
+              oninput="pfPickerSearch=this.value;renderPF()">
+            <select style="font-size:12px;padding:8px 24px 8px 10px;border-radius:8px;border:1.5px solid #E2E8F0;background:white;color:#4A6080;appearance:none;-webkit-appearance:none;outline:none;cursor:pointer"
+              onchange="pfPickerTheme=this.value;renderPF()">
+              <option value="">All themes</option>
+              ${themes.map(t=>`<option value="${t}" ${pfPickerTheme===t?"selected":""}>${t}</option>`).join("")}
+            </select>
+          </div>
+        </div>
+        <!-- Scrollable list -->
+        <div style="flex:1;overflow-y:auto;background:white">
+          <table style="width:100%;border-collapse:collapse">
+            <thead style="position:sticky;top:0;z-index:1;background:#F5F7FA">
+              <tr style="border-bottom:2px solid #E2E8F0">
+                <th style="width:44px;padding:9px 14px"></th>
+                <th style="text-align:left;padding:9px 12px;font-size:11px;font-weight:700;color:#8FA3BE;letter-spacing:0.08em;text-transform:uppercase">Name</th>
+                <th style="text-align:right;padding:9px 14px;font-size:11px;font-weight:700;color:#8FA3BE;letter-spacing:0.08em;text-transform:uppercase">YTD</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${deduped.map(r=>{
+                const isIn=!!pf.holdings.find(h=>h.ticker===r[0]);
+                const sid=r[0].replace(/[^a-zA-Z0-9]/g,"_");
+                const ytd=r[5];
+                return`<tr style="border-bottom:1px solid #F1F5F9;background:${isIn?"#F0F9FE":"white"};cursor:pointer" 
+                  onclick="toggleHolding('${r[0].replace(/'/g,"\\'")}',!document.getElementById('pfchk_${sid}').checked)">
+                  <td style="padding:9px 14px" onclick="event.stopPropagation()">
+                    <input type="checkbox" id="pfchk_${sid}" ${isIn?"checked":""} 
+                      style="accent-color:#003F88;width:16px;height:16px;cursor:pointer"
+                      onchange="toggleHolding('${r[0].replace(/'/g,"\\'")}',this.checked)">
+                  </td>
+                  <td style="padding:9px 12px">
+                    <div style="font-size:13px;font-weight:600;color:#1A2B42">${r[1].replace(/-DR$|-DRX$/,"")}</div>
+                    <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#8FA3BE">${r[0].split(" ")[0]} · ${r[3]}</div>
+                  </td>
+                  <td style="padding:9px 14px;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;color:${ytd!=null&&ytd>=0?"#007A4D":"#C0392B"}">${ytd!=null?(ytd>=0?"+":"")+ytd.toFixed(1)+"%":"—"}</td>
+                </tr>`;
+              }).join("")}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- RIGHT: Holdings tray -->
+      <div style="display:flex;flex-direction:column;overflow:hidden;background:white">
+        <!-- Tray header -->
+        <div style="padding:14px 18px;border-bottom:2px solid #E2E8F0;background:#F5F7FA;flex-shrink:0;display:flex;align-items:center;justify-content:space-between">
+          <div id="pfTrayHdr" style="font-size:13px;font-weight:700;color:#003F88;text-transform:uppercase;letter-spacing:0.05em">Holdings (${pf.holdings.length})</div>
+          <span id="pfWeightTotal" style="font-size:13px;font-weight:700;color:${Math.abs(pf.holdings.reduce((s,h)=>s+h.weight,0)-100)<0.1?"#007A4D":"#C0392B"}">Total: ${pf.holdings.reduce((s,h)=>s+h.weight,0).toFixed(1)}%</span>
+        </div>
+        <!-- Scrollable tray -->
+        <div id="pfTrayBody" style="flex:1;overflow-y:auto"></div>
+        <!-- Footer -->
+        <div style="padding:12px 16px;border-top:2px solid #E2E8F0;background:#F5F7FA;flex-shrink:0">
+          <div id="pfFooterWarn"></div>
+          <div id="pfFooterReturns"></div>
+        </div>
+      </div>
+    </div>`;
+
+    renderPFTray();
+    return;
+  }
+
+  // ── SUMMARY TAB ──
+  if(pfTab==="summary"){
+    body.style.overflowY="auto";body.style.padding="20px 24px";
+    const rets=calcPFReturns(pf);
+    const total=pf.holdings.reduce((s,h)=>s+h.weight,0);
+    if(pf.holdings.length===0||total===0){
+      body.innerHTML=`<div style="text-align:center;padding:48px;color:#8FA3BE;font-size:14px">Add securities in the Build tab first.</div>`;
+      return;
+    }
+    const risk=calcRisk(pf);const rl=getRiskLabel(risk);
+    const benches=getBenchmarks(pf);
+    const themeW={},ctryW={};
+    pf.holdings.forEach(h=>{
+      const r=DR_RAW.find(x=>x[0]===h.ticker);if(!r)return;
+      const w=h.weight/total*100;
+      themeW[r[3]||"Other"]=(themeW[r[3]||"Other"]||0)+w;
+      ctryW[r[2]||"Other"]=(ctryW[r[2]||"Other"]||0)+w;
+    });
+    const tColors=["#7C3AED","#0369A1","#0C4A6E","#4A6080","#991B1B","#92400E"];
+    const cColors=["#003F88","#00AEEF","#29C5F6","#0284C7","#38BDF8","#7DD3FC"];
+    const maxB=Math.max(1,...benches.map(b=>Math.abs(b.vals.ytd||0)));
+
+    body.innerHTML=`<div id="pfSummaryExport">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+      <div style="font-size:18px;font-weight:700;color:#003F88">${pf.name}</div>
+      <div style="background:${rl.bg};border:2px solid ${rl.border};color:${rl.color};border-radius:8px;padding:8px 16px;font-size:14px;font-weight:700">${rl.label}</div>
+    </div>
+    <div style="font-size:13px;color:#4A6080;margin-bottom:18px">${rl.desc}</div>
+
+    <!-- Return cards -->
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:18px">
+      ${["ytd","1m","3m","6m","1y"].map(p=>`
+        <div style="background:white;border-radius:10px;padding:14px;box-shadow:0 2px 8px rgba(0,63,136,0.07);text-align:center">
+          <div style="font-size:10px;color:#8FA3BE;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px">${PLAB[p]}</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:700;color:${rets[p]>=0?"#007A4D":"#C0392B"}">${rets[p]>=0?"+":""}${rets[p].toFixed(1)}%</div>
+        </div>`).join("")}
+    </div>
+
+    <!-- Charts row -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:18px">
+      <div style="background:white;border-radius:12px;padding:16px;box-shadow:0 2px 8px rgba(0,63,136,0.07)">
+        <div style="font-size:11px;font-weight:700;color:#4A6080;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:12px">Theme Composition</div>
+        <div style="position:relative;height:150px"><canvas id="pfThemeChart"></canvas></div>
+        <div style="margin-top:10px;display:flex;flex-direction:column;gap:5px">
+          ${Object.entries(themeW).sort((a,b)=>b[1]-a[1]).map(([t,w],i)=>
+            `<div style="display:flex;align-items:center;justify-content:space-between;font-size:12px">
+              <div style="display:flex;align-items:center;gap:6px"><div style="width:10px;height:10px;border-radius:2px;background:${tColors[i%tColors.length]};flex-shrink:0"></div><span style="color:#4A6080">${t}</span></div>
+              <strong style="color:#1A2B42">${w.toFixed(1)}%</strong>
+            </div>`).join("")}
+        </div>
+      </div>
+      <div style="background:white;border-radius:12px;padding:16px;box-shadow:0 2px 8px rgba(0,63,136,0.07)">
+        <div style="font-size:11px;font-weight:700;color:#4A6080;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:12px">Country Exposure</div>
+        <div style="position:relative;height:150px"><canvas id="pfCtryChart"></canvas></div>
+        <div style="margin-top:10px;display:flex;flex-direction:column;gap:5px">
+          ${Object.entries(ctryW).sort((a,b)=>b[1]-a[1]).map(([c,w],i)=>
+            `<div style="display:flex;align-items:center;justify-content:space-between;font-size:12px">
+              <div style="display:flex;align-items:center;gap:6px"><div style="width:10px;height:10px;border-radius:2px;background:${cColors[i%cColors.length]};flex-shrink:0"></div><span style="color:#4A6080">${c}</span></div>
+              <strong style="color:#1A2B42">${w.toFixed(1)}%</strong>
+            </div>`).join("")}
+        </div>
+      </div>
+      <div style="background:white;border-radius:12px;padding:16px;box-shadow:0 2px 8px rgba(0,63,136,0.07)">
+        <div style="font-size:11px;font-weight:700;color:#4A6080;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:12px">vs Benchmark (YTD)</div>
+        ${benches.map((b,i)=>`
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+            <div style="font-size:12px;color:#4A6080;width:110px;flex-shrink:0">${b.name}</div>
+            <div style="flex:1;height:8px;background:#EEF2F7;border-radius:4px;overflow:hidden">
+              <div style="height:100%;border-radius:4px;background:${(b.vals.ytd||0)>=0?"#007A4D":"#C0392B"};width:${Math.abs((b.vals.ytd||0)/maxB*100).toFixed(0)}%"></div>
+            </div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:700;width:55px;text-align:right;color:${(b.vals.ytd||0)>=0?"#007A4D":"#C0392B"}">${(b.vals.ytd||0)>=0?"+":""}${(b.vals.ytd||0).toFixed(1)}%</div>
+          </div>`).join("")}
+      </div>
+    </div>
+
+    <!-- Holdings list -->
+    <div style="background:white;border-radius:12px;padding:16px;box-shadow:0 2px 8px rgba(0,63,136,0.07)">
+      <div style="font-size:11px;font-weight:700;color:#4A6080;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:12px">Holdings</div>
+      ${pf.holdings.map(h=>{
+        const r=DR_RAW.find(x=>x[0]===h.ticker);
+        const ytd=r?r[5]:null;
+        const wPct=(h.weight/total*100).toFixed(1);
+        return`<div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #F1F5F9;font-size:13px">
+          <div style="flex:1;font-weight:600;color:#1A2B42">${h.name}</div>
+          <div style="font-family:'IBM Plex Mono',monospace;color:#8FA3BE;font-size:11px">${h.ticker.split(" ")[0]}</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-weight:700;color:#003F88;width:48px;text-align:right">${wPct}%</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-weight:600;width:60px;text-align:right;color:${ytd!=null&&ytd>=0?"#007A4D":"#C0392B"}">${ytd!=null?(ytd>=0?"+":"")+ytd.toFixed(1)+"%":"—"}</div>
+        </div>`;
+      }).join("")}
+    </div>
+    </div>`;
+
+    // Draw charts
+    const tE=Object.entries(themeW).sort((a,b)=>b[1]-a[1]);
+    new Chart(document.getElementById("pfThemeChart"),{type:"doughnut",
+      data:{labels:tE.map(([t])=>t),datasets:[{data:tE.map(([,w])=>w),backgroundColor:tColors.slice(0,tE.length),borderWidth:2,borderColor:"#fff"}]},
+      options:{responsive:true,maintainAspectRatio:false,cutout:"60%",plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.label}: ${c.parsed.toFixed(1)}%`}}}}});
+    const cE=Object.entries(ctryW).sort((a,b)=>b[1]-a[1]);
+    new Chart(document.getElementById("pfCtryChart"),{type:"doughnut",
+      data:{labels:cE.map(([c])=>c),datasets:[{data:cE.map(([,w])=>w),backgroundColor:cColors.slice(0,cE.length),borderWidth:2,borderColor:"#fff"}]},
+      options:{responsive:true,maintainAspectRatio:false,cutout:"60%",plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.label}: ${c.parsed.toFixed(1)}%`}}}}});
+  }
+}
+
+function exportPortfolioImage(){
+  const el=document.getElementById("pfSummaryExport");
+  if(!el){switchPFTab("summary");setTimeout(exportPortfolioImage,600);return;}
+  html2canvas(el,{backgroundColor:"#F5F7FA",scale:2}).then(canvas=>{
+    const a=document.createElement("a");
+    const pf=getCurrentPF();
+    a.download=(pf?pf.name.replace(/\s/g,"_"):"portfolio")+"_DR80.png";
+    a.href=canvas.toDataURL("image/png");a.click();
+    track("portfolio_export",pf?pf.name:"");
+  });
+}
+
+document.getElementById("pfabBadge").textContent=portfolios.length;
+</script>
+<!-- DISCLAIMER MODAL — shows on every page load, must click agree -->
+<div id="disclaimerModal" style="display:flex;position:fixed;inset:0;z-index:2000;background:rgba(0,15,50,0.85);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:20px;pointer-events:all">
+  <div style="background:white;border-radius:16px;width:100%;max-width:720px;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 32px 80px rgba(0,0,0,0.4);overflow:hidden">
+    <!-- Header -->
+    <div style="background:#003F88;color:white;padding:20px 28px;flex-shrink:0">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:24px">⚠️</span>
+        <div>
+          <div style="font-size:17px;font-weight:700">คำเตือนและข้อจำกัดความรับผิดชอบที่สำคัญ</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:2px">กรุณาอ่านและยอมรับก่อนใช้งาน — DR80 Universe · ธนาคารกรุงไทย</div>
+        </div>
+      </div>
+    </div>
+    <!-- Scrollable content -->
+    <div id="disclaimerScroll" onscroll="checkDisclaimerScroll()" style="flex:1;overflow-y:auto;padding:24px 28px;font-size:13px;color:#4A6080;line-height:1.9">
+
+      <p style="margin-bottom:14px"><strong style="color:#1A2B42">1. วัตถุประสงค์ของเครื่องมือ</strong><br>
+      แดชบอร์ดนี้จัดทำขึ้นเพื่อ<strong>วัตถุประสงค์ด้านข้อมูลและการศึกษาเท่านั้น</strong> มิได้ถือเป็นคำแนะนำการลงทุน คำแนะนำทางการเงิน หรือข้อเสนอในการซื้อ ขาย หรือถือครองหลักทรัพย์หรือตราสารทางการเงินใด ๆ ทั้งสิ้น</p>
+
+      <p style="margin-bottom:14px"><strong style="color:#1A2B42">2. ความถูกต้องของข้อมูล — ต้องตรวจสอบกับแหล่งข้อมูลทางการ</strong><br>
+      ข้อมูลที่แสดงอาจมีความคลาดเคลื่อนหรือล้าสมัย <strong>นักลงทุนต้องตรวจสอบข้อมูลกับแหล่งข้อมูลทางการทุกครั้ง</strong> ได้แก่ ตลาดหลักทรัพย์แห่งประเทศไทย (SET) · สำนักงาน ก.ล.ต. · Settrade · Bloomberg · Refinitiv และหนังสือชี้ชวนของผู้ออก DR</p>
+
+      <p style="margin-bottom:14px"><strong style="color:#1A2B42">3. ผลการดำเนินงานในอดีตไม่รับประกันอนาคต</strong><br>
+      ผลตอบแทนที่แสดงอ้างอิง ณ วันที่ <strong>16 เมษายน 2569</strong> มูลค่าของการลงทุนอาจเพิ่มขึ้นหรือลดลงได้ และนักลงทุนอาจได้รับเงินคืนน้อยกว่าเงินลงทุนเริ่มต้น</p>
+
+      <p style="margin-bottom:14px"><strong style="color:#1A2B42">4. ความเสี่ยงของ Depositary Receipt (DR)</strong><br>
+      การลงทุนใน DR มีความเสี่ยงหลายประการ ได้แก่ <strong>ความเสี่ยงด้านตลาด</strong> · <strong>ความเสี่ยงด้านอัตราแลกเปลี่ยน</strong> · <strong>ความเสี่ยงด้านสภาพคล่อง</strong> · <strong>ความเสี่ยงด้านประเทศ</strong> และ <strong>ความเสี่ยงด้าน Tracking Error</strong></p>
+
+      <p style="margin-bottom:14px"><strong style="color:#1A2B42">5. ข้อมูล UL Price Return</strong><br>
+      ข้อมูลในแท็บ "UL Price Return" แสดงราคาหลักทรัพย์อ้างอิงโดยไม่รวม FX ซึ่ง<strong>ไม่ใช่ราคาซื้อขายจริงของ DR บน SET</strong> ใช้เพื่อการเปรียบเทียบเท่านั้น</p>
+
+      <p style="margin-bottom:14px"><strong style="color:#1A2B42">6. หลักทรัพย์ที่มีสถานะ "Upcoming"</strong><br>
+      หมายความว่าหลักทรัพย์ดังกล่าว<strong>ยังไม่ได้รับการจดทะเบียนซื้อขายบน SET ในรูปแบบ DR</strong> ณ วันที่ข้อมูลอ้างอิง</p>
+
+      <p style="margin-bottom:14px"><strong style="color:#1A2B42">7. พอร์ตโฟลิโอสมมติ (Virtual Portfolio)</strong><br>
+      เป็นเพียงการจำลองเชิงทฤษฎีอิงจากข้อมูลย้อนหลัง ไม่ได้คำนึงถึงค่าธรรมเนียม ภาษี หรือต้นทุนการทำธุรกรรมจริง</p>
+
+      <p style="margin-bottom:0"><strong style="color:#1A2B42">8. ข้อจำกัดความรับผิดชอบ</strong><br>
+      ธนาคารกรุงไทย จำกัด (มหาชน) บริษัทในเครือ กรรมการ ผู้บริหาร และพนักงาน<strong>ไม่รับผิดชอบต่อความเสียหายใด ๆ</strong> ที่เกิดจากการใช้ข้อมูลในแดชบอร์ดนี้ การตัดสินใจลงทุนใด ๆ เป็นความรับผิดชอบของนักลงทุนแต่ผู้เดียว ก่อนลงทุนควรปรึกษาผู้แนะนำการลงทุนที่ได้รับใบอนุญาตจาก ก.ล.ต.</p>
+
+    </div>
+    <!-- Footer — agree button, no skip -->
+    <div style="padding:18px 28px;border-top:2px solid #E2E8F0;background:#F5F7FA;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:16px">
+      <div style="flex:1;font-size:12px;color:#8FA3BE">ข้อมูลอ้างอิง ณ วันที่ <strong>16 เมษายน 2569</strong> · ธนาคารกรุงไทย จำกัด (มหาชน)<br><span id="scrollHint" style="color:#D97706;font-weight:600">↓ เลื่อนอ่านจนครบก่อนกดยืนยัน</span></div>
+      <button id="agreeBtn" onclick="agreeDisclaimer()" disabled style="background:#8FA3BE;color:white;border:none;border-radius:10px;padding:12px 32px;font-family:'Sarabun',sans-serif;font-size:14px;font-weight:700;cursor:not-allowed;white-space:nowrap;box-shadow:none;position:relative;z-index:2001;pointer-events:all;transition:all 0.3s">
+        รับทราบและยอมรับ — เข้าใช้งาน
+      </button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
