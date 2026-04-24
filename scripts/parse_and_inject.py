@@ -101,15 +101,18 @@ def parse_ul(filepath):
         rows.append([ticker,name,country,theme,sec1,ytd,m1,m3,m6,y1,None,None,None,None,sub,'',sec2])
     return rows
 
+# Parse
 dr, date_str = parse_dr('data/Current_DR80.csv')
 ul = parse_ul('data/Current_DR80_UL.csv')
 
+# Boeing duplicate for Spacetech
 boeing = next((r[:] for r in dr if 'BOEING' in r[1].upper()), None)
 if boeing:
     bc = boeing[:]; bc[3] = 'Spacetech'; dr.append(bc)
 
 print(f"DR: {len(dr)} rows, UL: {len(ul)} rows")
 
+# Date
 today = datetime.now()
 thai_months = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน',
                'กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม']
@@ -124,19 +127,33 @@ except:
     thai_date = f"{today.day} {thai_months[today.month-1]} {today.year+543}"
     eng_date  = today.strftime('%d %B %Y')
 
-print(f"Date: {thai_date} / {eng_date}")
+update_time = today.strftime('%d %b %Y %H:%M') + ' (BKK)'
+print(f"Date: {thai_date} / {eng_date} / {update_time}")
 
-# Update index.html
+# Read index.html
 with open('index.html','r',encoding='utf-8') as f:
     html = f.read()
 
-html = re.sub(r'const DR_RAW = \[.*?\];', f'const DR_RAW = {json.dumps(dr, ensure_ascii=False)};', html, flags=re.DOTALL)
-html = re.sub(r'const UL_RAW = \[.*?\];', f'const UL_RAW = {json.dumps(ul, ensure_ascii=False)};', html, flags=re.DOTALL)
+# Safe injection using find() not regex
+# Replace DR_RAW
+dr_start = html.find('const DR_RAW = [')
+if dr_start == -1: raise ValueError("DR_RAW not found in index.html")
+dr_end = html.find('];', dr_start) + 2
+new_dr = f'const DR_RAW = {json.dumps(dr, ensure_ascii=False)};'
+html = html[:dr_start] + new_dr + html[dr_end:]
+
+# Replace UL_RAW (recalculate position after DR replacement)
+ul_start = html.find('const UL_RAW = [')
+if ul_start == -1: raise ValueError("UL_RAW not found in index.html")
+ul_end = html.find('];', ul_start) + 2
+new_ul = f'const UL_RAW = {json.dumps(ul, ensure_ascii=False)};'
+html = html[:ul_start] + new_ul + html[ul_end:]
+
+# Update dates
 html = re.sub(r'\d+ [ก-๙]+ \d{4}', thai_date, html)
 html = re.sub(r'\d+ \w+ 202\d', eng_date, html)
 
 # Inject last update timestamp
-update_time = today.strftime('%d %b %Y %H:%M') + ' (BKK)'
 html = html.replace('"AUTO_UPDATE_TIMESTAMP"', f'"{update_time}"')
 
 with open('index.html','w',encoding='utf-8') as f:
