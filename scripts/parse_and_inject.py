@@ -1,4 +1,4 @@
-import csv, json, re, os
+import csv, json, re
 from datetime import datetime
 from dateutil import parser as dp
 
@@ -6,66 +6,102 @@ def parse_float(v):
     try: return round(float(str(v).replace(',','').strip()), 6)
     except: return None
 
+def find_header(all_rows):
+    for i, row in enumerate(all_rows):
+        for cell in row:
+            if str(cell).strip() == 'Ticker':
+                return i
+    for i, row in enumerate(all_rows):
+        if any(str(c).strip() for c in row):
+            return i
+    return 0
+
 def parse_dr(filepath):
     rows = []
-    with open(filepath, encoding='utf-8-sig') as f:
+    with open(filepath, encoding='utf-8-sig', errors='ignore') as f:
         all_rows = list(csv.reader(f))
-    hi = next((i for i,r in enumerate(all_rows) if any('Ticker' in str(c) for c in r)), None)
-    if hi is None: raise ValueError("No header row found in DR CSV")
-    col = {h.strip():i for i,h in enumerate(all_rows[hi]) if h.strip()}
+    hi = find_header(all_rows)
+    print(f"DR: found header at row {hi}: {all_rows[hi][:6]}")
+    col = {}
+    for i, h in enumerate(all_rows[hi]):
+        h = str(h).strip()
+        if h: col[h] = i
     print(f"DR columns: {list(col.keys())}")
+    date_str = ''
+    if hi > 0:
+        for cell in all_rows[0]:
+            if cell.strip() and cell.strip() != '0':
+                date_str = cell.strip()
+                break
     for row in all_rows[hi+1:]:
-        if len(row) <= 1: continue
-        ticker = row[col.get('Ticker',0)].strip()
-        if not ticker or ticker in ['nan','NaN']: continue
-        name    = row[col['Name']].strip() if 'Name' in col else ''
-        country = row[col['Country']].strip() if 'Country' in col else ''
-        theme   = row[col['Theme 1']].strip() if 'Theme 1' in col else ''
-        sub     = row[col['Sub Theme']].strip() if 'Sub Theme' in col else ''
-        sec1    = row[col['Sector 1']].strip() if 'Sector 1' in col else ''
-        sec2    = row[col['Sector 2']].strip() if 'Sector 2' in col else ''
+        if not row or len(row) <= 1: continue
+        ticker_idx = col.get('Ticker', 1)
+        if ticker_idx >= len(row): continue
+        ticker = row[ticker_idx].strip()
+        if not ticker or ticker in ['nan','NaN','0','']: continue
+        def g(key, default=''):
+            idx = col.get(key, -1)
+            if idx < 0 or idx >= len(row): return default
+            return str(row[idx]).strip()
+        name    = g('Name')
+        country = g('Country')
+        theme   = g('Theme 1')
+        sub     = g('Sub Theme')
+        sec1    = g('Sector 1')
+        sec2    = g('Sector 2')
         inc = ''
-        if 'Inception date' in col:
-            try: inc = dp.parse(row[col['Inception date']]).strftime('%d %b %Y')
-            except: pass
-        ytd = parse_float(row[col['YTD']]) if 'YTD' in col else None
-        m1  = parse_float(row[col['1M']]) if '1M' in col else None
-        m3  = parse_float(row[col['3M']]) if '3M' in col else None
-        m6  = parse_float(row[col['6M']]) if '6M' in col else None
-        y1  = parse_float(row[col['1Y']]) if '1Y' in col else None
-        div   = parse_float(row[col['Dividend yield (%)']]) if 'Dividend yield (%)' in col else None
-        wk52h = parse_float(row[col['52-wk high']]) if '52-wk high' in col else None
-        tv    = parse_float(row[col['Trading value']]) if 'Trading value' in col else None
-        rsi   = parse_float(row[col['RSI']]) if 'RSI' in col else None
+        try:
+            inc_val = g('Inception date')
+            if inc_val and inc_val not in ['0','']:
+                inc = dp.parse(inc_val).strftime('%d %b %Y')
+        except: pass
+        ytd   = parse_float(g('YTD'))
+        m1    = parse_float(g('1M'))
+        m3    = parse_float(g('3M'))
+        m6    = parse_float(g('6M'))
+        y1    = parse_float(g('1Y'))
+        div   = parse_float(g('Dividend yield (%)'))
+        wk52h = parse_float(g('52-wk high'))
+        tv    = parse_float(g('Trading value'))
+        rsi   = parse_float(g('RSI'))
         rows.append([ticker,name,country,theme,sec1,ytd,m1,m3,m6,y1,wk52h,tv,rsi,div,sub,inc,sec2])
-    return rows
+    return rows, date_str
 
 def parse_ul(filepath):
     rows = []
-    with open(filepath, encoding='utf-8-sig') as f:
+    with open(filepath, encoding='utf-8-sig', errors='ignore') as f:
         all_rows = list(csv.reader(f))
-    hi = next((i for i,r in enumerate(all_rows) if any('Ticker' in str(c) for c in r)), None)
-    if hi is None: raise ValueError("No header row found in UL CSV")
-    col = {h.strip():i for i,h in enumerate(all_rows[hi]) if h.strip()}
+    hi = find_header(all_rows)
+    print(f"UL: found header at row {hi}: {all_rows[hi][:6]}")
+    col = {}
+    for i, h in enumerate(all_rows[hi]):
+        h = str(h).strip()
+        if h: col[h] = i
     for row in all_rows[hi+1:]:
-        if len(row) <= 1: continue
-        ticker = row[col.get('Ticker',0)].strip()
-        if not ticker or ticker in ['nan','NaN']: continue
-        name    = row[col['Name']].strip() if 'Name' in col else ''
-        country = row[col['Country']].strip() if 'Country' in col else ''
-        theme   = row[col['Theme 1']].strip() if 'Theme 1' in col else ''
-        sub     = row[col['Sub Theme']].strip() if 'Sub Theme' in col else ''
-        sec1    = row[col['Sector 1']].strip() if 'Sector 1' in col else ''
-        sec2    = row[col['Sector 2']].strip() if 'Sector 2' in col else ''
-        ytd = parse_float(row[col['YTD']]) if 'YTD' in col else None
-        m1  = parse_float(row[col['1M']]) if '1M' in col else None
-        m3  = parse_float(row[col['3M']]) if '3M' in col else None
-        m6  = parse_float(row[col['6M']]) if '6M' in col else None
-        y1  = parse_float(row[col['1Y']]) if '1Y' in col else None
+        if not row or len(row) <= 1: continue
+        ticker_idx = col.get('Ticker', 1)
+        if ticker_idx >= len(row): continue
+        ticker = row[ticker_idx].strip()
+        if not ticker or ticker in ['nan','NaN','0','']: continue
+        def g(key, default=''):
+            idx = col.get(key, -1)
+            if idx < 0 or idx >= len(row): return default
+            return str(row[idx]).strip()
+        name    = g('Name')
+        country = g('Country')
+        theme   = g('Theme 1')
+        sub     = g('Sub Theme')
+        sec1    = g('Sector 1')
+        sec2    = g('Sector 2')
+        ytd = parse_float(g('YTD'))
+        m1  = parse_float(g('1M'))
+        m3  = parse_float(g('3M'))
+        m6  = parse_float(g('6M'))
+        y1  = parse_float(g('1Y'))
         rows.append([ticker,name,country,theme,sec1,ytd,m1,m3,m6,y1,None,None,None,None,sub,'',sec2])
     return rows
 
-dr = parse_dr('data/Current_DR80.csv')
+dr, date_str = parse_dr('data/Current_DR80.csv')
 ul = parse_ul('data/Current_DR80_UL.csv')
 
 boeing = next((r[:] for r in dr if 'BOEING' in r[1].upper()), None)
@@ -77,8 +113,18 @@ print(f"DR: {len(dr)} rows, UL: {len(ul)} rows")
 today = datetime.now()
 thai_months = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน',
                'กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม']
-thai_date = f"{today.day} {thai_months[today.month-1]} {today.year+543}"
-eng_date  = today.strftime('%d %B %Y')
+try:
+    if date_str:
+        d = dp.parse(date_str)
+        thai_date = f"{d.day} {thai_months[d.month-1]} {d.year+543}"
+        eng_date  = d.strftime('%d %B %Y')
+    else:
+        raise ValueError("no date")
+except:
+    thai_date = f"{today.day} {thai_months[today.month-1]} {today.year+543}"
+    eng_date  = today.strftime('%d %B %Y')
+
+print(f"Date: {thai_date} / {eng_date}")
 
 with open('index.html','r',encoding='utf-8') as f:
     html = f.read()
