@@ -711,7 +711,18 @@ let visibleCols = {ytd:true,"1m":true,"3m":true,"6m":true,"1y":true,rsi:false,wk
 
 const LAST_UPDATE = "AUTO_UPDATE_TIMESTAMP";  // injected by parser
 
+function getRAW(){return activeTab==="dr"?DR_RAW:UL_RAW;}
+function getV(r){return r[PIDX[period]];}
+function fmtP(v,d=2){if(v==null||isNaN(v))return"—";return(v>=0?"+":"")+v.toFixed(d)+"%";}
+
 function showLastUpdate(){
+  const el=document.getElementById("lastUpdateChip");
+  const te=document.getElementById("lastUpdateTime");
+  if(el&&te&&LAST_UPDATE&&LAST_UPDATE!=="AUTO_UPDATE_TIMESTAMP"){
+    te.textContent="อัปเดต "+LAST_UPDATE;
+    el.style.display="inline-flex";
+  }
+}
   const el=document.getElementById("lastUpdateChip");
   const te=document.getElementById("lastUpdateTime");
   if(el&&te&&LAST_UPDATE&&LAST_UPDATE!=="AUTO_UPDATE_TIMESTAMP"){
