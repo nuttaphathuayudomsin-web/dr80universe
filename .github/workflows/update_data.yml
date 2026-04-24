@@ -1,0 +1,36 @@
+name: Update DR80 Data
+
+on:
+  push:
+    paths:
+      - 'data/Current_DR80.csv'
+      - 'data/Current_DR80_UL.csv'
+  workflow_dispatch:
+
+jobs:
+  update-dashboard:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install python-dateutil
+
+      - name: Parse CSVs and update dashboard
+        run: python scripts/parse_and_inject.py
+
+      - name: Commit and push
+        run: |
+          git config user.name "DR80 Bot"
+          git config user.email "dr80bot@noreply.github.com"
+          git add index.html
+          git diff --staged --quiet || git commit -m "Auto-update: DR80 data $(date '+%d %b %Y %H:%M')"
+          git push
