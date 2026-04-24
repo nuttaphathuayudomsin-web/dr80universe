@@ -193,7 +193,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--gray50);color:var(--text)
 .col-cust-btn.active{border-color:var(--navy);background:var(--sky-light);color:var(--navy)}
 .col-cust-btn input[type=checkbox]{accent-color:var(--navy)}
 /* TABLE */
-.table-card{background:white;border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow);min-height:400px}
+.table-card{background:white;border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow);min-height:800px}
 .table-top{display:flex;align-items:center;justify-content:space-between;padding:13px 18px;border-bottom:1px solid var(--border2)}
 .table-lbl{font-size:calc(12px * var(--fs));font-weight:700;color:var(--text2);letter-spacing:0.08em;text-transform:uppercase}
 .row-count{font-family:'IBM Plex Mono',monospace;font-size:calc(12px * var(--fs));color:var(--text3)}
@@ -508,7 +508,7 @@ select:focus{border-color:var(--sky)}
   <div id="mainLayout" style="display:flex;gap:0;align-items:flex-start;position:relative">
 
     <!-- LEFT SIDEBAR: always visible, sticky -->
-    <div id="leftPanel" style="width:210px;flex-shrink:0;position:sticky;top:150px;max-height:calc(100vh - 160px);overflow-y:auto;padding-right:14px;scrollbar-width:thin;scrollbar-color:var(--gray200) transparent">
+    <div id="leftPanel" style="width:210px;flex-shrink:0;position:sticky;top:150px;height:calc(100vh - 170px);overflow-y:auto;padding-right:14px;scrollbar-width:thin;scrollbar-color:var(--gray200) transparent;align-self:flex-start">
       <div style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px;padding:0 2px">💡 Invest by Idea</div>
       <div id="ideaGrid" style="display:flex;flex-direction:column;gap:5px;margin-bottom:14px"></div>
       <div style="border-top:1px solid var(--border2);margin-bottom:10px"></div>
@@ -1202,6 +1202,7 @@ function track(event,value=""){
 }
 
 function render(){
+  const scrollY=window.scrollY;
   const data=filtered();
   updateMetrics(data);
   updateIdeas();
@@ -1212,6 +1213,8 @@ function render(){
   updateTable(data);
   updateStatusBar();
   updateHeroMovers();
+  // Restore scroll position to prevent jumping on filter
+  window.scrollTo({top:scrollY,behavior:"instant"});
 }
 
 document.addEventListener("DOMContentLoaded",function(){
