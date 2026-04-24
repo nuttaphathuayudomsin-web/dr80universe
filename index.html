@@ -1198,7 +1198,7 @@ function checkDisclaimerScroll(){
   const btn=document.getElementById("agreeBtn");
   const hint=document.getElementById("scrollHint");
   if(!el||!btn)return;
-  const atBottom=el.scrollTop+el.clientHeight>=el.scrollHeight-10;
+  const atBottom=el.scrollTop+el.clientHeight>=el.scrollHeight-30;
   if(atBottom){
     btn.disabled=false;
     btn.style.background="#003F88";
@@ -1236,6 +1236,7 @@ document.addEventListener("DOMContentLoaded",function(){
   track("page_load","dr80_dashboard");
   showLastUpdate();
   document.getElementById("disclaimerModal").style.display="flex";
+  setTimeout(checkDisclaimerScroll, 100);
 });
 
 </script>
