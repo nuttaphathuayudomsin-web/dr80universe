@@ -126,6 +126,7 @@ except:
 
 print(f"Date: {thai_date} / {eng_date}")
 
+# Update index.html
 with open('index.html','r',encoding='utf-8') as f:
     html = f.read()
 
@@ -134,7 +135,11 @@ html = re.sub(r'const UL_RAW = \[.*?\];', f'const UL_RAW = {json.dumps(ul, ensur
 html = re.sub(r'\d+ [ก-๙]+ \d{4}', thai_date, html)
 html = re.sub(r'\d+ \w+ 202\d', eng_date, html)
 
+# Inject last update timestamp
+update_time = today.strftime('%d %b %Y %H:%M') + ' (BKK)'
+html = html.replace('"AUTO_UPDATE_TIMESTAMP"', f'"{update_time}"')
+
 with open('index.html','w',encoding='utf-8') as f:
     f.write(html)
 
-print(f"✅ index.html updated — {thai_date}")
+print(f"✅ index.html updated — {thai_date} — {update_time}")
