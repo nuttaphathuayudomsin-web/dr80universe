@@ -723,14 +723,8 @@ function showLastUpdate(){
     el.style.display="inline-flex";
   }
 }
-  const el=document.getElementById("lastUpdateChip");
-  const te=document.getElementById("lastUpdateTime");
-  if(el&&te&&LAST_UPDATE&&LAST_UPDATE!=="AUTO_UPDATE_TIMESTAMP"){
-    te.textContent="อัปเดต "+LAST_UPDATE;
-    el.style.display="inline-flex";
-  }
-}
 
+function getRAW(){return activeTab==="dr"?DR_RAW:UL_RAW;}
 function getV(r){return r[PIDX[period]];}
 function fmtP(v,d=2){if(v==null||isNaN(v))return"—";return(v>=0?"+":"")+v.toFixed(d)+"%";}
 
@@ -1193,26 +1187,6 @@ function render(){
   updateHeroMovers();
 }
 
-function checkDisclaimerScroll(){
-  const el=document.getElementById("disclaimerScroll");
-  const btn=document.getElementById("agreeBtn");
-  const hint=document.getElementById("scrollHint");
-  if(!el||!btn)return;
-  const atBottom=el.scrollTop+el.clientHeight>=el.scrollHeight-30;
-  if(atBottom){
-    btn.disabled=false;
-    btn.style.background="#003F88";
-    btn.style.cursor="pointer";
-    btn.style.boxShadow="0 4px 14px rgba(0,63,136,0.4)";
-    if(hint)hint.style.display="none";
-  }
-}
-
-function agreeDisclaimer(){
-  document.getElementById("disclaimerModal").style.display="none";
-  track("disclaimer_agreed","");
-}
-
 document.addEventListener("DOMContentLoaded",function(){
   document.getElementById("themeFilter").addEventListener("change",e=>{fTheme=e.target.value;render();});
   document.getElementById("sectorFilter").addEventListener("change",e=>{fSector=e.target.value;render();});
@@ -1235,8 +1209,6 @@ document.addEventListener("DOMContentLoaded",function(){
   populate();updateColCustomizer();render();
   track("page_load","dr80_dashboard");
   showLastUpdate();
-  document.getElementById("disclaimerModal").style.display="flex";
-  setTimeout(checkDisclaimerScroll, 100);
 });
 
 </script>
@@ -1988,56 +1960,6 @@ function exportPortfolioImage(){
 
 document.getElementById("pfabBadge").textContent=portfolios.length;
 </script>
-<!-- DISCLAIMER MODAL — shows on every page load, must click agree -->
-<div id="disclaimerModal" style="display:flex;position:fixed;inset:0;z-index:2000;background:rgba(0,15,50,0.85);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:20px;pointer-events:all">
-  <div style="background:white;border-radius:16px;width:100%;max-width:720px;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 32px 80px rgba(0,0,0,0.4);overflow:hidden;position:relative;z-index:2001;pointer-events:all">
-    <!-- Header -->
-    <div style="background:#003F88;color:white;padding:20px 28px;flex-shrink:0">
-      <div style="display:flex;align-items:center;gap:12px">
-        <span style="font-size:24px">⚠️</span>
-        <div>
-          <div style="font-size:17px;font-weight:700">คำเตือนและข้อจำกัดความรับผิดชอบที่สำคัญ</div>
-          <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:2px">กรุณาอ่านและยอมรับก่อนใช้งาน — DR80 Universe · ธนาคารกรุงไทย</div>
-        </div>
-      </div>
-    </div>
-    <!-- Scrollable content -->
-    <div id="disclaimerScroll" onscroll="checkDisclaimerScroll()" style="flex:1;overflow-y:auto;padding:24px 28px;font-size:13px;color:#4A6080;line-height:1.9">
-
-      <p style="margin-bottom:14px"><strong style="color:#1A2B42">1. วัตถุประสงค์ของเครื่องมือ</strong><br>
-      แดชบอร์ดนี้จัดทำขึ้นเพื่อ<strong>วัตถุประสงค์ด้านข้อมูลและการศึกษาเท่านั้น</strong> มิได้ถือเป็นคำแนะนำการลงทุน คำแนะนำทางการเงิน หรือข้อเสนอในการซื้อ ขาย หรือถือครองหลักทรัพย์หรือตราสารทางการเงินใด ๆ ทั้งสิ้น</p>
-
-      <p style="margin-bottom:14px"><strong style="color:#1A2B42">2. ความถูกต้องของข้อมูล — ต้องตรวจสอบกับแหล่งข้อมูลทางการ</strong><br>
-      ข้อมูลที่แสดงอาจมีความคลาดเคลื่อนหรือล้าสมัย <strong>นักลงทุนต้องตรวจสอบข้อมูลกับแหล่งข้อมูลทางการทุกครั้ง</strong> ได้แก่ ตลาดหลักทรัพย์แห่งประเทศไทย (SET) · สำนักงาน ก.ล.ต. · Settrade · Bloomberg · Refinitiv และหนังสือชี้ชวนของผู้ออก DR</p>
-
-      <p style="margin-bottom:14px"><strong style="color:#1A2B42">3. ผลการดำเนินงานในอดีตไม่รับประกันอนาคต</strong><br>
-      ผลตอบแทนที่แสดงอ้างอิง ณ วันที่ <strong>24 เมษายน 2569</strong> มูลค่าของการลงทุนอาจเพิ่มขึ้นหรือลดลงได้ และนักลงทุนอาจได้รับเงินคืนน้อยกว่าเงินลงทุนเริ่มต้น</p>
-
-      <p style="margin-bottom:14px"><strong style="color:#1A2B42">4. ความเสี่ยงของ Depositary Receipt (DR)</strong><br>
-      การลงทุนใน DR มีความเสี่ยงหลายประการ ได้แก่ <strong>ความเสี่ยงด้านตลาด</strong> · <strong>ความเสี่ยงด้านอัตราแลกเปลี่ยน</strong> · <strong>ความเสี่ยงด้านสภาพคล่อง</strong> · <strong>ความเสี่ยงด้านประเทศ</strong> และ <strong>ความเสี่ยงด้าน Tracking Error</strong></p>
-
-      <p style="margin-bottom:14px"><strong style="color:#1A2B42">5. ข้อมูล UL Price Return</strong><br>
-      ข้อมูลในแท็บ "UL Price Return" แสดงราคาหลักทรัพย์อ้างอิงโดยไม่รวม FX ซึ่ง<strong>ไม่ใช่ราคาซื้อขายจริงของ DR บน SET</strong> ใช้เพื่อการเปรียบเทียบเท่านั้น</p>
-
-      <p style="margin-bottom:14px"><strong style="color:#1A2B42">6. หลักทรัพย์ที่มีสถานะ "Upcoming"</strong><br>
-      หมายความว่าหลักทรัพย์ดังกล่าว<strong>ยังไม่ได้รับการจดทะเบียนซื้อขายบน SET ในรูปแบบ DR</strong> ณ วันที่ข้อมูลอ้างอิง</p>
-
-      <p style="margin-bottom:14px"><strong style="color:#1A2B42">7. พอร์ตโฟลิโอสมมติ (Virtual Portfolio)</strong><br>
-      เป็นเพียงการจำลองเชิงทฤษฎีอิงจากข้อมูลย้อนหลัง ไม่ได้คำนึงถึงค่าธรรมเนียม ภาษี หรือต้นทุนการทำธุรกรรมจริง</p>
-
-      <p style="margin-bottom:0"><strong style="color:#1A2B42">8. ข้อจำกัดความรับผิดชอบ</strong><br>
-      ธนาคารกรุงไทย จำกัด (มหาชน) บริษัทในเครือ กรรมการ ผู้บริหาร และพนักงาน<strong>ไม่รับผิดชอบต่อความเสียหายใด ๆ</strong> ที่เกิดจากการใช้ข้อมูลในแดชบอร์ดนี้ การตัดสินใจลงทุนใด ๆ เป็นความรับผิดชอบของนักลงทุนแต่ผู้เดียว ก่อนลงทุนควรปรึกษาผู้แนะนำการลงทุนที่ได้รับใบอนุญาตจาก ก.ล.ต.</p>
-
-    </div>
-    <!-- Footer — agree button, no skip -->
-    <div style="padding:18px 28px;border-top:2px solid #E2E8F0;background:#F5F7FA;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:16px;position:relative;z-index:2002;pointer-events:all">
-      <div style="flex:1;font-size:12px;color:#8FA3BE">ข้อมูลอ้างอิง ณ วันที่ <strong>24 เมษายน 2569</strong> · ธนาคารกรุงไทย จำกัด (มหาชน)<br><span id="scrollHint" style="color:#D97706;font-weight:600">↓ เลื่อนอ่านจนครบก่อนกดยืนยัน</span></div>
-      <button id="agreeBtn" onclick="agreeDisclaimer()" style="background:#003F88;color:white;border:none;border-radius:10px;padding:12px 32px;font-family:'Sarabun',sans-serif;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap;box-shadow:0 4px 14px rgba(0,63,136,0.3);position:relative;z-index:2001;pointer-events:all">
-        รับทราบและยอมรับ — เข้าใช้งาน
-      </button>
-    </div>
-  </div>
-</div>
 
 </body>
 </html>
