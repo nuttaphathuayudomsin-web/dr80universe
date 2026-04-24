@@ -5,6 +5,8 @@ on:
     paths:
       - 'data/Current_DR80.csv'
       - 'data/Current_DR80_UL.csv'
+  schedule:
+    - cron: '0 11 * * 1-5'  # 6pm Bangkok (UTC+7) Mon-Fri
   workflow_dispatch:
 
 jobs:
